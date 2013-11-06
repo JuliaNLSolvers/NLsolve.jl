@@ -1,0 +1,13 @@
+language: cpp
+compiler:
+  - clang
+notifications:
+  email: false
+before_install:
+  - sudo add-apt-repository ppa:staticfloat/julia-deps -y
+  - sudo add-apt-repository ppa:staticfloat/julianightlies -y
+  - sudo apt-get update -qq -y
+  - sudo apt-get install libpcre3-dev julia -y
+script:
+  - julia -e 'Pkg.init(); run(`ln -s $(pwd()) $(Pkg.dir("NLsolve"))`); Pkg.pin("NLsolve"); Pkg.resolve()'
+  - julia -e 'using NLsolve; @assert isdefined(:NLsolve); @assert typeof(NLsolve) === Module'
