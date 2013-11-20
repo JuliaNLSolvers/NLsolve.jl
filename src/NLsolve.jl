@@ -1,5 +1,7 @@
 module NLsolve
 
-# package code goes here
+include("newton.jl")
+
+export newton
 
 end # module
