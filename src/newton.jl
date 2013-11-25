@@ -99,7 +99,19 @@ function newton{T}(df::DifferentiableMultivariateFunction,
 
         g = fjac'*fvec
 
-        p = -fjac\fvec
+        try
+            p = -fjac\fvec
+        catch e
+            if isa(e, Base.LinAlg.SingularException)
+                # Modify the search direction if the jacobian is singular
+                # TODO: better selection for lambda, see Nocedal & Wright p. 289
+                fjac2 = fjac'*fjac
+                lambda = 1e6*sqrt(nn*eps())*norm(fjac2, 1)
+                p = -(fjac2 + 0.1*eye(nn))\g
+            else
+                throw(e)
+            end
+        end
 
         copy!(xold, x)
 
