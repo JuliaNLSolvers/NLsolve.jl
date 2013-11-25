@@ -1,5 +1,6 @@
 module NLsolve
 
+using Optim
 
 import Base.show,
        Base.push!,
@@ -8,7 +9,6 @@ import Base.show,
 
 export DifferentiableMultivariateFunction,
        nlsolve
-
 
 immutable DifferentiableMultivariateFunction
     f!::Function
@@ -155,7 +155,8 @@ function nlsolve(df::DifferentiableMultivariateFunction,
                  iterations::Integer = 1_000,
                  store_trace::Bool = false,
                  show_trace::Bool = false,
-                 extended_trace::Bool = false)
+                 extended_trace::Bool = false,
+                 linesearch!::Function = Optim.hz_linesearch!)
     if extended_trace
         show_trace = true
     end
@@ -164,9 +165,7 @@ function nlsolve(df::DifferentiableMultivariateFunction,
         @printf "------   --------------   --------------\n"
     end
     newton(df, initial_x, xtol, ftol, iterations,
-           store_trace,
-           show_trace,
-           extended_trace)
+           store_trace, show_trace, extended_trace, linesearch!)
 end
 
 end # module
