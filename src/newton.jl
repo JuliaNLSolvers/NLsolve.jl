@@ -107,7 +107,7 @@ function newton{T}(df::DifferentiableMultivariateFunction,
                 # TODO: better selection for lambda, see Nocedal & Wright p. 289
                 fjac2 = fjac'*fjac
                 lambda = 1e6*sqrt(nn*eps())*norm(fjac2, 1)
-                p = -(fjac2 + 0.1*eye(nn))\g
+                p = -(fjac2 + lambda*eye(nn))\g
             else
                 throw(e)
             end
