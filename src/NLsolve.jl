@@ -147,9 +147,11 @@ function assess_convergence(x::Vector,
 end
 
 include("newton.jl")
+include("trust_region.jl")
 
 function nlsolve(df::DifferentiableMultivariateFunction,
                  initial_x::Vector;
+                 method::Symbol = :newton,
                  xtol::Real = 0.0,
                  ftol::Real = 1e-8,
                  iterations::Integer = 1_000,
@@ -164,8 +166,15 @@ function nlsolve(df::DifferentiableMultivariateFunction,
         @printf "Iter     f(x) inf-norm    Step 2-norm \n"
         @printf "------   --------------   --------------\n"
     end
-    newton(df, initial_x, xtol, ftol, iterations,
-           store_trace, show_trace, extended_trace, linesearch!)
+    if method == :newton
+        newton(df, initial_x, xtol, ftol, iterations,
+               store_trace, show_trace, extended_trace, linesearch!)
+    elseif method == :trust_region
+        trust_region(df, initial_x, xtol, ftol, iterations,
+                     store_trace, show_trace, extended_trace)
+    else
+        throw(ArgumentError("Unknown method $method"))
+    end
 end
 
 end # module
