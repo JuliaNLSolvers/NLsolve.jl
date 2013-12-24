@@ -158,7 +158,8 @@ function nlsolve(df::DifferentiableMultivariateFunction,
                  store_trace::Bool = false,
                  show_trace::Bool = false,
                  extended_trace::Bool = false,
-                 linesearch!::Function = Optim.hz_linesearch!)
+                 linesearch!::Function = Optim.hz_linesearch!,
+                 factor::Real = 1.0)
     if extended_trace
         show_trace = true
     end
@@ -171,7 +172,7 @@ function nlsolve(df::DifferentiableMultivariateFunction,
                store_trace, show_trace, extended_trace, linesearch!)
     elseif method == :trust_region
         trust_region(df, initial_x, xtol, ftol, iterations,
-                     store_trace, show_trace, extended_trace)
+                     store_trace, show_trace, extended_trace, factor)
     else
         throw(ArgumentError("Unknown method $method"))
     end
