@@ -151,7 +151,7 @@ include("trust_region.jl")
 
 function nlsolve(df::DifferentiableMultivariateFunction,
                  initial_x::Vector;
-                 method::Symbol = :newton,
+                 method::Symbol = :trust_region,
                  xtol::Real = 0.0,
                  ftol::Real = 1e-8,
                  iterations::Integer = 1_000,
