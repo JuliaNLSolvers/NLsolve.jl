@@ -74,7 +74,7 @@ function newton{T}(df::DifferentiableMultivariateFunction,
     it = 0
     x_converged, f_converged, converged = false, false, false
 
-    # TODO: How should this flag be set?
+    # FIXME: How should this flag be set?
     mayterminate = false
 
     # Maintain a cache for line search results
@@ -104,7 +104,7 @@ function newton{T}(df::DifferentiableMultivariateFunction,
         catch e
             if isa(e, Base.LinAlg.SingularException)
                 # Modify the search direction if the jacobian is singular
-                # TODO: better selection for lambda, see Nocedal & Wright p. 289
+                # FIXME: better selection for lambda, see Nocedal & Wright p. 289
                 fjac2 = fjac'*fjac
                 lambda = 1e6*sqrt(nn*eps())*norm(fjac2, 1)
                 p = -(fjac2 + lambda*eye(nn))\g
