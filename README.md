@@ -121,7 +121,7 @@ This is the classical Newton algorithm with linesearch.
 
 This method is selected with `method = :newton`.
 
-This method accepts a custom parameter `lineasearch!`, which must be equal to a
+This method accepts a custom parameter `linesearch!`, which must be equal to a
 function computing the linesearch. Currently, available values are taken from
 the `Optim` package, and are: `Optim.hz_linesearch!` (the default),
 `Optim.backtracking_linesearch!`, `Optim.interpolating_linesearch!`.
