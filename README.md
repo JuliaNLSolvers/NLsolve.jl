@@ -48,6 +48,54 @@ Finally, the `nlsolve` function returns an object of type `SolverResults`. In
 particular, the field `zero` of that structure contains the solution if
 convergence has occurred.
 
+# Specifying the function and its Jacobian
+
+In the following, it is assumed that have defined a function `f!(x::Vector,
+fx::Vector)` computing the residual of the system.
+
+There are 3 ways of specifying the function to be solved, depending on the
+availability of the Jacobian function:
+
+## Finite differencing
+
+If you do not have a function that compute the Jacobian, it is possible to
+have it computed by finite difference. In that case, the syntax is simply:
+
+    nlsolve(f!, initial_x)
+
+Alternatively, you can construct an object of type
+`DifferentiableMultivariateFunction` and pass it to `nlsolve`, as in:
+
+    df = DifferentiableMultivariateFunction(f!)
+    nlsolve(df, initial_x)
+
+## Jacobian available
+
+If, in addition to `f!`, you have a function `g!(x::Vector, gx::Array)` for
+computing the Jacobian of the system, then the syntax is, as in the example
+above:
+
+    nlsolve(f!, g!, initial_x)
+
+Alternatively, you can construct an object of type
+`DifferentiableMultivariateFunction` and pass it to `nlsolve`, as in:
+
+    df = DifferentiableMultivariateFunction(f!, g!)
+    nlsolve(df, initial_x)
+
+## Optimization of simultaneous residuals and Jacobian
+
+If, in addition to `f!` and `g!`, you have a function `fg!(x::Vector,
+fx::Vector, gx::Array)` that computes both the residual and the Jacobian at
+the same time, you can use the following syntax:
+
+    df = DifferentiableMultivariateFunction(f!, g!, fg!)
+    nlsolve(df, initial_x)
+
+If the function `fg!` uses some optimization that make it costless than
+calling `f!` and `g!` successively, then this syntax can possibly improve the
+performance.
+
 # Fine tunings
 
 Two algorithms are currently available. The choice between the two is achieved
@@ -96,11 +144,11 @@ Other optional arguments to `nlsolve`, available for all algorithms, are:
 
 # Todolist
 
-* Jacobian by finite difference
 * Broyden updating of Jacobian in trust-region
 * Autoscaling in trust-region
 * Add more elaborate tests
 * Macro to run tests against all algorithms
+* Homotopy methods
 
 # References
 
