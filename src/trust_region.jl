@@ -67,13 +67,13 @@ function trust_region{T}(df::DifferentiableMultivariateFunction,
                          extended_trace::Bool,
                          factor::Real)
 
-    x = copy(initial_x)
+    x = copy(initial_x)  # Current point
+    xold = similar(x)    # Old point
+    r = similar(x)       # Current residual
+    r_new = similar(x)   # New residual
+    p = similar(x)       # Step
     nn = length(x)
-    xold = Array(T, nn)
-    r = Array(T, nn)
-    r_new = Array(T, nn)
-    J = Array(T, nn, nn)
-    p = Array(T, nn)
+    J = Array(T, nn, nn) # Jacobian
 
     # Count function calls
     f_calls, g_calls = 0, 0
