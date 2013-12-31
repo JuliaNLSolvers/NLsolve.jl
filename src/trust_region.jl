@@ -97,7 +97,10 @@ function trust_region{T}(df::DifferentiableMultivariateFunction,
     tracing = store_trace || show_trace || extended_trace
     @trustregiontrace NaN
 
-    delta = factor*max(norm(x), 1)
+    delta = factor*norm(x)
+    if delta == 0
+        delta = factor
+    end
     eta = 1e-4
 
     while !converged && it < iterations
