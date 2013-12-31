@@ -46,7 +46,8 @@ point to the iterative algorithm.
 
 Finally, the `nlsolve` function returns an object of type `SolverResults`. In
 particular, the field `zero` of that structure contains the solution if
-convergence has occurred.
+convergence has occurred. If `r` is an object of type `SolverResults`, then
+`converged(r)` indicates if convergence has occurred.
 
 # Specifying the function and its Jacobian
 

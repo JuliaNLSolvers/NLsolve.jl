@@ -10,7 +10,8 @@ import Base.show,
 import Calculus.finite_difference_jacobian!
 
 export DifferentiableMultivariateFunction,
-       nlsolve
+       nlsolve,
+       converged
 
 immutable DifferentiableMultivariateFunction
     f!::Function
