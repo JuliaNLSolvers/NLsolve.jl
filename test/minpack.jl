@@ -9,8 +9,6 @@
 #   MINPACK would test also other initial points which are 10 or 100 times the
 #   original point.
 
-using NLsolve
-
 function rosenbrock()
     function f!(x::Vector, fvec::Vector)
         fvec[1] = 1 - x[1]

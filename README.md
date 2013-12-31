@@ -149,7 +149,6 @@ Other optional arguments to `nlsolve`, available for all algorithms, are:
 # Todolist
 
 * Broyden updating of Jacobian in trust-region
-* Macro to run tests against all algorithms
 * Homotopy methods
 
 # References

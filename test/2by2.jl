@@ -1,6 +1,5 @@
-# From Nocedal & Wright, p. 281
-
-using NLsolve
+# Example from Nocedal & Wright, p. 281
+# Used to test all the different algorithms
 
 function f!(x, fvec)
     fvec[1] = (x[1]+3)*(x[2]^3-7)+18
@@ -17,8 +16,21 @@ end
 
 df = DifferentiableMultivariateFunction(f!, g!)
 
-r = nlsolve(df, [ -0.5; 1.4], show_trace = true)
-
+# Test trust region
+r = nlsolve(df, [ -0.5; 1.4], method = :trust_region, autoscale = true)
+@assert converged(r)
+@assert norm(r.zero - [ 0; 1]) < 1e-8
+r = nlsolve(df, [ -0.5; 1.4], method = :trust_region, autoscale = false)
+@assert converged(r)
 @assert norm(r.zero - [ 0; 1]) < 1e-8
 
-println(r)
+# Test Newton
+r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch! = Optim.backtracking_linesearch!)
+@assert converged(r)
+@assert norm(r.zero - [ 0; 1]) < 1e-8
+r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch! = Optim.hz_linesearch!)
+@assert converged(r)
+@assert norm(r.zero - [ 0; 1]) < 1e-8
+r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch! = Optim.interpolating_linesearch!)
+@assert converged(r)
+@assert norm(r.zero - [ 0; 1]) < 1e-8

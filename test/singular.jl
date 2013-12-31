@@ -1,8 +1,7 @@
 # From Nocedal & Wright, p. 288-289
 
-# Jacobian is singular at the starting point
-
-using NLsolve
+# Jacobian is singular at the starting point.
+# Used to test the behavior of algorithms in that context.
 
 function f!(x, fvec)
     fvec[1] = x[1]
@@ -18,8 +17,10 @@ end
 
 df = DifferentiableMultivariateFunction(f!, g!)
 
-r = nlsolve(df, [ 3.0; 0], show_trace = true)
-
+r = nlsolve(df, [ 3.0; 0], method = :newton)
+@assert converged(r)
 @assert norm(r.zero) < 1e-6
 
-println(r)
+r = nlsolve(df, [ 3.0; 0], method = :trust_region)
+@assert converged(r)
+@assert norm(r.zero) < 1e-6
