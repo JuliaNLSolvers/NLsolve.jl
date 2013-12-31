@@ -152,10 +152,12 @@ function trust_region{T}(df::DifferentiableMultivariateFunction,
         @trustregiontrace norm(x-xold)
 
         # Update size of trust region
-        if rho < 0.25
-            delta = 0.25*norm(d .* p)
-        elseif rho > 0.75 && abs(norm(d .* p) - delta) < eps(delta)
-            delta = 2*delta
+        if rho < 0.1
+            delta = 0.5*delta
+        elseif rho >= 0.9
+            delta = 2*norm(d .* p)
+        elseif rho >= 0.5
+            delta = max(delta, 2*norm(d .* p))
         end
     end
 
