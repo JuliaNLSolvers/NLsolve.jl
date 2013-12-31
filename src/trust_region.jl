@@ -20,7 +20,7 @@ macro trustregiontrace(stepnorm)
     end
 end
 
-function dogleg!{T}(p::Vector{T}, r::Vector{T}, J::Matrix{T}, delta::Real)
+function dogleg!{T}(p::Vector{T}, r::Vector{T}, d::Vector{T}, J::Matrix{T}, delta::Real)
     local p_i
     try
         p_i = -J\r # Gauss-Newton step
@@ -37,21 +37,21 @@ function dogleg!{T}(p::Vector{T}, r::Vector{T}, J::Matrix{T}, delta::Real)
     end
 
     # Test is Gauss-Newton step is within the region
-    if norm(p_i) <= delta
+    if norm(d .* p_i) <= delta
         copy!(p, p_i)
     else
-        g = J'*r # Gradient direction
-        p_c = - norm(g)^2/dot(g, (J'*J)*g)*g # Cauchy point
+        g = (J'*r) ./ (d .^ 2) # Gradient direction
+        p_c = - norm(d .* g)^2/norm(J*g)^2*g # Cauchy point
 
-        if norm(p_c) >= delta
+        if norm(d .* p_c) >= delta
             # Cauchy point is out of the region, take the largest step along
             # gradient direction
-            copy!(p, -delta/norm(g)*g)
+            copy!(p, -delta/norm(d .* g)*g)
         else
             # Compute the optimal point on dogleg path
-            b = 2*dot(p_c, p_i-p_c)
-            a = dot(p_i-p_c,p_i-p_c)
-            tau = (-b+sqrt(b^2-4*a*(dot(p_c,p_c)-delta^2)))/2/a
+            b = 2*dot(d .* p_c, d .* (p_i-p_c))
+            a = norm(d.*(p_i-p_c))^2
+            tau = (-b+sqrt(b^2-4*a*(norm(d.*p_c)^2-delta^2)))/2/a
             copy!(p, p_c+tau*(p_i-p_c))
         end
     end
@@ -65,13 +65,15 @@ function trust_region{T}(df::DifferentiableMultivariateFunction,
                          store_trace::Bool,
                          show_trace::Bool,
                          extended_trace::Bool,
-                         factor::Real)
+                         factor::Real,
+                         autoscale::Bool)
 
     x = copy(initial_x)  # Current point
     xold = similar(x)    # Old point
     r = similar(x)       # Current residual
     r_new = similar(x)   # New residual
     p = similar(x)       # Step
+    d = similar(x)       # Scaling vector
     nn = length(x)
     J = Array(T, nn, nn) # Jacobian
 
@@ -97,7 +99,17 @@ function trust_region{T}(df::DifferentiableMultivariateFunction,
     tracing = store_trace || show_trace || extended_trace
     @trustregiontrace NaN
 
-    delta = factor*norm(x)
+    if autoscale
+        for j = 1:nn
+            d[j] = norm(J[:,j])
+            if d[j] == 0
+                d[j] = 1
+            end
+        end
+    else
+        d = ones(nn)
+    end
+    delta = factor*norm(d .* x)
     if delta == 0
         delta = factor
     end
@@ -108,7 +120,7 @@ function trust_region{T}(df::DifferentiableMultivariateFunction,
         it += 1
 
         # Compute proposed iteration step
-        dogleg!(p, r, J, delta)
+        dogleg!(p, r, d, J, delta)
 
         df.f!(x + p, r_new)
         f_calls += 1
@@ -124,6 +136,14 @@ function trust_region{T}(df::DifferentiableMultivariateFunction,
             copy!(r, r_new)
             df.g!(x, J)
             g_calls += 1
+
+            # Update scaling vector
+            if autoscale
+                for j = 1:nn
+                    d[j] = max(0.1*d[j], norm(J[:,j]))
+                end
+            end
+
             x_converged, f_converged, converged = assess_convergence(x, xold, r, xtol, ftol)
         else
             x_converged, converged = false, false
@@ -133,13 +153,17 @@ function trust_region{T}(df::DifferentiableMultivariateFunction,
 
         # Update size of trust region
         if rho < 0.25
-            delta = 0.25*norm(p)
-        elseif rho > 0.75 && abs(norm(p) - delta) < eps(delta)
+            delta = 0.25*norm(d .* p)
+        elseif rho > 0.75 && abs(norm(d .* p) - delta) < eps(delta)
             delta = 2*delta
         end
     end
 
-    return SolverResults("Trust-region with dogleg",
+    name = "Trust-region with dogleg"
+    if autoscale
+        name *= " and autoscaling"
+    end
+    return SolverResults(name,
                          initial_x, x, norm(r, Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
                          f_calls, g_calls)

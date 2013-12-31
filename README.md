@@ -110,10 +110,13 @@ compact region centered around the current iterate.
 
 This method is selected with `method = :trust_region`.
 
-This method accepts a custom parameter `factor`, which determines the size of
-the initial trust region. This size is set to the product of factor and the
-euclidean norm of `initial_x` if nonzero, or else to factor itself. The default
-value is `1.0`.
+This method accepts the following custom parameters:
+
+* `factor`: determines the size of the initial trust region. This size is set
+  to the product of factor and the euclidean norm of `initial_x` if nonzero, or
+  else to factor itself. Default: `1.0`.
+* `autoscale`: if `true`, then the variables will be automatically rescaled.
+  The scaling factors are the norms of the Jacobian columns. Default: `true`.
 
 ## Newton method with linesearch
 
@@ -145,7 +148,6 @@ Other optional arguments to `nlsolve`, available for all algorithms, are:
 # Todolist
 
 * Broyden updating of Jacobian in trust-region
-* Autoscaling in trust-region
 * Add more elaborate tests
 * Macro to run tests against all algorithms
 * Homotopy methods
