@@ -149,7 +149,6 @@ Other optional arguments to `nlsolve`, available for all algorithms, are:
 # Todolist
 
 * Broyden updating of Jacobian in trust-region
-* Add more elaborate tests
 * Macro to run tests against all algorithms
 * Homotopy methods
 
@@ -157,3 +156,6 @@ Other optional arguments to `nlsolve`, available for all algorithms, are:
 
 Nocedal, Jorge and Wright, Stephen J. (2006): "Numerical Optimization", second
 edition, Springer
+
+[MINPACK](http://www.netlib.org/minpack/) by Jorge More', Burt Garbow, and Ken
+Hillstrom at Argonne National Laboratory
