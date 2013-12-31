@@ -177,7 +177,7 @@ function nlsolve(df::DifferentiableMultivariateFunction,
                  store_trace::Bool = false,
                  show_trace::Bool = false,
                  extended_trace::Bool = false,
-                 linesearch!::Function = Optim.hz_linesearch!,
+                 linesearch!::Function = Optim.backtracking_linesearch!,
                  factor::Real = 1.0)
     if extended_trace
         show_trace = true
@@ -207,7 +207,7 @@ function nlsolve(f!::Function,
                  store_trace::Bool = false,
                  show_trace::Bool = false,
                  extended_trace::Bool = false,
-                 linesearch!::Function = Optim.hz_linesearch!,
+                 linesearch!::Function = Optim.backtracking_linesearch!,
                  factor::Real = 1.0)
     nlsolve(DifferentiableMultivariateFunction(f!, g!),
             initial_x, method = method, xtol = xtol, ftol = ftol,
@@ -225,7 +225,7 @@ function nlsolve(f!::Function,
                  store_trace::Bool = false,
                  show_trace::Bool = false,
                  extended_trace::Bool = false,
-                 linesearch!::Function = Optim.hz_linesearch!,
+                 linesearch!::Function = Optim.backtracking_linesearch!,
                  factor::Real = 1.0)
     nlsolve(DifferentiableMultivariateFunction(f!),
             initial_x, method = method, xtol = xtol, ftol = ftol,

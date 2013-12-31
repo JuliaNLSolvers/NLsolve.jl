@@ -123,8 +123,8 @@ This method is selected with `method = :newton`.
 
 This method accepts a custom parameter `linesearch!`, which must be equal to a
 function computing the linesearch. Currently, available values are taken from
-the `Optim` package, and are: `Optim.hz_linesearch!` (the default),
-`Optim.backtracking_linesearch!`, `Optim.interpolating_linesearch!`.
+the `Optim` package, and are: `Optim.backtracking_linesearch!` (the default),
+`Optim.hz_linesearch!`, `Optim.interpolating_linesearch!`.
 
 ## Common options
 
