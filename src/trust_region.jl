@@ -51,7 +51,7 @@ function dogleg!{T}(p::Vector{T}, r::Vector{T}, J::Matrix{T}, delta::Real)
             # Compute the optimal point on dogleg path
             b = 2*dot(p_c, p_i-p_c)
             a = dot(p_i-p_c,p_i-p_c)
-            tau = (-b+sqrt(b^2-4*a*(dot(p_c,p_c)-delta^2)))/2*a
+            tau = (-b+sqrt(b^2-4*a*(dot(p_c,p_c)-delta^2)))/2/a
             copy!(p, p_c+tau*(p_i-p_c))
         end
     end
