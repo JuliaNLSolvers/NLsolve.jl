@@ -52,7 +52,7 @@ function newton{T}(df::DifferentiableMultivariateFunction,
 
     x = copy(initial_x)
     nn = length(x)
-    xold = Array(T, nn)
+    xold = nans(T, nn)
     fvec = Array(T, nn)
     fjac = Array(T, nn, nn)
     p = Array(T, nn)
@@ -72,7 +72,7 @@ function newton{T}(df::DifferentiableMultivariateFunction,
     end
 
     it = 0
-    x_converged, f_converged, converged = false, false, false
+    x_converged, f_converged, converged = assess_convergence(x, xold, fvec, xtol, ftol)
 
     # FIXME: How should this flag be set?
     mayterminate = false
