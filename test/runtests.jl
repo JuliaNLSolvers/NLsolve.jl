@@ -3,7 +3,8 @@ using NLsolve
 tests = ["2by2.jl",
          "singular.jl",
          "finite_difference.jl",
-         "minpack.jl"]
+         "minpack.jl",
+         "iface.jl"]
 
 println("Running tests:")
 
