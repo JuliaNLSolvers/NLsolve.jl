@@ -39,7 +39,8 @@ following program:
 First, note that the function `f!` computes the residuals of the nonlinear
 system, and stores them in a preallocated vector passed as second argument.
 Similarly, the function `g!` computes the Jacobian of the system and stores it
-in a preallocated matrix passed as second argument.
+in a preallocated matrix passed as second argument. Residuals and Jacobian
+functions can take different shapes, see below.
 
 Second, when calling the `nlsolve` function, it is necessary to give a starting
 point to the iterative algorithm.
@@ -51,13 +52,20 @@ convergence has occurred. If `r` is an object of type `SolverResults`, then
 
 # Specifying the function and its Jacobian
 
+There are various ways of specifying the residuals function and possibly its
+Jacobian.
+
+## With functions modifying arguments in-place
+
+This is the most efficient method, because it minimizes the memory allocations.
+
 In the following, it is assumed that have defined a function `f!(x::Vector,
-fx::Vector)` computing the residual of the system.
+fx::Vector)` computing the residual of the system at point `x` and putting it
+into the `fx` argument.
 
-There are 3 ways of specifying the function to be solved, depending on the
-availability of the Jacobian function:
+In turn, there 3 ways of specifying how the Jacobian should be computed:
 
-## Finite differencing
+### Finite differencing
 
 If you do not have a function that compute the Jacobian, it is possible to
 have it computed by finite difference. In that case, the syntax is simply:
@@ -70,7 +78,7 @@ Alternatively, you can construct an object of type
     df = DifferentiableMultivariateFunction(f!)
     nlsolve(df, initial_x)
 
-## Jacobian available
+### Jacobian available
 
 If, in addition to `f!`, you have a function `g!(x::Vector, gx::Array)` for
 computing the Jacobian of the system, then the syntax is, as in the example
@@ -84,7 +92,7 @@ Alternatively, you can construct an object of type
     df = DifferentiableMultivariateFunction(f!, g!)
     nlsolve(df, initial_x)
 
-## Optimization of simultaneous residuals and Jacobian
+### Optimization of simultaneous residuals and Jacobian
 
 If, in addition to `f!` and `g!`, you have a function `fg!(x::Vector,
 fx::Vector, gx::Array)` that computes both the residual and the Jacobian at
@@ -96,6 +104,35 @@ the same time, you can use the following syntax:
 If the function `fg!` uses some optimization that make it costless than
 calling `f!` and `g!` successively, then this syntax can possibly improve the
 performance.
+
+## With functions returning residuals and Jacobian as output
+
+Here it is assumed that you have a function `f(x::Vector)` that returns a
+newly-allocated vector containing the residuals. The helper function
+`not_in_place` can be used to construct a `DifferentiableMultivariateFunction`
+object, that can be used as first argument of `nlsolve`. The complete syntax is
+therefore:
+
+    nlsolve(not_in_place(f), initial_x)
+
+Finite-differencing is used to compute the Jacobian in that case.
+
+If, in addition, there is a function `g(x::Vector)` returning a newly-allocated
+matrix containing the Jacobian, it can be passed as a second argument to
+`not_in_place`. Similarly, you can pass as a third argument a function
+`fg(x::Vector)` returning a pair consisting of the residuals and the Jacobian.
+
+## With functions taking several scalar arguments
+
+If you have a function `f(x::Float64, y::Float64, ...)` that takes the point of
+interest as several scalars and returns a vector or a tuple containing the
+residuals, you can use the helper function `n_ary` can be used to construct a
+`DifferentiableMultivariateFunction` object, that can be used as first argument
+of `nlsolve`. The complete syntax is therefore:
+
+    nlsolve(n_ary(f), initial_x)
+
+Finite-differencing is used to compute the Jacobian.
 
 # Fine tunings
 

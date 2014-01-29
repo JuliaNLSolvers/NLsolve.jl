@@ -10,6 +10,8 @@ import Base.show,
 import Calculus.finite_difference_jacobian!
 
 export DifferentiableMultivariateFunction,
+       not_in_place,
+       n_ary,
        nlsolve,
        converged
 
@@ -42,6 +44,48 @@ function DifferentiableMultivariateFunction(f!::Function)
         fg!(x, fx, gx)
     end
     return DifferentiableMultivariateFunction(f!, g!, fg!)
+end
+
+# Helpers for functions that do not modify arguments in place but return
+# values and jacobian
+function not_in_place(f::Function)
+    function f!(x::Vector, fx::Vector)
+        copy!(fx, f(x))
+    end
+    DifferentiableMultivariateFunction(f!)
+end
+
+function not_in_place(f::Function, g::Function)
+    function f!(x::Vector, fx::Vector)
+        copy!(fx, f(x))
+    end
+    function g!(x::Vector, gx::Array)
+        copy!(gx, g(x))
+    end
+    DifferentiableMultivariateFunction(f!, g!)
+end
+
+function not_in_place(f::Function, g::Function, fg::Function)
+    function f!(x::Vector, fx::Vector)
+        copy!(fx, f(x))
+    end
+    function g!(x::Vector, gx::Array)
+        copy!(gx, g(x))
+    end
+    function fg!(x::Vector, fx::Vector, gx::Array)
+        (fvec, fjac) = fg(x)
+        copy!(fx, fvec)
+        copy!(gx, fjac)
+    end
+    DifferentiableMultivariateFunction(f!, g!, fg!)
+end
+
+# Helper for functions that take several scalar arguments and return a tuple
+function n_ary(f::Function)
+    function f!(x::Vector, fx::Vector)
+        copy!(fx, [ f(x...)... ])
+    end
+    DifferentiableMultivariateFunction(f!)
 end
 
 immutable SolverState
