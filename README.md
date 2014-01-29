@@ -105,6 +105,24 @@ If the function `fg!` uses some optimization that make it costless than
 calling `f!` and `g!` successively, then this syntax can possibly improve the
 performance.
 
+### Other combinations
+
+There are other helpers for two other cases, described below. Note that these
+cases are not optimal in terms of memory management.
+
+If only `f!` and `fg!` are available, the helper function `only_f!_and_fg!` can be
+used to construct a `DifferentiableMultivariateFunction` object, that can be
+used as first argument of `nlsolve`. The complete syntax is therefore:
+
+    nlsolve(only_f!_and_fg!(f!, fg!), initial_x)
+
+If only `fg!` is available, the helper function `only_fg!` can be used to
+construct a `DifferentiableMultivariateFunction` object, that can be used as
+first argument of `nlsolve`. The complete syntax is therefore:
+
+    nlsolve(only_fg!(fg!), initial_x)
+
+
 ## With functions returning residuals and Jacobian as output
 
 Here it is assumed that you have a function `f(x::Vector)` that returns a

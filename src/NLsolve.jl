@@ -10,6 +10,8 @@ import Base.show,
 import Calculus.finite_difference_jacobian!
 
 export DifferentiableMultivariateFunction,
+       only_f!_and_fg!,
+       only_fg!,
        not_in_place,
        n_ary,
        nlsolve,
@@ -38,6 +40,28 @@ function DifferentiableMultivariateFunction(f!::Function)
             return fx
         end
         finite_difference_jacobian!(f, x, fx, gx)
+    end
+    function g!(x::Vector, gx::Array)
+        fx = similar(x)
+        fg!(x, fx, gx)
+    end
+    return DifferentiableMultivariateFunction(f!, g!, fg!)
+end
+
+# Helper for the case where only f! and fg! are available
+function only_f!_and_fg!(f!::Function, fg!::Function)
+    function g!(x::Vector, gx::Array)
+        fx = similar(x)
+        fg!(x, fx, gx)
+    end
+    return DifferentiableMultivariateFunction(f!, g!, fg!)
+end
+
+# Helper for the case where only fg! is available
+function only_fg!(fg!::Function)
+    function f!(x::Vector, fx::Vector)
+        gx = Array(Float64, length(x), length(x))
+        fg!(x, fx, gx)
     end
     function g!(x::Vector, gx::Array)
         fx = similar(x)

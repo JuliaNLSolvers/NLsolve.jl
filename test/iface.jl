@@ -40,6 +40,12 @@ r = nlsolve(f!, [ -0.5; 1.4])
 r = nlsolve(f!, g!, [ -0.5; 1.4])
 @assert converged(r)
 
+r = nlsolve(only_f!_and_fg!(f!, fg!), [ -0.5; 1.4])
+@assert converged(r)
+
+r = nlsolve(only_fg!(fg!), [ -0.5; 1.4])
+@assert converged(r)
+
 
 # Using functions returning their output
 
