@@ -497,4 +497,8 @@ for (df, initial, name) in alltests
     r = nlsolve(df, initial, method = :trust_region)
     @printf "%-30s   %5d   %5d   %5d   %14e\n" name length(initial) r.f_calls r.g_calls r.residual_norm
     @assert converged(r)
+    # with autodiff
+    r = nlsolve(df.f!, initial, method = :trust_region, autodiff = true)
+    @printf "%-30s   %5d   %5d   %5d   %14e\n" name*"-AD" length(initial) r.f_calls r.g_calls r.residual_norm
+    @assert converged(r)
 end
