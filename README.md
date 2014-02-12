@@ -78,6 +78,14 @@ Alternatively, you can construct an object of type
     df = DifferentiableMultivariateFunction(f!)
     nlsolve(df, initial_x)
 
+### Automatic differentiation
+
+Another option if you do not have a function computing the Jacobian is to use
+automatic differentiation, thanks to the `DualNumbers` package. The syntax is
+simply:
+
+    nlsolve(f!, initial_x, autodiff = true)
+
 ### Jacobian available
 
 If, in addition to `f!`, you have a function `g!(x::Vector, gx::Array)` for
