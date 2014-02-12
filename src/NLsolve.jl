@@ -236,6 +236,7 @@ end
 
 include("newton.jl")
 include("trust_region.jl")
+include("autodiff.jl")
 
 function nlsolve(df::DifferentiableMultivariateFunction,
                  initial_x::Vector;
@@ -299,8 +300,14 @@ function nlsolve(f!::Function,
                  extended_trace::Bool = false,
                  linesearch!::Function = Optim.backtracking_linesearch!,
                  factor::Real = 1.0,
-                 autoscale::Bool = true)
-    nlsolve(DifferentiableMultivariateFunction(f!),
+                 autoscale::Bool = true,
+                 autodiff::Bool = false)
+    if !autodiff
+        df = DifferentiableMultivariateFunction(f!)
+    else
+        df = NLsolve.autodiff(f!, eltype(initial_x), length(initial_x), length(initial_x))
+    end
+    nlsolve(df,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,

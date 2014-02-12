@@ -5,7 +5,8 @@ tests = ["2by2.jl",
          "finite_difference.jl",
          "minpack.jl",
          "iface.jl",
-         "already_converged.jl"]
+         "already_converged.jl",
+         "autodiff.jl"]
 
 println("Running tests:")
 
