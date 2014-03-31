@@ -68,14 +68,14 @@ function trust_region{T}(df::DifferentiableMultivariateFunction,
                          factor::Real,
                          autoscale::Bool)
 
-    x = copy(initial_x)  # Current point
+    x = copy(initial_x)     # Current point
     nn = length(x)
-    xold = nans(T, nn)   # Old point
-    r = similar(x)       # Current residual
-    r_new = similar(x)   # New residual
-    p = similar(x)       # Step
-    d = similar(x)       # Scaling vector
-    J = Array(T, nn, nn) # Jacobian
+    xold = fill(nan(T), nn) # Old point
+    r = similar(x)          # Current residual
+    r_new = similar(x)      # New residual
+    p = similar(x)          # Step
+    d = similar(x)          # Scaling vector
+    J = Array(T, nn, nn)    # Jacobian
 
     # Count function calls
     f_calls, g_calls = 0, 0
