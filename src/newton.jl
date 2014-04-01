@@ -52,7 +52,7 @@ function newton{T}(df::DifferentiableMultivariateFunction,
 
     x = copy(initial_x)
     nn = length(x)
-    xold = nans(T, nn)
+    xold = fill(nan(T), nn)
     fvec = Array(T, nn)
     fjac = Array(T, nn, nn)
     p = Array(T, nn)
