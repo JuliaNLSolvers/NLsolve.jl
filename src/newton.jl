@@ -102,7 +102,7 @@ function newton{T}(df::DifferentiableMultivariateFunction,
         try
             p = -fjac\fvec
         catch e
-            if isa(e, Base.LinAlg.SingularException)
+            if isa(e, Base.LinAlg.LAPACKException)
                 # Modify the search direction if the jacobian is singular
                 # FIXME: better selection for lambda, see Nocedal & Wright p. 289
                 fjac2 = fjac'*fjac

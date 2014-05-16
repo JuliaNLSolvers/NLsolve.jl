@@ -25,7 +25,7 @@ function dogleg!{T}(p::Vector{T}, r::Vector{T}, d::Vector{T}, J::Matrix{T}, delt
     try
         p_i = -J\r # Gauss-Newton step
     catch e
-        if isa(e, Base.LinAlg.SingularException)
+        if isa(e, Base.LinAlg.LAPACKException)
             # If Jacobian is singular, compute a least-squares solution to J*x+r=0
             U, S, V = svd(J)
             k = sum(S .> eps())
