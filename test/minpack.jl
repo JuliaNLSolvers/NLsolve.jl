@@ -316,7 +316,7 @@ function discrete_boundary_value(n::Integer)
         end
     end
     initial_x = [1:n]*h
-    initial_x = initial_x .* (initial_x - 1)
+    initial_x = initial_x .* (initial_x .- 1)
     
     (DifferentiableMultivariateFunction(f!, g!), initial_x, "Discrete boundary value")
 end
@@ -356,7 +356,7 @@ function discrete_integral_equation(n::Integer)
     end
 
     initial_x = [1:n]*h
-    initial_x = initial_x .* (initial_x - 1)
+    initial_x = initial_x .* (initial_x .- 1)
     
     (DifferentiableMultivariateFunction(f!, g!), initial_x, "Discrete integral equation")
 end
@@ -410,7 +410,7 @@ function variably_dimensioned(n::Integer)
             fjac[k,k] += 1
         end
     end
-    (DifferentiableMultivariateFunction(f!, g!), 1 - [1:n]/n, "Variably dimensioned")
+    (DifferentiableMultivariateFunction(f!, g!), 1 .- [1:n]/n, "Variably dimensioned")
 end
 
 function broyden_tridiagonal(n::Integer)
