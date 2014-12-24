@@ -1,6 +1,6 @@
 The NLsolve.jl package is licensed under the GPL v3 or later:
 
-> Copyright (c) 2013 Sébastien Villemot <sebastien@dynare.org>.
+> Copyright (c) 2013-2014 Sébastien Villemot <sebastien.villemot@sciencespo.fr>.
 >
 > This program is free software: you can redistribute it and/or modify
 > it under the terms of the GNU General Public License as published by
