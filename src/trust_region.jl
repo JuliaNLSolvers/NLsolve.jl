@@ -36,7 +36,7 @@ function dogleg!{T}(p::Vector{T}, r::Vector{T}, d::Vector{T}, J::Matrix{T}, delt
         end
     end
 
-    # Test is Gauss-Newton step is within the region
+    # Test if Gauss-Newton step is within the region
     if norm(d .* p_i) <= delta
         copy!(p, p_i)
     else
