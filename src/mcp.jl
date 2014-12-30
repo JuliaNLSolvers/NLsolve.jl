@@ -69,7 +69,7 @@ function mcp_smooth(df::DifferentiableMultivariateFunction,
             for j = 1:length(x)
                 gx[i,j] *= dminus_du[i]*dplus_du[i]
             end
-            gx[i,i] -= dminus_dv[i] + dminus_du[i]*dplus_dv[i]
+            gx[i,i] += dminus_dv[i] + dminus_du[i]*dplus_dv[i]
         end
     end
     return DifferentiableMultivariateFunction(f!, g!)
