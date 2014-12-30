@@ -5,6 +5,11 @@ The NLsolve package solves systems of nonlinear equations. Formally, if `f` is
 a multivariate function, then this package looks for some vector `x` that
 satisfies `f(x)=0`.
 
+The package is also able to solve mixed-complementarity problems, which are
+similar to systems of nonlinear equations, except that the equality to zero is
+allowed to become an inequality if some boundary condition is satisfied. See
+further below for a formal definition and the related commands.
+
 Since there is some overlap between optimizers and nonlinear solvers, this
 package borrows some ideas from the
 [Optim](https://github.com/JuliaOpt/Optim.jl) package, and depends on it for
@@ -209,10 +214,81 @@ Other optional arguments to `nlsolve`, available for all algorithms, are:
 * `extended_trace`: should additional algorithm internals be added to the state
   trace? Default: `false`.
 
+# Mixed-complementarity problems
+
+Given a multivariate function `f` and two vectors `a` and `b`, the solution to
+the mixed-complementarity problem (MCP) is a vector `x` such that one of the
+following holds for every index `i`:
+
+* either `f_i(x) = 0` and `a_i <= x_i <= b_i`
+* or `f_i(x) > 0` and `x_i = a_i`
+* or `f_i(x) < 0` and `x_i = b_i`
+
+The vector `a` can contain elements equal to `-Inf`, while the vector
+`b` can contain elements equal to `Inf`. In the particular case where all
+elements of `a` are equal to `-Inf`, and all elements of `b` are equal to
+`Inf`, the MCP is exactly equivalent to the multivariate root finding problem
+described above.
+
+The package solves MCPs by reformulating them as the solution to a system of
+nonlinear equations (as described by Miranda and Fackler, 2002, though NLsolve
+uses the sign convention opposite to theirs).
+
+The function `mcpsolve` solves MCPs. It takes the same arguments as `nlsolve`,
+except that the vectors `a` and `b` must immediately follow the argument(s)
+corresponding to `f` (and possibly its derivative). There is also an extra
+optional argument `reformulation`, which can take two values:
+
+* `reformulation = :smooth`: use a smooth reformulation of the problem using
+  the Fischer function. This is the default, since it is more robust for complex
+  problems.
+* `reformulation = :minmax`: use a min-max reformulation of the problem. It is
+  faster than the smooth approximation, since it uses less algebra, but is less
+  robust since the reformulated problem has kinks.
+
+Here is a complete example:
+
+    using NLsolve
+
+    function f!(x, fvec)
+        fvec[1]=3*x[1]^2+2*x[1]*x[2]+2*x[2]^2+x[3]+3*x[4]-6
+        fvec[2]=2*x[1]^2+x[1]+x[2]^2+3*x[3]+2*x[4]-2
+        fvec[3]=3*x[1]^2+x[1]*x[2]+2*x[2]^2+2*x[3]+3*x[4]-1
+        fvec[4]=x[1]^2+3*x[2]^2+2*x[3]+3*x[4]-3
+    end
+
+    r = mcpsolve(f!, [0., 0., 0., 0.], [Inf, Inf, Inf, Inf],
+                 [1.25, 0., 0., 0.5], reformulation = :smooth, autodiff = true)
+
+The solution is:
+
+    julia> r.zero
+    4-element Array{Float64,1}:
+      1.22474  
+      0.0      
+     -1.378e-19
+      0.5      
+
+The lower bounds are hit for the second and third components, hence the second
+and third components of the function are positive at the solution. On the other
+hand, the first and fourth components of the function are zero at the solution.
+
+    julia> fvec = similar(r.zero)
+
+    julia> f!(r.zero, fvec)
+
+    julia> fvec
+    4-element Array{Float64,1}:
+     -1.26298e-9 
+      3.22474    
+      5.0        
+      3.62723e-11
+
 # Todolist
 
 * Broyden updating of Jacobian in trust-region
 * Homotopy methods
+* [LMMCP algorithm by C. Kanzow](http://www.mathematik.uni-wuerzburg.de/~kanzow/)
 
 # References
 
@@ -221,3 +297,6 @@ edition, Springer
 
 [MINPACK](http://www.netlib.org/minpack/) by Jorge More', Burt Garbow, and Ken
 Hillstrom at Argonne National Laboratory
+
+Miranda, Mario J. and Fackler, Paul L. (2002): "Applied Computational Economics
+and Finance", MIT Press
