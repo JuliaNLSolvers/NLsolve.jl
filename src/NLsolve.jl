@@ -319,11 +319,24 @@ end
 
 # Solvers for mixed-complementarity problems
 
+macro reformulate(df)
+    esc(quote
+        if reformulation == :smooth
+            rf = mcp_smooth($df, lower, upper)
+        elseif reformulation == :minmax
+            rf = mcp_minmax($df, lower, upper)
+        else
+            throw(ArgumentError("Unknown reformulation $reformulation"))
+        end
+    end)
+end
+
 function mcpsolve(df::DifferentiableMultivariateFunction,
                   lower::Vector,
                   upper::Vector,
                   initial_x::Vector;
                   method::Symbol = :trust_region,
+                  reformulation::Symbol = :smooth,
                   xtol::Real = 0.0,
                   ftol::Real = 1e-8,
                   iterations::Integer = 1_000,
@@ -333,7 +346,8 @@ function mcpsolve(df::DifferentiableMultivariateFunction,
                   linesearch!::Function = Optim.backtracking_linesearch!,
                   factor::Real = 1.0,
                   autoscale::Bool = true)
-    nlsolve(mcp_smooth(df, lower, upper),
+    @reformulate df
+    nlsolve(rf,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
@@ -346,6 +360,7 @@ function mcpsolve(f!::Function,
                   upper::Vector,
                   initial_x::Vector;
                   method::Symbol = :trust_region,
+                  reformulation::Symbol = :smooth,
                   xtol::Real = 0.0,
                   ftol::Real = 1e-8,
                   iterations::Integer = 1_000,
@@ -355,7 +370,8 @@ function mcpsolve(f!::Function,
                   linesearch!::Function = Optim.backtracking_linesearch!,
                   factor::Real = 1.0,
                   autoscale::Bool = true)
-    nlsolve(mcp_smooth(DifferentiableMultivariateFunction(f!, g!), lower, upper),
+    @reformulate DifferentiableMultivariateFunction(f!, g!)
+    nlsolve(rf,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
@@ -367,6 +383,7 @@ function mcpsolve(f!::Function,
                   upper::Vector,
                   initial_x::Vector;
                   method::Symbol = :trust_region,
+                  reformulation::Symbol = :smooth,
                   xtol::Real = 0.0,
                   ftol::Real = 1e-8,
                   iterations::Integer = 1_000,
@@ -382,7 +399,8 @@ function mcpsolve(f!::Function,
     else
         df = NLsolve.autodiff(f!, eltype(initial_x), length(initial_x), length(initial_x))
     end
-    nlsolve(mcp_smooth(df, lower, upper),
+    @reformulate df
+    nlsolve(rf,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,

@@ -1,7 +1,7 @@
-# Generate a function whose roots are the solutions of the MCP.
+# Generate a smooth function whose roots are the solutions of the MCP.
 # More precisely, this function is:
 #
-# x -> phiminus(phiplus(f(x), x-b), x-a)
+# x -> phiminus(phiplus(f(x), x-upper), x-lower)
 #
 # where
 #  phiplus(u, v) = u + v + sqrt(u^2+v^2)
@@ -72,5 +72,42 @@ function mcp_smooth(df::DifferentiableMultivariateFunction,
             gx[i,i] += dminus_dv[i] + dminus_du[i]*dplus_dv[i]
         end
     end
+    return DifferentiableMultivariateFunction(f!, g!)
+end
+
+# Generate a function whose roots are the solutions of the MCP.
+# More precisely, this function is:
+#
+# x -> min(max(f(x), x-upper), x-lower)
+#
+# Note that Miranda and Fackler use the opposite sign convention for the MCP,
+# hence the difference in the function.
+function mcp_minmax(df::DifferentiableMultivariateFunction,
+                    lower::Vector, upper::Vector)
+
+    function f!(x::Vector, fx::Vector)
+        df.f!(x, fx)
+        for i = 1:length(x)
+            if fx[i] < x[i]-upper[i]
+                fx[i] = x[i]-upper[i]
+            end
+            if fx[i] > x[i]-lower[i]
+                fx[i] = x[i]-lower[i]
+            end
+        end
+    end
+
+    function g!(x::Vector, gx::Array)
+        fx = similar(x)
+        df.fg!(x, fx, gx)
+        for i = 1:length(x)
+            if fx[i] < x[i]-upper[i] || fx[i] > x[i]-lower[i]
+                for j = 1:length(x)
+                    gx[i,j] = (i == j ? 1.0 : 0.0)
+                end
+            end
+        end
+    end
+
     return DifferentiableMultivariateFunction(f!, g!)
 end

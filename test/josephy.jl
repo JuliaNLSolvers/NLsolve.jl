@@ -30,15 +30,47 @@ solution = [ 1.22474487, 0., 0., 0.5 ]
 
 df = DifferentiableMultivariateFunction(f!, g!)
 
-r = mcpsolve(df, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50])
+
+# Test smooth reformulation with trust region
+
+r = mcpsolve(df, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :smooth)
 @assert converged(r)
 @assert norm(r.zero - solution) < 1e-8
+
+r = mcpsolve(f!, g!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :smooth)
+@assert converged(r)
+@assert norm(r.zero - solution) < 1e-8
+
+r = mcpsolve(f!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :smooth)
+@assert converged(r)
+@assert norm(r.zero - solution) < 1e-8
+
+r = mcpsolve(f!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :smooth, autodiff = true)
+@assert converged(r)
+@assert norm(r.zero - solution) < 1e-8
+
+
+# Test minmax reformulation with trust region
+
+r = mcpsolve(df, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :minmax)
+@assert converged(r)
+@assert norm(r.zero - solution) < 1e-8
+
+r = mcpsolve(f!, g!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :minmax)
+@assert converged(r)
+@assert norm(r.zero - solution) < 1e-8
+
+r = mcpsolve(f!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :minmax)
+@assert converged(r)
+@assert norm(r.zero - solution) < 1e-8
+
+r = mcpsolve(f!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :minmax, autodiff = true)
+@assert converged(r)
+@assert norm(r.zero - solution) < 1e-8
+
+
+# Test with Newton method
 
 r = mcpsolve(df, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], method = :newton)
 @assert converged(r)
 @assert norm(r.zero - solution) < 1e-8
-
-r = mcpsolve(f!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50])
-@assert converged(r)
-@assert norm(r.zero - solution) < 1e-8
-
