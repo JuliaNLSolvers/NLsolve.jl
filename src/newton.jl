@@ -88,7 +88,6 @@ function newton{T}(df::DifferentiableMultivariateFunction,
 
     # Keep track of step-sizes
     foval = dfo.fg!(x, gr)
-    alpha = Optim.alphainit(one(T), x, gr, foval)
 
     while !converged && it < iterations
 
@@ -119,7 +118,7 @@ function newton{T}(df::DifferentiableMultivariateFunction,
         push!(lsr, zero(T), 0.5*dot(fvec,fvec), dot(g, p))
 
         alpha, f_calls_update, g_calls_update =
-            linesearch!(dfo, xold, p, x, gr, lsr, alpha, mayterminate)
+            linesearch!(dfo, xold, p, x, gr, lsr, one(T), mayterminate)
 
         f_calls += f_calls_update
         g_calls += g_calls_update
