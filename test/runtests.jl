@@ -7,7 +7,8 @@ tests = ["2by2.jl",
          "iface.jl",
          "already_converged.jl",
          "autodiff.jl",
-         "josephy.jl"]
+         "josephy.jl",
+         "difficult_mcp.jl"]
 
 println("Running tests:")
 
