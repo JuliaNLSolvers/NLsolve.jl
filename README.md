@@ -5,7 +5,7 @@ The NLsolve package solves systems of nonlinear equations. Formally, if `f` is
 a multivariate function, then this package looks for some vector `x` that
 satisfies `f(x)=0`.
 
-The package is also able to solve mixed-complementarity problems, which are
+The package is also able to solve mixed complementarity problems, which are
 similar to systems of nonlinear equations, except that the equality to zero is
 allowed to become an inequality if some boundary condition is satisfied. See
 further below for a formal definition and the related commands.
@@ -214,10 +214,10 @@ Other optional arguments to `nlsolve`, available for all algorithms, are:
 * `extended_trace`: should additional algorithm internals be added to the state
   trace? Default: `false`.
 
-# Mixed-complementarity problems
+# Mixed complementarity problems
 
 Given a multivariate function `f` and two vectors `a` and `b`, the solution to
-the mixed-complementarity problem (MCP) is a vector `x` such that one of the
+the mixed complementarity problem (MCP) is a vector `x` such that one of the
 following holds for every index `i`:
 
 * either `f_i(x) = 0` and `a_i <= x_i <= b_i`

@@ -317,7 +317,7 @@ function nlsolve(f!::Function,
 end
 
 
-# Solvers for mixed-complementarity problems
+# Solvers for mixed complementarity problems
 
 macro reformulate(df)
     esc(quote
