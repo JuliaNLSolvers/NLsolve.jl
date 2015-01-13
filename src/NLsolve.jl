@@ -14,15 +14,20 @@ export DifferentiableMultivariateFunction,
        only_fg!,
        not_in_place,
        n_ary,
+       DifferentiableSparseMultivariateFunction,
        nlsolve,
        mcpsolve,
        converged
 
-immutable DifferentiableMultivariateFunction
+abstract AbstractDifferentiableMultivariateFunction
+
+immutable DifferentiableMultivariateFunction <: AbstractDifferentiableMultivariateFunction
     f!::Function
     g!::Function
     fg!::Function
 end
+
+alloc_jacobian(df::DifferentiableMultivariateFunction, T::Type, n::Integer) = Array(T, n, n)
 
 function DifferentiableMultivariateFunction(f!::Function, g!::Function)
     function fg!(x::Vector, fx::Vector, gx::Array)
@@ -111,6 +116,23 @@ function n_ary(f::Function)
         copy!(fx, [ f(x...)... ])
     end
     DifferentiableMultivariateFunction(f!)
+end
+
+# For sparse Jacobians
+immutable DifferentiableSparseMultivariateFunction <: AbstractDifferentiableMultivariateFunction
+    f!::Function
+    g!::Function
+    fg!::Function
+end
+
+alloc_jacobian(df::DifferentiableSparseMultivariateFunction, T::Type, n::Integer) = spzeros(T, n, n)
+
+function DifferentiableSparseMultivariateFunction(f!::Function, g!::Function)
+    function fg!(x::Vector, fx::Vector, gx::SparseMatrixCSC)
+        f!(x, fx)
+        g!(x, gx)
+    end
+    return DifferentiableSparseMultivariateFunction(f!, g!, fg!)
 end
 
 immutable SolverState
@@ -240,7 +262,7 @@ include("trust_region.jl")
 include("autodiff.jl")
 include("mcp.jl")
 
-function nlsolve(df::DifferentiableMultivariateFunction,
+function nlsolve(df::AbstractDifferentiableMultivariateFunction,
                  initial_x::Vector;
                  method::Symbol = :trust_region,
                  xtol::Real = 0.0,
@@ -331,7 +353,7 @@ macro reformulate(df)
     end)
 end
 
-function mcpsolve(df::DifferentiableMultivariateFunction,
+function mcpsolve(df::AbstractDifferentiableMultivariateFunction,
                   lower::Vector,
                   upper::Vector,
                   initial_x::Vector;

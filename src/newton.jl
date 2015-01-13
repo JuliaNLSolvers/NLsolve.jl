@@ -18,10 +18,10 @@ macro newtontrace(stepnorm)
     end
 end
 
-function create_objective_function(df::DifferentiableMultivariateFunction,
+function create_objective_function(df::AbstractDifferentiableMultivariateFunction,
                                    T::Type, nn::Integer)
     fvec2 = Array(T, nn)
-    fjac2 = Array(T, nn, nn)
+    fjac2 = alloc_jacobian(df, T, nn)
     function fo(x::Vector{T})
         df.f!(x, fvec2)
         return(0.5*dot(fvec2, fvec2))
@@ -40,7 +40,7 @@ function create_objective_function(df::DifferentiableMultivariateFunction,
 end
     
 
-function newton{T}(df::DifferentiableMultivariateFunction,
+function newton{T}(df::AbstractDifferentiableMultivariateFunction,
                    initial_x::Vector{T},
                    xtol::Real,
                    ftol::Real,
@@ -54,7 +54,7 @@ function newton{T}(df::DifferentiableMultivariateFunction,
     nn = length(x)
     xold = fill(nan(T), nn)
     fvec = Array(T, nn)
-    fjac = Array(T, nn, nn)
+    fjac = alloc_jacobian(df, T, nn)
     p = Array(T, nn)
     g = Array(T, nn)
     gr = Array(T, nn)

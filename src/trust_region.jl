@@ -20,14 +20,14 @@ macro trustregiontrace(stepnorm)
     end
 end
 
-function dogleg!{T}(p::Vector{T}, r::Vector{T}, d::Vector{T}, J::Matrix{T}, delta::Real)
+function dogleg!{T}(p::Vector{T}, r::Vector{T}, d::Vector{T}, J::AbstractMatrix{T}, delta::Real)
     local p_i
     try
         p_i = -J\r # Gauss-Newton step
     catch e
         if isa(e, Base.LinAlg.LAPACKException)
             # If Jacobian is singular, compute a least-squares solution to J*x+r=0
-            U, S, V = svd(J)
+            U, S, V = svd(full(J)) # Convert to full matrix because sparse SVD not implemented as of Julia 0.3
             k = sum(S .> eps())
             mrinv = V*diagm([1./S[1:k]; zeros(length(S)-k)])*U' # Moore-Penrose generalized inverse of J
             p_i = -mrinv*r
@@ -57,7 +57,7 @@ function dogleg!{T}(p::Vector{T}, r::Vector{T}, d::Vector{T}, J::Matrix{T}, delt
     end
 end
 
-function trust_region{T}(df::DifferentiableMultivariateFunction,
+function trust_region{T}(df::AbstractDifferentiableMultivariateFunction,
                          initial_x::Vector{T},
                          xtol::Real,
                          ftol::Real,
@@ -75,7 +75,7 @@ function trust_region{T}(df::DifferentiableMultivariateFunction,
     r_new = similar(x)      # New residual
     p = similar(x)          # Step
     d = similar(x)          # Scaling vector
-    J = Array(T, nn, nn)    # Jacobian
+    J = alloc_jacobian(df, T, nn)    # Jacobian
 
     # Count function calls
     f_calls, g_calls = 0, 0

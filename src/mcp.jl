@@ -10,7 +10,7 @@
 #
 # Note that Miranda and Fackler use the opposite sign convention for the MCP,
 # hence the difference in the smooth function.
-function mcp_smooth(df::DifferentiableMultivariateFunction,
+function mcp_smooth(df::AbstractDifferentiableMultivariateFunction,
                     lower::Vector, upper::Vector)
 
     function f!(x::Vector, fx::Vector)
@@ -25,7 +25,7 @@ function mcp_smooth(df::DifferentiableMultivariateFunction,
         end
     end
 
-    function g!(x::Vector, gx::Array)
+    function g!(x::Vector, gx::AbstractArray)
         fx = similar(x)
         df.fg!(x, fx, gx)
 
@@ -72,7 +72,10 @@ function mcp_smooth(df::DifferentiableMultivariateFunction,
             gx[i,i] += dminus_dv[i] + dminus_du[i]*dplus_dv[i]
         end
     end
-    return DifferentiableMultivariateFunction(f!, g!)
+
+    dfT = typeof(df)
+
+    return dfT(f!, g!)
 end
 
 # Generate a function whose roots are the solutions of the MCP.
@@ -82,7 +85,7 @@ end
 #
 # Note that Miranda and Fackler use the opposite sign convention for the MCP,
 # hence the difference in the function.
-function mcp_minmax(df::DifferentiableMultivariateFunction,
+function mcp_minmax(df::AbstractDifferentiableMultivariateFunction,
                     lower::Vector, upper::Vector)
 
     function f!(x::Vector, fx::Vector)
@@ -97,7 +100,7 @@ function mcp_minmax(df::DifferentiableMultivariateFunction,
         end
     end
 
-    function g!(x::Vector, gx::Array)
+    function g!(x::Vector, gx::AbstractArray)
         fx = similar(x)
         df.fg!(x, fx, gx)
         for i = 1:length(x)
@@ -109,5 +112,7 @@ function mcp_minmax(df::DifferentiableMultivariateFunction,
         end
     end
 
-    return DifferentiableMultivariateFunction(f!, g!)
+    dfT = typeof(df)
+
+    return dfT(f!, g!)
 end
