@@ -99,6 +99,10 @@ above:
 
     nlsolve(f!, g!, initial_x)
 
+Note that you should not assume that the Jacobian `gx` passed in argument is
+initialized to a zero matrix. You must set all the elements of the matrix in
+the function `g!`.
+
 Alternatively, you can construct an object of type
 `DifferentiableMultivariateFunction` and pass it to `nlsolve`, as in:
 
