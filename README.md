@@ -165,6 +165,35 @@ of `nlsolve`. The complete syntax is therefore:
 
 Finite-differencing is used to compute the Jacobian.
 
+## If the Jacobian is sparse
+
+If the Jacobian of your function is sparse, it is possible to ask the routines
+to manipulate sparse matrices instead of full ones, in order to increase
+performance on large systems. This can be achieved by constructing an object of
+type `DifferentiableSparseMultivariateFunction`:
+
+    df = DifferentiableSparseMultivariateFunction(f!, g!)
+    nlsolve(df, initial_x)
+
+It is possible to give an optional third function `fg!` to the constructor, as
+for the full Jacobian case.
+
+The second argument of `g!` (and the third of `fg!`) is assumed to be of the
+same type as the one returned by the function `spzeros` (i.e.
+`SparseMatrixCSC`).
+
+Note that on the first call to `g!` or `fg!`, the sparse matrix passed in
+argument is empty, i.e. all its elements are zeros. But this matrix is not
+reset across function calls. So you need to be careful and ensure that you
+don't forget to overwrite all nonzeros elements that could have been
+initialized by a previous function call. If in doubt, you can clear the sparse
+matrix at the beginning of the function. If `gx` is the sparse Jacobian, this
+can be achieved with:
+
+    fill!(gx.colptr, 1)
+    empty!(gx.rowval)
+    empty!(gx.nzval)
+
 # Fine tunings
 
 Two algorithms are currently available. The choice between the two is achieved
