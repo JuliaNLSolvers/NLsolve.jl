@@ -70,7 +70,7 @@ function trust_region{T}(df::AbstractDifferentiableMultivariateFunction,
 
     x = copy(initial_x)     # Current point
     nn = length(x)
-    xold = fill(nan(T), nn) # Old point
+    xold = fill(convert(T, NaN), nn) # Old point
     r = similar(x)          # Current residual
     r_new = similar(x)      # New residual
     p = similar(x)          # Step
@@ -94,7 +94,7 @@ function trust_region{T}(df::AbstractDifferentiableMultivariateFunction,
 
     delta = NaN
     rho = NaN
-    
+
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
     @trustregiontrace NaN

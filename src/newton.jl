@@ -35,10 +35,10 @@ function create_objective_function(df::AbstractDifferentiableMultivariateFunctio
         storage = fjac2'*fvec2
         return(0.5*dot(fvec2, fvec2))
     end
-    
+
     return(DifferentiableFunction(fo, go!, fgo!))
 end
-    
+
 
 function newton{T}(df::AbstractDifferentiableMultivariateFunction,
                    initial_x::Vector{T},
@@ -52,7 +52,7 @@ function newton{T}(df::AbstractDifferentiableMultivariateFunction,
 
     x = copy(initial_x)
     nn = length(x)
-    xold = fill(nan(T), nn)
+    xold = fill(convert(T, NaN), nn)
     fvec = Array(T, nn)
     fjac = alloc_jacobian(df, T, nn)
     p = Array(T, nn)
@@ -92,7 +92,7 @@ function newton{T}(df::AbstractDifferentiableMultivariateFunction,
     while !converged && it < iterations
 
         it += 1
-        
+
         df.g!(x, fjac)
         g_calls += 1
 
