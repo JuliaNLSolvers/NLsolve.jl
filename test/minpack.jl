@@ -9,6 +9,8 @@
 #   MINPACK would test also other initial points which are 10 or 100 times the
 #   original point.
 
+using Compat
+
 function rosenbrock()
     function f!(x::Vector, fvec::Vector)
         fvec[1] = 1 - x[1]
@@ -65,7 +67,7 @@ function wood()
     const c4 = 2.02e1
     const c5 = 1.98e1
     const c6 = 1.8e2
-    
+
     function f!(x::Vector, fvec::Vector)
         temp1 = x[2] - x[1]^2
         temp2 = x[4] - x[3]^2
@@ -74,7 +76,7 @@ function wood()
         fvec[3] = -c6*x[3]*temp2 - (1 - x[3])
         fvec[4] = c6*temp2 + c4*(x[4] - 1) + c5*(x[2] - 1)
     end
-    
+
     function g!(x::Vector, fjac::Matrix)
         fill!(fjac, 0)
         temp1 = x[2] - 3x[1]^2
@@ -111,7 +113,7 @@ function helical_valley()
         fvec[2] = 10(temp2 - 1)
         fvec[3] = x[3]
     end
-    
+
     function g!(x::Vector, fjac::Matrix)
         temp = x[1]^2 + x[2]^2
         temp1 = tpi*temp
@@ -131,7 +133,7 @@ end
 
 function watson(n::Integer)
     const c9 = 2.9e1
-    
+
     function f!(x::Vector, fvec::Vector)
         fill!(fvec, 0)
         for i = 1:29
@@ -160,7 +162,7 @@ function watson(n::Integer)
         fvec[1] += x[1]*(1-2temp)
         fvec[2] += temp
     end
-    
+
     function g!(x::Vector, fjac::Matrix)
         fill!(fjac, 0)
         for i = 1:29
@@ -182,11 +184,11 @@ function watson(n::Integer)
             temp2 = 2*sum2
             temp = ti^2
             tk = 1.0
-            
+
             for k = 1:n
                 tj = tk
                 for j = k:n
-                    fjac[k,j] += tj*((float64(k-1)/ti - temp2)*(float64(j-1)/ti - temp2) - temp1)
+                    fjac[k,j] += tj*((@compat(Float64(k-1))/ti - temp2)*(@compat(Float64(j-1))/ti - temp2) - temp1)
                     tj *= ti
                 end
                 tk *= temp
@@ -206,7 +208,7 @@ end
 
 function chebyquad(n::Integer)
     const tk = 1/n
-    
+
     function f!(x::Vector, fvec::Vector)
         fill!(fvec, 0)
         for j = 1:n
@@ -229,7 +231,7 @@ function chebyquad(n::Integer)
             iev = -iev
         end
     end
-    
+
     function g!(x::Vector, fjac::Matrix)
         for j = 1:n
             temp1 = 1.
@@ -248,7 +250,7 @@ function chebyquad(n::Integer)
             end
         end
     end
-    (DifferentiableMultivariateFunction(f!, g!), [1:n]/(n+1), "Chebyquad")
+    (DifferentiableMultivariateFunction(f!, g!), collect(1:n)/(n+1), "Chebyquad")
 end
 
 function brown_almost_linear(n::Integer)
@@ -259,7 +261,7 @@ function brown_almost_linear(n::Integer)
         end
         fvec[n] = prod(x) - 1
     end
-    
+
     function g!(x::Vector, fjac::Matrix)
         fill!(fjac, 1)
         fjac[diagind(fjac)] = 2
@@ -282,7 +284,7 @@ end
 
 function discrete_boundary_value(n::Integer)
     const h = 1/(n+1)
-    
+
     function f!(x::Vector, fvec::Vector)
         for k = 1:n
             temp = (x[k] + k*h + 1)^3
@@ -299,7 +301,7 @@ function discrete_boundary_value(n::Integer)
             fvec[k] = 2x[k] - temp1 - temp2 + temp*h^2/2
         end
     end
-    
+
     function g!(x::Vector, fjac::Matrix)
         for k = 1:n
             temp = 3*(x[k]+k*h+1)^2
@@ -315,9 +317,9 @@ function discrete_boundary_value(n::Integer)
             end
         end
     end
-    initial_x = [1:n]*h
+    initial_x = collect(1:n)*h
     initial_x = initial_x .* (initial_x .- 1)
-    
+
     (DifferentiableMultivariateFunction(f!, g!), initial_x, "Discrete boundary value")
 end
 
@@ -343,7 +345,7 @@ function discrete_integral_equation(n::Integer)
             fvec[k] = x[k] + h*((1-tk)*sum1 + tk*sum2)/2
         end
     end
-    
+
     function g!(x::Vector, fjac::Matrix)
         for k = 1:n
             tk = k*h
@@ -355,9 +357,9 @@ function discrete_integral_equation(n::Integer)
         end
     end
 
-    initial_x = [1:n]*h
+    initial_x = collect(1:n)*h
     initial_x = initial_x .* (initial_x .- 1)
-    
+
     (DifferentiableMultivariateFunction(f!, g!), initial_x, "Discrete integral equation")
 end
 
@@ -371,7 +373,7 @@ function trigonometric(n::Integer)
             fvec[k] = n+k-sin(x[k]) - sum1 - k*fvec[k]
         end
     end
-    
+
     function g!(x::Vector, fjac::Matrix)
         for j = 1:n
             temp = sin(x[j])
@@ -395,7 +397,7 @@ function variably_dimensioned(n::Integer)
             fvec[k] = x[k] - 1 + k*temp
         end
     end
-    
+
     function g!(x::Vector, fjac::Matrix)
         sum1 = 0.0
         for j = 1:n
@@ -410,7 +412,7 @@ function variably_dimensioned(n::Integer)
             fjac[k,k] += 1
         end
     end
-    (DifferentiableMultivariateFunction(f!, g!), 1 .- [1:n]/n, "Variably dimensioned")
+    (DifferentiableMultivariateFunction(f!, g!), 1 .- collect(1:n)/n, "Variably dimensioned")
 end
 
 function broyden_tridiagonal(n::Integer)
@@ -430,7 +432,7 @@ function broyden_tridiagonal(n::Integer)
             fvec[k] = temp - temp1 - 2temp2 + 1
         end
     end
-    
+
     function g!(x::Vector, fjac::Matrix)
         fill!(fjac, 0)
         for k = 1:n
@@ -463,7 +465,7 @@ function broyden_banded(n::Integer)
             fvec[k] = x[k]*(2+5x[k]^2) + 1 - temp
         end
     end
-    
+
     function g!(x::Vector, fjac::Matrix)
         fill!(fjac, 0)
         for k = 1:n
