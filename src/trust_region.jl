@@ -25,7 +25,7 @@ function dogleg!{T}(p::Vector{T}, r::Vector{T}, d::Vector{T}, J::AbstractMatrix{
     try
         p_i = -J\r # Gauss-Newton step
     catch e
-        if isa(e, Base.LinAlg.LAPACKException)
+        if isa(e, Base.LinAlg.LAPACKException) || isa(e, Base.LinAlg.SingularException)
             # If Jacobian is singular, compute a least-squares solution to J*x+r=0
             U, S, V = svd(full(J)) # Convert to full matrix because sparse SVD not implemented as of Julia 0.3
             k = sum(S .> eps())
