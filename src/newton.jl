@@ -24,7 +24,7 @@ function create_objective_function(df::AbstractDifferentiableMultivariateFunctio
     fjac2 = alloc_jacobian(df, T, nn)
     function fo(x::Vector{T})
         df.f!(x, fvec2)
-        return(0.5*dot(fvec2, fvec2))
+        return(dot(fvec2, fvec2)/2)
     end
     function go!(x::Vector{T}, storage::Vector{T})
         df.fg!(x, fvec2, fjac2)
@@ -33,17 +33,17 @@ function create_objective_function(df::AbstractDifferentiableMultivariateFunctio
     function fgo!(x::Vector{T}, storage::Vector{T})
         df.fg!(x, fvec2, fjac2)
         storage = fjac2'*fvec2
-        return(0.5*dot(fvec2, fvec2))
+        return(dot(fvec2, fvec2)/2)
     end
 
     return(DifferentiableFunction(fo, go!, fgo!))
 end
 
 
-function newton{T}(df::AbstractDifferentiableMultivariateFunction,
+function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
                    initial_x::Vector{T},
-                   xtol::Real,
-                   ftol::Real,
+                   xtol::T,
+                   ftol::T,
                    iterations::Integer,
                    store_trace::Bool,
                    show_trace::Bool,
@@ -82,7 +82,7 @@ function newton{T}(df::AbstractDifferentiableMultivariateFunction,
 
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
-    @newtontrace NaN
+    @newtontrace convert(T,NaN)
 
     dfo = create_objective_function(df, T, nn)
 
@@ -105,7 +105,7 @@ function newton{T}(df::AbstractDifferentiableMultivariateFunction,
                 # Modify the search direction if the jacobian is singular
                 # FIXME: better selection for lambda, see Nocedal & Wright p. 289
                 fjac2 = fjac'*fjac
-                lambda = 1e6*sqrt(nn*eps())*norm(fjac2, 1)
+                lambda = convert(T,1e6)*sqrt(nn*eps())*norm(fjac2, 1)
                 p = -(fjac2 + lambda*eye(nn))\g
             else
                 throw(e)
@@ -115,7 +115,7 @@ function newton{T}(df::AbstractDifferentiableMultivariateFunction,
         copy!(xold, x)
 
         Optim.clear!(lsr)
-        push!(lsr, zero(T), 0.5*dot(fvec,fvec), dot(g, p))
+        push!(lsr, zero(T), dot(fvec,fvec)/2, dot(g, p))
 
         alpha, f_calls_update, g_calls_update =
             linesearch!(dfo, xold, p, x, gr, lsr, one(T), mayterminate)
@@ -135,4 +135,16 @@ function newton{T}(df::AbstractDifferentiableMultivariateFunction,
                          initial_x, x, norm(fvec, Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
                          f_calls, g_calls)
+end
+
+function newton{T}(df::AbstractDifferentiableMultivariateFunction,
+                   initial_x::Vector{T},
+                   xtol::Real,
+                   ftol::Real,
+                   iterations::Integer,
+                   store_trace::Bool,
+                   show_trace::Bool,
+                   extended_trace::Bool,
+                   linesearch!::Function)
+    newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch!)
 end

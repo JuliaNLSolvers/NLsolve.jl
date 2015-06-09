@@ -24,10 +24,24 @@ r = nlsolve(df, [ -0.5; 1.4], method = :trust_region, autoscale = false)
 @assert converged(r)
 @assert norm(r.zero - [ 0; 1]) < 1e-8
 
+r = nlsolve(df, [ -0.5f0; 1.4f0], method = :trust_region, autoscale = true)
+@assert eltype(r.zero) == Float32
+@assert converged(r)
+@assert norm(r.zero - [ 0; 1]) < 1e-8
+r = nlsolve(df, [ -0.5f0; 1.4f0], method = :trust_region, autoscale = false)
+@assert eltype(r.zero) == Float32
+@assert converged(r)
+@assert norm(r.zero - [ 0; 1]) < 1e-8
+
 # Test Newton
 r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch! = Optim.backtracking_linesearch!, ftol = 1e-6)
 @assert converged(r)
 @assert norm(r.zero - [ 0; 1]) < 1e-6
+r = nlsolve(df, [ -0.5f0; 1.4f0], method = :newton, linesearch! = Optim.backtracking_linesearch!, ftol = 1e-3)
+@assert eltype(r.zero) == Float32
+@assert converged(r)
+@assert norm(r.zero - [ 0; 1]) < 1e-6
+
 # Tests of other lineasearches are disabled, they are not stable across runs
 #r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch! = Optim.hz_linesearch!, ftol = 1e-6)
 #@assert converged(r)
