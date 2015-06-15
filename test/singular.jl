@@ -25,3 +25,18 @@ df = DifferentiableMultivariateFunction(f!, g!)
 r = nlsolve(df, [ 3.0; 0], method = :trust_region)
 @assert converged(r)
 @assert norm(r.zero) < 1e-6
+
+let a = rand(10)
+    const A = a*a'
+    global f!, g!
+    function f!(x, fvec)
+        copy!(fvec, A*x)
+    end
+
+    function g!(x, fjac)
+        copy!(fjac, A)
+    end
+end
+
+df = DifferentiableMultivariateFunction(f!, g!)
+r = nlsolve(df, rand(10), method = :trust_region)
