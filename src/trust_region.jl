@@ -57,15 +57,15 @@ function dogleg!{T}(p::Vector{T}, r::Vector{T}, d::Vector{T}, J::AbstractMatrix{
     end
 end
 
-function trust_region{T}(df::AbstractDifferentiableMultivariateFunction,
+function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
                          initial_x::Vector{T},
-                         xtol::Real,
-                         ftol::Real,
+                         xtol::T,
+                         ftol::T,
                          iterations::Integer,
                          store_trace::Bool,
                          show_trace::Bool,
                          extended_trace::Bool,
-                         factor::Real,
+                         factor::T,
                          autoscale::Bool)
 
     x = copy(initial_x)     # Current point
@@ -92,12 +92,12 @@ function trust_region{T}(df::AbstractDifferentiableMultivariateFunction,
     it = 0
     x_converged, f_converged, converged = assess_convergence(x, xold, r, xtol, ftol)
 
-    delta = NaN
-    rho = NaN
+    delta = convert(T, NaN)
+    rho = convert(T, NaN)
 
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
-    @trustregiontrace NaN
+    @trustregiontrace convert(T, NaN)
 
     if autoscale
         for j = 1:nn
@@ -107,13 +107,13 @@ function trust_region{T}(df::AbstractDifferentiableMultivariateFunction,
             end
         end
     else
-        d = ones(nn)
+        d = ones(T,nn)
     end
     delta = factor*norm(d .* x)
     if delta == 0
         delta = factor
     end
-    eta = 1e-4
+    eta = convert(T, 1e-4)
 
     while !converged && it < iterations
 
@@ -140,7 +140,7 @@ function trust_region{T}(df::AbstractDifferentiableMultivariateFunction,
             # Update scaling vector
             if autoscale
                 for j = 1:nn
-                    d[j] = max(0.1*d[j], norm(J[:,j]))
+                    d[j] = max(convert(T,0.1)*d[j], norm(J[:,j]))
                 end
             end
 
@@ -153,7 +153,7 @@ function trust_region{T}(df::AbstractDifferentiableMultivariateFunction,
 
         # Update size of trust region
         if rho < 0.1
-            delta = 0.5*delta
+            delta = delta/2
         elseif rho >= 0.9
             delta = 2*norm(d .* p)
         elseif rho >= 0.5
@@ -169,4 +169,17 @@ function trust_region{T}(df::AbstractDifferentiableMultivariateFunction,
                          initial_x, x, norm(r, Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
                          f_calls, g_calls)
+end
+
+function trust_region{T}(df::AbstractDifferentiableMultivariateFunction,
+                         initial_x::Vector{T},
+                         xtol::Real,
+                         ftol::Real,
+                         iterations::Integer,
+                         store_trace::Bool,
+                         show_trace::Bool,
+                         extended_trace::Bool,
+                         factor::Real,
+                         autoscale::Bool)
+    trust_region_(df, initial_x, convert(T,xtol), convert(T,ftol), iterations, store_trace, show_trace, extended_trace, convert(T,factor), autoscale)
 end
