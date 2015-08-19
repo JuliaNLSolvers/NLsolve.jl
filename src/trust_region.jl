@@ -20,39 +20,42 @@ macro trustregiontrace(stepnorm)
     end
 end
 
-function dogleg!{T}(p::Vector{T}, r::Vector{T}, d::Vector{T}, J::AbstractMatrix{T}, delta::Real)
+function dogleg!{T}(p::Vector{T}, r::Vector{T}, d2::Vector{T}, J::AbstractMatrix{T}, delta::Real)
     local p_i
     try
-        p_i = -J\r # Gauss-Newton step
+        p_i = J \ r # Gauss-Newton step
     catch e
         if isa(e, Base.LinAlg.LAPACKException) || isa(e, Base.LinAlg.SingularException)
             # If Jacobian is singular, compute a least-squares solution to J*x+r=0
             U, S, V = svd(full(J)) # Convert to full matrix because sparse SVD not implemented as of Julia 0.3
             k = sum(S .> eps())
-            mrinv = V*diagm([1./S[1:k]; zeros(length(S)-k)])*U' # Moore-Penrose generalized inverse of J
-            p_i = -mrinv*r
+            mrinv = V * diagm([1./S[1:k]; zeros(length(S)-k)]) * U' # Moore-Penrose generalized inverse of J
+            p_i = mrinv * r
         else
             throw(e)
         end
     end
-
+    scale!(p_i, -one(T))
     # Test if Gauss-Newton step is within the region
-    if norm(d .* p_i) <= delta
+    if wnorm(d2, p_i) <= delta
         copy!(p, p_i)
     else
-        g = (J'*r) ./ (d .^ 2) # Gradient direction
-        p_c = - norm(d .* g)^2/norm(J*g)^2*g # Cauchy point
-
-        if norm(d .* p_c) >= delta
+        p_c = At_mul_B(J, r) # Gradient direction
+        broadcast!(/, p_c, p_c, d2)
+        scale!(p_c, - wnorm(d2, p_c)^2 / sumabs2(J * p_c)) # Cauchy point
+        if wnorm(d2, p_c) >= delta
             # Cauchy point is out of the region, take the largest step along
             # gradient direction
-            copy!(p, -delta/norm(d .* g)*g)
+            scale!(p, p_c, delta / wnorm(d2, p_c))
         else
+            p_diff = Base.BLAS.axpy!(-one(T), p_c, p_i)
             # Compute the optimal point on dogleg path
-            b = 2*dot(d .* p_c, d .* (p_i-p_c))
-            a = norm(d.*(p_i-p_c))^2
-            tau = (-b+sqrt(b^2-4*a*(norm(d.*p_c)^2-delta^2)))/2/a
-            copy!(p, p_c+tau*(p_i-p_c))
+            b = 2 * wdot(d2, p_c, p_diff)
+            a = wdot(d2, p_diff, p_diff)
+            c = wdot(d2, p_c, p_c)
+            tau = (-b + sqrt(b^2 - 4 * a * (c - delta^2)))/(2*a)
+            copy!(p, p_c)
+            Base.BLAS.axpy!(tau, p_diff, p)
         end
     end
 end
@@ -73,8 +76,9 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
     xold = fill(convert(T, NaN), nn) # Old point
     r = similar(x)          # Current residual
     r_new = similar(x)      # New residual
+    r_predict = similar(x)  # predicted residual
     p = similar(x)          # Step
-    d = similar(x)          # Scaling vector
+    d2 = similar(x)         # Scaling vector
     J = alloc_jacobian(df, T, nn)    # Jacobian
 
     # Count function calls
@@ -101,15 +105,15 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
 
     if autoscale
         for j = 1:nn
-            d[j] = norm(J[:,j])
-            if d[j] == 0
-                d[j] = 1
+            d2[j] = sumabs2j(J, j)
+            if d2[j] == zero(T)
+                d2[j] = one(T)
             end
         end
     else
-        d = ones(T,nn)
+        fill!(d2, one(T))
     end
-    delta = factor*norm(d .* x)
+    delta = factor * wnorm(d2, x)
     if delta == 0
         delta = factor
     end
@@ -120,19 +124,20 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
         it += 1
 
         # Compute proposed iteration step
-        dogleg!(p, r, d, J, delta)
+        dogleg!(p, r, d2, J, delta)
 
-        df.f!(x + p, r_new)
+        copy!(xold, x)
+        Base.BLAS.axpy!(one(T), p, x)
+        df.f!(x, r_new)
         f_calls += 1
 
         # Ratio of actual to predicted reduction
-        rho = (norm(r)^2 - norm(r_new)^2)/(norm(r)^2 - norm(r+J*p)^2)
-
-        copy!(xold, x)
+        A_mul_B!(r_predict, J, p)
+        Base.BLAS.axpy!(one(T), r, r_predict)
+        rho = (sumabs2(r) - sumabs2(r_new)) / (sumabs2(r) - sumabs2(r_predict))
 
         if rho > eta
             # Successful iteration
-            x += p
             copy!(r, r_new)
             df.g!(x, J)
             g_calls += 1
@@ -140,24 +145,25 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
             # Update scaling vector
             if autoscale
                 for j = 1:nn
-                    d[j] = max(convert(T,0.1)*d[j], norm(J[:,j]))
+                    d2[j] = max(convert(T, 0.01) * d2[j], sumabs2j(J, j))
                 end
             end
 
             x_converged, f_converged, converged = assess_convergence(x, xold, r, xtol, ftol)
         else
+            Base.BLAS.axpy!(-one(T), p, x)
             x_converged, converged = false, false
         end
 
-        @trustregiontrace norm(x-xold)
+        @trustregiontrace sqeuclidean(x, xold)
 
         # Update size of trust region
         if rho < 0.1
             delta = delta/2
         elseif rho >= 0.9
-            delta = 2*norm(d .* p)
+            delta = 2 * wnorm(d2, p)
         elseif rho >= 0.5
-            delta = max(delta, 2*norm(d .* p))
+            delta = max(delta, 2 * wnorm(d2, p))
         end
     end
 

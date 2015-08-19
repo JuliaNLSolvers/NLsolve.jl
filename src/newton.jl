@@ -128,7 +128,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
 
         x_converged, f_converged, converged = assess_convergence(x, xold, fvec, xtol, ftol)
 
-        @newtontrace norm(x-xold, 2)
+        @newtontrace sqeuclidean(x, xold)
     end
 
     return SolverResults("Newton with line-search",
