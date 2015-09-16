@@ -492,15 +492,22 @@ alltests = [ rosenbrock(); powell_singular(); powell_badly_scaled(); wood();
             trigonometric(10); variably_dimensioned(10);
             broyden_tridiagonal(10); broyden_banded(10) ]
 
-@printf "%-30s   %5s   %5s   %5s   %14s\n" "Function" "Dim" "NFEV" "NJEV" "Final inf-norm"
-println("-"^71)
+@printf("%-30s   %5s   %5s   %5s   %14s     %10s\n", "Function", "Dim", "NFEV",
+        "NJEV", "Final inf-norm", "total time")
+println("-"^86)
 
 for (df, initial, name) in alltests
+    tic()
     r = nlsolve(df, initial, method = :trust_region)
-    @printf "%-30s   %5d   %5d   %5d   %14e\n" name length(initial) r.f_calls r.g_calls r.residual_norm
+    tot_time = toq()
+    @printf("%-30s   %5d   %5d   %5d   %14e   %10e\n", name, length(initial),
+            r.f_calls, r.g_calls, r.residual_norm, tot_time)
     @assert converged(r)
     # with autodiff
+    tic()
     r = nlsolve(df.f!, initial, method = :trust_region, autodiff = true)
-    @printf "%-30s   %5d   %5d   %5d   %14e\n" name*"-AD" length(initial) r.f_calls r.g_calls r.residual_norm
+    tot_time = toq()
+    @printf("%-30s   %5d   %5d   %5d   %14e   %10e\n", name*"-AD",
+            length(initial), r.f_calls, r.g_calls, r.residual_norm, tot_time)
     @assert converged(r)
 end
