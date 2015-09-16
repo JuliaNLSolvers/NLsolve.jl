@@ -2,6 +2,7 @@ VERSION >= v"0.4.0-dev+6521" && __precompile__()
 
 module NLsolve
 
+using Distances
 using Optim
 
 import Base.show,
@@ -246,7 +247,7 @@ function assess_convergence(x::Vector,
                             ftol::Real)
     x_converged, f_converged = false, false
 
-    if norm(x - x_previous, Inf) < xtol
+    if !any(isnan, x_previous) && chebyshev(x, x_previous) < xtol
         x_converged = true
     end
 
@@ -259,6 +260,7 @@ function assess_convergence(x::Vector,
     return x_converged, f_converged, converged
 end
 
+include("utils.jl")
 include("newton.jl")
 include("trust_region.jl")
 include("autodiff.jl")
