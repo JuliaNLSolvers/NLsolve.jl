@@ -29,7 +29,7 @@ function dogleg!{T}(p::Vector{T}, r::Vector{T}, d2::Vector{T}, J::AbstractMatrix
             # If Jacobian is singular, compute a least-squares solution to J*x+r=0
             U, S, V = svd(full(J)) # Convert to full matrix because sparse SVD not implemented as of Julia 0.3
             k = sum(S .> eps())
-            mrinv = V * diagm([1./S[1:k]; zeros(length(S)-k)]) * U' # Moore-Penrose generalized inverse of J
+            mrinv = V * diagm([1./S[1:k]; zeros(eltype(S), length(S)-k)]) * U' # Moore-Penrose generalized inverse of J
             p_i = mrinv * r
         else
             throw(e)
