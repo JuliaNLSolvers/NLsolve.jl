@@ -9,7 +9,7 @@
 #   MINPACK would test also other initial points which are 10 or 100 times the
 #   original point.
 
-using Compat
+@testset "minpack" begin
 
 function rosenbrock()
     function f!(x::Vector, fvec::Vector)
@@ -502,12 +502,14 @@ for (df, initial, name) in alltests
     tot_time = toq()
     @printf("%-30s   %5d   %5d   %5d   %14e   %10e\n", name, length(initial),
             r.f_calls, r.g_calls, r.residual_norm, tot_time)
-    @assert converged(r)
+    @test converged(r)
     # with autodiff
     tic()
     r = nlsolve(df.f!, initial, method = :trust_region, autodiff = true)
     tot_time = toq()
     @printf("%-30s   %5d   %5d   %5d   %14e   %10e\n", name*"-AD",
             length(initial), r.f_calls, r.g_calls, r.residual_norm, tot_time)
-    @assert converged(r)
+    @test converged(r)
+end
+
 end

@@ -1,4 +1,5 @@
 # Test the finite differencing technique
+@testset "finite_difference" begin
 
 function f!(x, fvec)
     fvec[1] = (x[1]+3)*(x[2]^3-7)+18
@@ -7,5 +8,6 @@ end
 
 r = nlsolve(f!, [ 0.1; 1.2])
 
-@assert norm(r.zero - [ 0; 1]) < 1e-8
+@test norm(r.zero - [ 0; 1]) < 1e-8
 
+end
