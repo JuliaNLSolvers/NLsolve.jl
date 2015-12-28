@@ -28,11 +28,11 @@ function create_objective_function(df::AbstractDifferentiableMultivariateFunctio
     end
     function go!(x::Vector{T}, storage::Vector{T})
         df.fg!(x, fvec2, fjac2)
-        storage = fjac2'*fvec2
+        copy!(storage, fjac2'*fvec2)
     end
     function fgo!(x::Vector{T}, storage::Vector{T})
         df.fg!(x, fvec2, fjac2)
-        storage = fjac2'*fvec2
+        copy!(storage, fjac2'*fvec2)
         return(dot(fvec2, fvec2)/2)
     end
 
