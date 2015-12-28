@@ -86,7 +86,7 @@ Alternatively, you can construct an object of type
 ### Automatic differentiation
 
 Another option if you do not have a function computing the Jacobian is to use
-automatic differentiation, thanks to the `DualNumbers` package. The syntax is
+automatic differentiation, thanks to the `ForwardDiff` package. The syntax is
 simply:
 
     nlsolve(f!, initial_x, autodiff = true)

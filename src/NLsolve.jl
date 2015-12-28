@@ -4,6 +4,7 @@ module NLsolve
 
 using Distances
 using Optim
+using ForwardDiff
 
 import Base.show,
        Base.push!,
@@ -333,7 +334,7 @@ function nlsolve{T}(f!::Function,
     if !autodiff
         df = DifferentiableMultivariateFunction(f!)
     else
-        df = NLsolve.autodiff(f!, eltype(initial_x), length(initial_x), length(initial_x))
+        df = NLsolve.autodiff(f!, eltype(initial_x), length(initial_x))
     end
     nlsolve(df,
             initial_x, method = method, xtol = xtol, ftol = ftol,
@@ -423,7 +424,7 @@ function mcpsolve{T}(f!::Function,
     if !autodiff
         df = DifferentiableMultivariateFunction(f!)
     else
-        df = NLsolve.autodiff(f!, eltype(initial_x), length(initial_x), length(initial_x))
+        df = NLsolve.autodiff(f!, eltype(initial_x), length(initial_x))
     end
     @reformulate df
     nlsolve(rf,

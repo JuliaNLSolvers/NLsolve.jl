@@ -8,8 +8,6 @@ else
     const Test = BaseTestNext
 end
 
-
-
 tests = ["2by2.jl",
          "singular.jl",
          "finite_difference.jl",
