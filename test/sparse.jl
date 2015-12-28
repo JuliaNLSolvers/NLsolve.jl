@@ -1,6 +1,8 @@
 # Test sparse Jacobian implementation (even though the Jacobian of the function
 # is actually not sparse...)
 
+@testset "sparse" begin
+
 function f!(x, fvec)
     fvec[1] = (x[1]+3)*(x[2]^3-7)+18
     fvec[2] = sin(x[2]*exp(x[1])-1)
@@ -18,20 +20,22 @@ df = DifferentiableSparseMultivariateFunction(f!, g!)
 
 # Test trust region
 r = nlsolve(df, [ -0.5; 1.4], method = :trust_region, autoscale = true)
-@assert converged(r)
-@assert norm(r.zero - [ 0; 1]) < 1e-8
+@test converged(r)
+@test norm(r.zero - [ 0; 1]) < 1e-8
 
 # Test Newton
 r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch! = Optim.backtracking_linesearch!, ftol = 1e-6)
-@assert converged(r)
-@assert norm(r.zero - [ 0; 1]) < 1e-6
+@test converged(r)
+@test norm(r.zero - [ 0; 1]) < 1e-6
 
 # Test MCP solver with smooth reformulation
 r = mcpsolve(df, [-Inf;-Inf], [Inf; Inf], [-0.5; 1.4], reformulation = :smooth)
-@assert converged(r)
-@assert norm(r.zero - [ 0; 1]) < 1e-8
+@test converged(r)
+@test norm(r.zero - [ 0; 1]) < 1e-8
 
 # Test MCP solver with minmax reformulation
 r = mcpsolve(df, [-Inf;-Inf], [Inf; Inf], [-0.5; 1.4], reformulation = :minmax)
-@assert converged(r)
-@assert norm(r.zero - [ 0; 1]) < 1e-8
+@test converged(r)
+@test norm(r.zero - [ 0; 1]) < 1e-8
+
+end

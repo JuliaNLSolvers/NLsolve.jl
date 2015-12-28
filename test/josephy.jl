@@ -1,5 +1,7 @@
 # MCP example by Josephy.
 
+@testset "mcp_josephy" begin
+
 function f!(x, fvec)
     fvec[1]=3*x[1]^2+2*x[1]*x[2]+2*x[2]^2+x[3]+3*x[4]-6
     fvec[2]=2*x[1]^2+x[1]+x[2]^2+3*x[3]+2*x[4]-2
@@ -34,43 +36,45 @@ df = DifferentiableMultivariateFunction(f!, g!)
 # Test smooth reformulation with trust region
 
 r = mcpsolve(df, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :smooth)
-@assert converged(r)
-@assert norm(r.zero - solution) < 1e-8
+@test converged(r)
+@test norm(r.zero - solution) < 1e-8
 
 r = mcpsolve(f!, g!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :smooth)
-@assert converged(r)
-@assert norm(r.zero - solution) < 1e-8
+@test converged(r)
+@test norm(r.zero - solution) < 1e-8
 
 r = mcpsolve(f!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :smooth)
-@assert converged(r)
-@assert norm(r.zero - solution) < 1e-8
+@test converged(r)
+@test norm(r.zero - solution) < 1e-8
 
 r = mcpsolve(f!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :smooth, autodiff = true)
-@assert converged(r)
-@assert norm(r.zero - solution) < 1e-8
+@test converged(r)
+@test norm(r.zero - solution) < 1e-8
 
 
 # Test minmax reformulation with trust region
 
 r = mcpsolve(df, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :minmax)
-@assert converged(r)
-@assert norm(r.zero - solution) < 1e-8
+@test converged(r)
+@test norm(r.zero - solution) < 1e-8
 
 r = mcpsolve(f!, g!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :minmax)
-@assert converged(r)
-@assert norm(r.zero - solution) < 1e-8
+@test converged(r)
+@test norm(r.zero - solution) < 1e-8
 
 r = mcpsolve(f!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :minmax)
-@assert converged(r)
-@assert norm(r.zero - solution) < 1e-8
+@test converged(r)
+@test norm(r.zero - solution) < 1e-8
 
 r = mcpsolve(f!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :minmax, autodiff = true)
-@assert converged(r)
-@assert norm(r.zero - solution) < 1e-8
+@test converged(r)
+@test norm(r.zero - solution) < 1e-8
 
 
 # Test with Newton method
 
 r = mcpsolve(df, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], method = :newton)
-@assert converged(r)
-@assert norm(r.zero - solution) < 1e-8
+@test converged(r)
+@test norm(r.zero - solution) < 1e-8
+
+end

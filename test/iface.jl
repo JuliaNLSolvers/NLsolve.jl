@@ -1,5 +1,7 @@
 # Test all the various ways of specifying a function
 
+@testset "iface" begin
+
 # Using functions modifying in-place
 
 function f!(x, fvec)
@@ -26,25 +28,25 @@ function fg!(x, fvec, fjac)
 end
 
 r = nlsolve(DifferentiableMultivariateFunction(f!), [ -0.5; 1.4])
-@assert converged(r)
+@test converged(r)
 
 r = nlsolve(DifferentiableMultivariateFunction(f!, g!), [ -0.5; 1.4])
-@assert converged(r)
+@test converged(r)
 
 r = nlsolve(DifferentiableMultivariateFunction(f!, g!, fg!), [ -0.5; 1.4])
-@assert converged(r)
+@test converged(r)
 
 r = nlsolve(f!, [ -0.5; 1.4])
-@assert converged(r)
+@test converged(r)
 
 r = nlsolve(f!, g!, [ -0.5; 1.4])
-@assert converged(r)
+@test converged(r)
 
 r = nlsolve(only_f!_and_fg!(f!, fg!), [ -0.5; 1.4])
-@assert converged(r)
+@test converged(r)
 
 r = nlsolve(only_fg!(fg!), [ -0.5; 1.4])
-@assert converged(r)
+@test converged(r)
 
 
 # Using functions returning their output
@@ -80,13 +82,13 @@ function fg(x)
 end
 
 r = nlsolve(not_in_place(f), [ -0.5; 1.4])
-@assert converged(r)
+@test converged(r)
 
 r = nlsolve(not_in_place(f, g), [ -0.5; 1.4])
-@assert converged(r)
+@test converged(r)
 
 r = nlsolve(not_in_place(f, g, fg), [ -0.5; 1.4])
-@assert converged(r)
+@test converged(r)
 
 
 # Using functions taking scalar as inputs
@@ -98,4 +100,6 @@ function f(x, y)
 end
 
 r = nlsolve(n_ary(f), [ -0.5; 1.4])
-@assert converged(r)
+@test converged(r)
+
+end
