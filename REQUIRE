@@ -1,6 +1,6 @@
 julia 0.3
 Optim
 Calculus
-DualNumbers
+ForwardDiff
 Compat
 Distances
