@@ -86,9 +86,6 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
 
     dfo = create_objective_function(df, T, nn)
 
-    # Keep track of step-sizes
-    foval = dfo.fg!(x, gr)
-
     while !converged && it < iterations
 
         it += 1
