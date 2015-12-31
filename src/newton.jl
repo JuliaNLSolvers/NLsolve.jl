@@ -44,11 +44,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     df.f!(x, fvec)
     f_calls += 1
 
-    i = find(!isfinite(fvec))
-
-    if !isempty(i)
-        error("During the resolution of the non-linear system, the evaluation of the following equation(s) resulted in a non-finite number: $(i)")
-    end
+    check_isfinite(fvec)
 
     it = 0
     x_converged, f_converged, converged = assess_convergence(x, xold, fvec, xtol, ftol)

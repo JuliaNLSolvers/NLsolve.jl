@@ -33,3 +33,10 @@ function assess_convergence(x::Vector,
 
     return x_converged, f_converged, converged
 end
+
+function check_isfinite(x::Vector)
+    i = find(!isfinite(x))
+    if !isempty(i)
+        throw(IsFiniteException(i))
+    end
+end
