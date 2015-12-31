@@ -188,7 +188,7 @@ function watson(n::Integer)
             for k = 1:n
                 tj = tk
                 for j = k:n
-                    fjac[k,j] += tj*((@compat(Float64(k-1))/ti - temp2)*(@compat(Float64(j-1))/ti - temp2) - temp1)
+                    fjac[k,j] += tj*((Float64(k-1)/ti - temp2)*(Float64(j-1)/ti - temp2) - temp1)
                     tj *= ti
                 end
                 tk *= temp
