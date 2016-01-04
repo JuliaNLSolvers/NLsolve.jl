@@ -28,7 +28,7 @@ type IsFiniteException <: Exception
 end
 show(io::IO, e::IsFiniteException) = print(io,
   "During the resolution of the non-linear system, the evaluation" *
-  "of the following equation(s) resulted in a non-finite number: $(e.indices)")
+  " of the following equation(s) resulted in a non-finite number: $(e.indices)")
 
 include("differentiable_functions.jl")
 include("solver_state_results.jl")
