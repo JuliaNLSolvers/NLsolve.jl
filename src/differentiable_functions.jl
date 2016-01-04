@@ -1,0 +1,115 @@
+abstract AbstractDifferentiableMultivariateFunction
+
+immutable DifferentiableMultivariateFunction <: AbstractDifferentiableMultivariateFunction
+    f!::Function
+    g!::Function
+    fg!::Function
+end
+
+alloc_jacobian(df::DifferentiableMultivariateFunction, T::Type, n::Integer) = Array(T, n, n)
+
+function DifferentiableMultivariateFunction(f!::Function, g!::Function)
+    function fg!(x::Vector, fx::Vector, gx::Array)
+        f!(x, fx)
+        g!(x, gx)
+    end
+    return DifferentiableMultivariateFunction(f!, g!, fg!)
+end
+
+function DifferentiableMultivariateFunction(f!::Function)
+    function fg!(x::Vector, fx::Vector, gx::Array)
+        f!(x, fx)
+        function f(x::Vector)
+            fx = similar(x)
+            f!(x, fx)
+            return fx
+        end
+        finite_difference_jacobian!(f, x, fx, gx)
+    end
+    function g!(x::Vector, gx::Array)
+        fx = similar(x)
+        fg!(x, fx, gx)
+    end
+    return DifferentiableMultivariateFunction(f!, g!, fg!)
+end
+
+# Helper for the case where only f! and fg! are available
+function only_f!_and_fg!(f!::Function, fg!::Function)
+    function g!(x::Vector, gx::Array)
+        fx = similar(x)
+        fg!(x, fx, gx)
+    end
+    return DifferentiableMultivariateFunction(f!, g!, fg!)
+end
+
+# Helper for the case where only fg! is available
+function only_fg!(fg!::Function)
+    function f!(x::Vector, fx::Vector)
+        gx = Array(eltype(x), length(x), length(x))
+        fg!(x, fx, gx)
+    end
+    function g!(x::Vector, gx::Array)
+        fx = similar(x)
+        fg!(x, fx, gx)
+    end
+    return DifferentiableMultivariateFunction(f!, g!, fg!)
+end
+
+# Helpers for functions that do not modify arguments in place but return
+# values and jacobian
+function not_in_place(f::Function)
+    function f!(x::Vector, fx::Vector)
+        copy!(fx, f(x))
+    end
+    DifferentiableMultivariateFunction(f!)
+end
+
+function not_in_place(f::Function, g::Function)
+    function f!(x::Vector, fx::Vector)
+        copy!(fx, f(x))
+    end
+    function g!(x::Vector, gx::Array)
+        copy!(gx, g(x))
+    end
+    DifferentiableMultivariateFunction(f!, g!)
+end
+
+function not_in_place(f::Function, g::Function, fg::Function)
+    function f!(x::Vector, fx::Vector)
+        copy!(fx, f(x))
+    end
+    function g!(x::Vector, gx::Array)
+        copy!(gx, g(x))
+    end
+    function fg!(x::Vector, fx::Vector, gx::Array)
+        (fvec, fjac) = fg(x)
+        copy!(fx, fvec)
+        copy!(gx, fjac)
+    end
+    DifferentiableMultivariateFunction(f!, g!, fg!)
+end
+
+# Helper for functions that take several scalar arguments and return a tuple
+function n_ary(f::Function)
+    function f!(x::Vector, fx::Vector)
+        copy!(fx, [ f(x...)... ])
+    end
+    DifferentiableMultivariateFunction(f!)
+end
+
+# For sparse Jacobians
+immutable DifferentiableSparseMultivariateFunction <: AbstractDifferentiableMultivariateFunction
+    f!::Function
+    g!::Function
+    fg!::Function
+end
+
+alloc_jacobian(df::DifferentiableSparseMultivariateFunction, T::Type, n::Integer) = spzeros(T, n, n)
+
+function DifferentiableSparseMultivariateFunction(f!::Function, g!::Function)
+    function fg!(x::Vector, fx::Vector, gx::SparseMatrixCSC)
+        f!(x, fx)
+        g!(x, gx)
+    end
+    return DifferentiableSparseMultivariateFunction(f!, g!, fg!)
+end

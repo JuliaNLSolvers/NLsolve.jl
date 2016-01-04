@@ -44,11 +44,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     df.f!(x, fvec)
     f_calls += 1
 
-    i = find(!isfinite(fvec))
-
-    if !isempty(i)
-        error("During the resolution of the non-linear system, the evaluation of the following equation(s) resulted in a non-finite number: $(i)")
-    end
+    check_isfinite(fvec)
 
     it = 0
     x_converged, f_converged, converged = assess_convergence(x, xold, fvec, xtol, ftol)
@@ -103,8 +99,6 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
         df.g!(x, fjac)
         g_calls += 1
 
-        g = fjac'*fvec
-
         try
             p = -fjac\fvec
         catch e
@@ -113,6 +107,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
                 # FIXME: better selection for lambda, see Nocedal & Wright p. 289
                 fjac2 = fjac'*fjac
                 lambda = convert(T,1e6)*sqrt(nn*eps())*norm(fjac2, 1)
+                g = fjac'*fvec
                 p = -(fjac2 + lambda*eye(nn))\g
             else
                 throw(e)

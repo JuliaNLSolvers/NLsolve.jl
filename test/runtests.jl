@@ -16,7 +16,8 @@ tests = ["2by2.jl",
          "autodiff.jl",
          "josephy.jl",
          "difficult_mcp.jl",
-         "sparse.jl"]
+         "sparse.jl",
+         "throws.jl"]
 
 println("Running tests:")
 

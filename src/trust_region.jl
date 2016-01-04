@@ -88,10 +88,7 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
     f_calls += 1
     g_calls += 1
 
-    i = find(!isfinite(r))
-    if !isempty(i)
-        error("During the resolution of the non-linear system, the evaluation of the following equation(s) resulted in a non-finite number: $(i)")
-    end
+    check_isfinite(r)
 
     it = 0
     x_converged, f_converged, converged = assess_convergence(x, xold, r, xtol, ftol)
