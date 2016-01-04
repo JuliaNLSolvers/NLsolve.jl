@@ -18,28 +18,6 @@ macro newtontrace(stepnorm)
     end
 end
 
-function create_objective_function(df::AbstractDifferentiableMultivariateFunction,
-                                   T::Type, nn::Integer)
-    fvec2 = Array(T, nn)
-    fjac2 = alloc_jacobian(df, T, nn)
-    function fo(x::Vector{T})
-        df.f!(x, fvec2)
-        return(dot(fvec2, fvec2)/2)
-    end
-    function go!(x::Vector{T}, storage::Vector{T})
-        df.fg!(x, fvec2, fjac2)
-        copy!(storage, fjac2'*fvec2)
-    end
-    function fgo!(x::Vector{T}, storage::Vector{T})
-        df.fg!(x, fvec2, fjac2)
-        copy!(storage, fjac2'*fvec2)
-        return(dot(fvec2, fvec2)/2)
-    end
-
-    return(DifferentiableFunction(fo, go!, fgo!))
-end
-
-
 function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
                    initial_x::Vector{T},
                    xtol::T,
@@ -55,6 +33,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     xold = fill(convert(T, NaN), nn)
     fvec = Array(T, nn)
     fjac = alloc_jacobian(df, T, nn)
+
     p = Array(T, nn)
     g = Array(T, nn)
     gr = Array(T, nn)
@@ -84,10 +63,38 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     tracing = store_trace || show_trace || extended_trace
     @newtontrace convert(T,NaN)
 
-    dfo = create_objective_function(df, T, nn)
+    # Work vectors for the linesearch objective function
+    fjac2 = alloc_jacobian(df, T, nn)
+    fvec2 = Array(T, nn)
 
-    # Keep track of step-sizes
-    foval = dfo.fg!(x, gr)
+    # Create objective function for the linesearch.
+    # This function is defined as fo(x) = 0.5 * f(x) ⋅ f(x) and thus
+    # has the gradient ∇fo(x) = ∇f(x) ⋅ f(x)
+    function fo(xlin::Vector{T})
+        df.f!(xlin, fvec2)
+        return(dot(fvec2, fvec2)/2)
+    end
+ₖ
+    # The line search algorithm will want to first compute ∇fo(xₖ).
+    # We have already computed ∇f(xₖ) and it is possible that it
+    # is expensive to recompute.
+    # We solve this using the already computed ∇f(xₖ)
+    # in case of the line search asking us for the gradient at xₖ.
+    function go!(xlin::Vector{T}, storage::Vector{T})
+        df.f!(xlin, fvec2)
+        if xlin == xold
+            copy!(storage, fjac'*fvec2)
+        # Else we need to recompute it.
+        else
+            df.g!(xlin, fjac2)
+            copy!(storage, fjac2'*fvec2)
+        end
+        # For convenience, return fo(x) here so that fgo(x) = go(x)
+        return(dot(fvec2, fvec2)/2)
+    end
+    fgo!(xlin::Vector{T}, storage::Vector{T}) = go!(xlin, storage)
+
+    dfo = DifferentiableFunction(fo, go!, fgo!)
 
     while !converged && it < iterations
 
@@ -121,7 +128,9 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
             linesearch!(dfo, xold, p, x, gr, lsr, one(T), mayterminate)
 
         f_calls += f_calls_update
-        g_calls += g_calls_update
+        # -1 here because for the first call we
+        # use the already computed gradient
+        g_calls += g_calls_update - 1
 
         df.f!(x, fvec)
         f_calls += 1
