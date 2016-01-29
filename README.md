@@ -200,6 +200,14 @@ can be achieved with:
     empty!(gx.rowval)
     empty!(gx.nzval)
 
+
+Another solution is to directly pass a Jacobian matrix with a given sparsity. To do so, construct an object of type `DifferentiableGivenSparseMultivariateFunction`
+
+    df = DifferentiableGivenSparseMultivariateFunction(f!, g!, J)
+    nlsolve(df, initial_x)
+
+If  `g!` conserves the sparsity structure of `gx`, `gx` will always have the same sparsity as `J`. This sometimes allow to write a faster version of `g!`.
+
 # Fine tunings
 
 Two algorithms are currently available. The choice between the two is achieved
