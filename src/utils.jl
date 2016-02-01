@@ -1,6 +1,6 @@
 sumabs2j(S::AbstractMatrix, j::Integer) = sumabs2(slice(S, :, j))
 
-function sumabs2j(S::Base.SparseMatrix.SparseMatrixCSC, j::Integer)
+function sumabs2j(S::SparseMatrixCSC, j::Integer)
     sumabs2(sub(nonzeros(S), nzrange(S, j)))
 end
 

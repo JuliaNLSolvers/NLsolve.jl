@@ -113,3 +113,22 @@ function DifferentiableSparseMultivariateFunction(f!::Function, g!::Function)
     end
     return DifferentiableSparseMultivariateFunction(f!, g!, fg!)
 end
+
+
+immutable DifferentiableGivenSparseMultivariateFunction{Tv, Ti} <: AbstractDifferentiableMultivariateFunction
+    f!::Function
+    g!::Function
+    fg!::Function
+    J::SparseMatrixCSC{Tv, Ti}
+end
+
+alloc_jacobian(df::DifferentiableGivenSparseMultivariateFunction, args...) = deepcopy(df.J)
+
+function DifferentiableGivenSparseMultivariateFunction(f!::Function, g!::Function, J::SparseMatrixCSC)
+    function fg!(x::Vector, fx::Vector, gx::SparseMatrixCSC)
+        f!(x, fx)
+        g!(x, gx)
+    end
+    DifferentiableGivenSparseMultivariateFunction(f!, g!, fg!, J)
+end
+

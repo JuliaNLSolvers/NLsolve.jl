@@ -19,6 +19,7 @@ export DifferentiableMultivariateFunction,
        not_in_place,
        n_ary,
        DifferentiableSparseMultivariateFunction,
+       DifferentiableGivenSparseMultivariateFunction,
        nlsolve,
        mcpsolve,
        converged
