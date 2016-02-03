@@ -78,7 +78,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     # in case of the line search asking us for the gradient at xₖ.
     function go!(xlin::Vector, storage::Vector)
         df.f!(xlin, fvec2)
-        if xlin == xold
+        if xlin === xold
             copy!(storage, fjac'*fvec2)
         # Else we need to recompute it.
         else
