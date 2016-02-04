@@ -18,7 +18,8 @@ tests = ["2by2.jl",
          "difficult_mcp.jl",
          "sparse.jl",
          "throws.jl",
-         "f_g_counts.jl"]
+         "f_g_counts.jl",
+         "no_linesearch.jl"]
 
 println("Running tests:")
 
