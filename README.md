@@ -21,27 +21,31 @@ linesearch algorithms.
 
 We consider the following bivariate function of two variables:
 
-    (x, y) -> ((x+3)*(y^3-7)+18, sin(y*exp(x)-1))
+```jl
+(x, y) -> ((x+3)*(y^3-7)+18, sin(y*exp(x)-1))
+```
 
 In order to find a zero of this function and display it, you would write the
 following program:
 
-    using NLsolve
+```jl
+using NLsolve
 
-    function f!(x, fvec)
-        fvec[1] = (x[1]+3)*(x[2]^3-7)+18
-        fvec[2] = sin(x[2]*exp(x[1])-1)
-    end
+function f!(x, fvec)
+    fvec[1] = (x[1]+3)*(x[2]^3-7)+18
+    fvec[2] = sin(x[2]*exp(x[1])-1)
+end
 
-    function g!(x, fjac)
-        fjac[1, 1] = x[2]^3-7
-        fjac[1, 2] = 3*x[2]^2*(x[1]+3)
-        u = exp(x[1])*cos(x[2]*exp(x[1])-1)
-        fjac[2, 1] = x[2]*u
-        fjac[2, 2] = u
-    end
+function g!(x, fjac)
+    fjac[1, 1] = x[2]^3-7
+    fjac[1, 2] = 3*x[2]^2*(x[1]+3)
+    u = exp(x[1])*cos(x[2]*exp(x[1])-1)
+    fjac[2, 1] = x[2]*u
+    fjac[2, 2] = u
+end
 
-    nlsolve(f!, g!, [ 0.1; 1.2])
+nlsolve(f!, g!, [ 0.1; 1.2])
+```
 
 First, note that the function `f!` computes the residuals of the nonlinear
 system, and stores them in a preallocated vector passed as second argument.
@@ -77,13 +81,17 @@ In turn, there 3 ways of specifying how the Jacobian should be computed:
 If you do not have a function that compute the Jacobian, it is possible to
 have it computed by finite difference. In that case, the syntax is simply:
 
-    nlsolve(f!, initial_x)
+```jl
+nlsolve(f!, initial_x)
+```
 
 Alternatively, you can construct an object of type
 `DifferentiableMultivariateFunction` and pass it to `nlsolve`, as in:
 
-    df = DifferentiableMultivariateFunction(f!)
-    nlsolve(df, initial_x)
+```jl
+df = DifferentiableMultivariateFunction(f!)
+nlsolve(df, initial_x)
+```
 
 ### Automatic differentiation
 
@@ -91,7 +99,9 @@ Another option if you do not have a function computing the Jacobian is to use
 automatic differentiation, thanks to the `ForwardDiff` package. The syntax is
 simply:
 
-    nlsolve(f!, initial_x, autodiff = true)
+```jl
+nlsolve(f!, initial_x, autodiff = true)
+```
 
 ### Jacobian available
 
@@ -99,7 +109,9 @@ If, in addition to `f!`, you have a function `g!(x::Vector, gx::Array)` for
 computing the Jacobian of the system, then the syntax is, as in the example
 above:
 
-    nlsolve(f!, g!, initial_x)
+```jl
+nlsolve(f!, g!, initial_x)
+```
 
 Note that you should not assume that the Jacobian `gx` passed in argument is
 initialized to a zero matrix. You must set all the elements of the matrix in
@@ -108,8 +120,10 @@ the function `g!`.
 Alternatively, you can construct an object of type
 `DifferentiableMultivariateFunction` and pass it to `nlsolve`, as in:
 
-    df = DifferentiableMultivariateFunction(f!, g!)
-    nlsolve(df, initial_x)
+```jl
+df = DifferentiableMultivariateFunction(f!, g!)
+nlsolve(df, initial_x)
+```
 
 ### Optimization of simultaneous residuals and Jacobian
 
@@ -117,8 +131,10 @@ If, in addition to `f!` and `g!`, you have a function `fg!(x::Vector,
 fx::Vector, gx::Array)` that computes both the residual and the Jacobian at
 the same time, you can use the following syntax:
 
-    df = DifferentiableMultivariateFunction(f!, g!, fg!)
-    nlsolve(df, initial_x)
+```jl
+df = DifferentiableMultivariateFunction(f!, g!, fg!)
+nlsolve(df, initial_x)
+```
 
 If the function `fg!` uses some optimization that make it costless than
 calling `f!` and `g!` successively, then this syntax can possibly improve the
@@ -133,14 +149,17 @@ If only `f!` and `fg!` are available, the helper function `only_f!_and_fg!` can 
 used to construct a `DifferentiableMultivariateFunction` object, that can be
 used as first argument of `nlsolve`. The complete syntax is therefore:
 
-    nlsolve(only_f!_and_fg!(f!, fg!), initial_x)
+```jl
+nlsolve(only_f!_and_fg!(f!, fg!), initial_x)
+```
 
 If only `fg!` is available, the helper function `only_fg!` can be used to
 construct a `DifferentiableMultivariateFunction` object, that can be used as
 first argument of `nlsolve`. The complete syntax is therefore:
 
-    nlsolve(only_fg!(fg!), initial_x)
-
+```jl
+nlsolve(only_fg!(fg!), initial_x)
+```
 
 ## With functions returning residuals and Jacobian as output
 
@@ -150,7 +169,9 @@ newly-allocated vector containing the residuals. The helper function
 object, that can be used as first argument of `nlsolve`. The complete syntax is
 therefore:
 
-    nlsolve(not_in_place(f), initial_x)
+```jl
+nlsolve(not_in_place(f), initial_x)
+```    
 
 Finite-differencing is used to compute the Jacobian in that case.
 
@@ -167,7 +188,9 @@ residuals, you can use the helper function `n_ary` can be used to construct a
 `DifferentiableMultivariateFunction` object, that can be used as first argument
 of `nlsolve`. The complete syntax is therefore:
 
-    nlsolve(n_ary(f), initial_x)
+```jl
+nlsolve(n_ary(f), initial_x)
+```
 
 Finite-differencing is used to compute the Jacobian.
 
@@ -178,8 +201,10 @@ to manipulate sparse matrices instead of full ones, in order to increase
 performance on large systems. This can be achieved by constructing an object of
 type `DifferentiableSparseMultivariateFunction`:
 
-    df = DifferentiableSparseMultivariateFunction(f!, g!)
-    nlsolve(df, initial_x)
+```jl
+df = DifferentiableSparseMultivariateFunction(f!, g!)
+nlsolve(df, initial_x)
+```
 
 It is possible to give an optional third function `fg!` to the constructor, as
 for the full Jacobian case.
@@ -196,15 +221,18 @@ initialized by a previous function call. If in doubt, you can clear the sparse
 matrix at the beginning of the function. If `gx` is the sparse Jacobian, this
 can be achieved with:
 
-    fill!(gx.colptr, 1)
-    empty!(gx.rowval)
-    empty!(gx.nzval)
-
+```jl
+fill!(gx.colptr, 1)
+empty!(gx.rowval)
+empty!(gx.nzval)
+```
 
 Another solution is to directly pass a Jacobian matrix with a given sparsity. To do so, construct an object of type `DifferentiableGivenSparseMultivariateFunction`
 
-    df = DifferentiableGivenSparseMultivariateFunction(f!, g!, J)
-    nlsolve(df, initial_x)
+```jl
+df = DifferentiableGivenSparseMultivariateFunction(f!, g!, J)
+nlsolve(df, initial_x)
+```
 
 If  `g!` conserves the sparsity structure of `gx`, `gx` will always have the same sparsity as `J`. This sometimes allow to write a faster version of `g!`.
 
@@ -294,41 +322,47 @@ optional argument `reformulation`, which can take two values:
 
 Here is a complete example:
 
-    using NLsolve
+```jl
+using NLsolve
 
-    function f!(x, fvec)
-        fvec[1]=3*x[1]^2+2*x[1]*x[2]+2*x[2]^2+x[3]+3*x[4]-6
-        fvec[2]=2*x[1]^2+x[1]+x[2]^2+3*x[3]+2*x[4]-2
-        fvec[3]=3*x[1]^2+x[1]*x[2]+2*x[2]^2+2*x[3]+3*x[4]-1
-        fvec[4]=x[1]^2+3*x[2]^2+2*x[3]+3*x[4]-3
-    end
+function f!(x, fvec)
+    fvec[1]=3*x[1]^2+2*x[1]*x[2]+2*x[2]^2+x[3]+3*x[4]-6
+    fvec[2]=2*x[1]^2+x[1]+x[2]^2+3*x[3]+2*x[4]-2
+    fvec[3]=3*x[1]^2+x[1]*x[2]+2*x[2]^2+2*x[3]+3*x[4]-1
+    fvec[4]=x[1]^2+3*x[2]^2+2*x[3]+3*x[4]-3
+end
 
-    r = mcpsolve(f!, [0., 0., 0., 0.], [Inf, Inf, Inf, Inf],
-                 [1.25, 0., 0., 0.5], reformulation = :smooth, autodiff = true)
+r = mcpsolve(f!, [0., 0., 0., 0.], [Inf, Inf, Inf, Inf],
+             [1.25, 0., 0., 0.5], reformulation = :smooth, autodiff = true)
+```
 
 The solution is:
 
-    julia> r.zero
-    4-element Array{Float64,1}:
-      1.22474
-      0.0
-     -1.378e-19
-      0.5
+```jl
+julia> r.zero
+4-element Array{Float64,1}:
+  1.22474
+  0.0
+ -1.378e-19
+  0.5
+```
 
 The lower bounds are hit for the second and third components, hence the second
 and third components of the function are positive at the solution. On the other
 hand, the first and fourth components of the function are zero at the solution.
 
-    julia> fvec = similar(r.zero)
+```jl
+julia> fvec = similar(r.zero)
 
-    julia> f!(r.zero, fvec)
+julia> f!(r.zero, fvec)
 
-    julia> fvec
-    4-element Array{Float64,1}:
-     -1.26298e-9
-      3.22474
-      5.0
-      3.62723e-11
+julia> fvec
+4-element Array{Float64,1}:
+ -1.26298e-9
+  3.22474
+  5.0
+  3.62723e-11
+```
 
 # Todolist
 
