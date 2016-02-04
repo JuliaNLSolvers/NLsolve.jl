@@ -1,5 +1,5 @@
 julia 0.4
 Optim
 Calculus
-ForwardDiff
+ForwardDiff 0.1.4 0.2
 Distances
