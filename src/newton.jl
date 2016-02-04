@@ -1,3 +1,11 @@
+function no_linesearch!(dfo, xold, p, x, gr, lsr, alpha, mayterminate)
+    @simd for i in eachindex(x)
+        @inbounds x[i] = xold[i] + p[i]
+    end
+    dfo.f(x)
+    return 0.0, 0, 0
+end
+
 macro newtontrace(stepnorm)
     quote
         if tracing
