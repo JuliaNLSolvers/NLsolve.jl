@@ -1,0 +1,42 @@
+Rosenbrock                           2      30      17     0.000000e+00
+Rosenbrock-AD                        2      30      17     0.000000e+00
+Powell singular                      4      17      17     2.945101e-09
+Powell singular-AD                   4      17      17     2.945101e-09
+Powell badly scaled                  2      15      14     7.051804e-12
+Powell badly scaled-AD               2      15      14     7.051804e-12
+Wood                                 4      19      15     1.152565e-10
+Wood-AD                              4      19      15     1.152340e-10
+Helical Valley                       3      10       9     1.110223e-14
+Helical Valley-AD                    3      10       9     1.110223e-14
+Watson                               6      20      16     2.982250e-13
+Watson-AD                            6      20      16     2.903164e-13
+Watson                               9      17      17     1.615243e-12
+Watson-AD                            9      17      17     1.651451e-12
+Chebyquad                            5       8       5     9.143861e-09
+Chebyquad-AD                         5       8       5     9.143861e-09
+Chebyquad                            6      13       8     7.320533e-16
+Chebyquad-AD                         6      13       8     7.320533e-16
+Chebyquad                            7      10       6     6.329061e-10
+Chebyquad-AD                         7      10       6     6.329061e-10
+Chebyquad                            9      14       8     1.631681e-14
+Chebyquad-AD                         9      14       8     1.631681e-14
+Brown almost-linear                 10       5       5     3.382331e-09
+Brown almost-linear-AD              10       5       5     3.382331e-09
+Brown almost-linear                 30       4       4     8.883265e-09
+Brown almost-linear-AD              30       4       4     8.883265e-09
+Brown almost-linear                 40       4       4     1.570839e-09
+Brown almost-linear-AD              40       4       4     1.570839e-09
+Discrete boundary value             10       4       4     2.636780e-16
+Discrete boundary value-AD          10       4       4     2.636780e-16
+Discrete integral equation           1       4       4     8.540391e-14
+Discrete integral equation-AD        1       4       4     8.540391e-14
+Discrete integral equation          10       4       4     2.720046e-15
+Discrete integral equation-AD       10       4       4     2.720046e-15
+Trigonometric                       10      14       8     1.204281e-10
+Trigonometric-AD                    10      14       8     1.204299e-10
+Variably dimensioned                10      15      15     1.323497e-12
+Variably dimensioned-AD             10      15      15     1.323497e-12
+Broyden tridiagonal                 10       5       5     7.548402e-10
+Broyden tridiagonal-AD              10       5       5     7.548402e-10
+Broyden banded                      10       6       6     9.359466e-09
+Broyden banded-AD                   10       6       6     9.359466e-09
