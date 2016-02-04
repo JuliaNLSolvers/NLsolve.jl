@@ -17,10 +17,11 @@ tests = ["2by2.jl",
          "josephy.jl",
          "difficult_mcp.jl",
          "sparse.jl",
-         "throws.jl"]
+         "throws.jl",
+         "f_g_counts.jl"]
 
 println("Running tests:")
 
 for test in tests
-    include(test)    
+    include(test)
 end

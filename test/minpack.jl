@@ -495,21 +495,23 @@ alltests = [ rosenbrock(); powell_singular(); powell_badly_scaled(); wood();
 @printf("%-30s   %5s   %5s   %5s   %14s     %10s\n", "Function", "Dim", "NFEV",
         "NJEV", "Final inf-norm", "total time")
 println("-"^86)
-
+f_out = open("minpack_results.dat", "w")
 for (df, initial, name) in alltests
-    tic()
-    r = nlsolve(df, initial, method = :trust_region)
-    tot_time = toq()
+
+    tot_time = @elapsed r = nlsolve(df, initial, method = :trust_region)
     @printf("%-30s   %5d   %5d   %5d   %14e   %10e\n", name, length(initial),
             r.f_calls, r.g_calls, r.residual_norm, tot_time)
     @test converged(r)
+    @printf(f_out, "%-30s   %5d   %5d   %5d   %14e\n", name, length(initial),
+            r.f_calls, r.g_calls, r.residual_norm)
     # with autodiff
-    tic()
-    r = nlsolve(df.f!, initial, method = :trust_region, autodiff = true)
-    tot_time = toq()
+    tot_time = @elapsed r_AD = nlsolve(df.f!, initial, method = :trust_region, autodiff = true)
     @printf("%-30s   %5d   %5d   %5d   %14e   %10e\n", name*"-AD",
-            length(initial), r.f_calls, r.g_calls, r.residual_norm, tot_time)
-    @test converged(r)
+            length(initial), r_AD.f_calls, r_AD.g_calls, r_AD.residual_norm, tot_time)
+    @printf(f_out, "%-30s   %5d   %5d   %5d   %14e\n", name*"-AD", length(initial),
+            r_AD.f_calls, r_AD.g_calls, r_AD.residual_norm)
+    @test converged(r_AD)
 end
+close(f_out)
 
 end
