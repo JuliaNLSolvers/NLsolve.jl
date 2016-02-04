@@ -126,8 +126,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
         alpha, f_calls_update, g_calls_update =
             linesearch!(dfo, xold, p, x, gr, lsr, one(T), mayterminate)
 
-        df.f!(x, fvec)
-        f_calls += 1
+        # fvec is here also updated in the linesearch! so no need to call f again.
 
         x_converged, f_converged, converged = assess_convergence(x, xold, fvec, xtol, ftol)
 
