@@ -27,12 +27,12 @@ In order to find a zero of this function and display it, you would write the
 following program:
 
     using NLsolve
-    
+
     function f!(x, fvec)
         fvec[1] = (x[1]+3)*(x[2]^3-7)+18
         fvec[2] = sin(x[2]*exp(x[1])-1)
     end
-    
+
     function g!(x, fjac)
         fjac[1, 1] = x[2]^3-7
         fjac[1, 2] = 3*x[2]^2*(x[1]+3)
@@ -239,7 +239,9 @@ This method is selected with `method = :newton`.
 This method accepts a custom parameter `linesearch!`, which must be equal to a
 function computing the linesearch. Currently, available values are taken from
 the `Optim` package, and are: `Optim.backtracking_linesearch!` (the default),
-`Optim.hz_linesearch!`, `Optim.interpolating_linesearch!`.
+`Optim.hz_linesearch!`, `Optim.interpolating_linesearch!`. **Note:** it is assumed
+that the linesearch function will evaluate the function at least once at the
+current point.
 
 ## Common options
 
@@ -307,10 +309,10 @@ The solution is:
 
     julia> r.zero
     4-element Array{Float64,1}:
-      1.22474  
-      0.0      
+      1.22474
+      0.0
      -1.378e-19
-      0.5      
+      0.5
 
 The lower bounds are hit for the second and third components, hence the second
 and third components of the function are positive at the solution. On the other
@@ -322,9 +324,9 @@ hand, the first and fourth components of the function are zero at the solution.
 
     julia> fvec
     4-element Array{Float64,1}:
-     -1.26298e-9 
-      3.22474    
-      5.0        
+     -1.26298e-9
+      3.22474
+      5.0
       3.62723e-11
 
 # Todolist
