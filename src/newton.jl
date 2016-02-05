@@ -86,13 +86,13 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     # in case of the line search asking us for the gradient at xₖ.
     function go!(xlin::Vector, storage::Vector)
         if xlin == xold
-            copy!(storage, fjac'*fvec)
+            At_mul_B!(storage, fjac, fvec)
         # Else we need to recompute it.
         else
             df.fg!(xlin, fvec, fjac)
             f_calls += 1
             g_calls += 1
-            copy!(storage, fjac'*fvec)
+            At_mul_B!(storage, fjac, fvec)
         end
     end
     function fgo!(xlin::Vector, storage::Vector)
@@ -112,7 +112,8 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
         end
 
         try
-            p = -fjac\fvec
+            p = fjac\fvec
+            scale!(p, -1)
         catch e
             if isa(e, Base.LinAlg.LAPACKException)
                 # Modify the search direction if the jacobian is singular
