@@ -238,7 +238,7 @@ If  `g!` conserves the sparsity structure of `gx`, `gx` will always have the sam
 
 # Cache
 
-It is common to repeatedly want to solve a system with for example different initial guesses. If the size of the input is small, the cost of allocating the temporary variables for the algorithm can be expensive. It is therefore possible to create a cache that holds these temporary variables between calls to `nlsolve`. It is created by `NLsolveCache(df, initial_x)` or `NLsolveCache(df, T, len)` where `T` is the type of the initial guess and `len` is it's length.
+It is common to repeatedly want to solve a system with for example different initial guesses. The cost of allocating the temporary variables for the solver can sometimes be expensive. It is therefore possible to create a cache that holds these temporary variables between calls to `nlsolve`. A cache is created with `NLsolveCache(df, initial_x)` or `NLsolveCache(df, T, len)` where `T` is the type of the initial guess and `len` is its length. The cache can then be used by calling `nlsolve` with the optional argument `cache`.
 
 # Fine tunings
 

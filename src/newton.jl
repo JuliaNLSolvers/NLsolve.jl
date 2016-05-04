@@ -36,6 +36,8 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
                    extended_trace::Bool,
                    linesearch!::Function,
                    cache::NLsolveCache{T})
+    nn = length(initial_x)
+    check_lengths(cache, nn)
 
     x =  cache.v1
     xold = cache.v2
@@ -44,8 +46,6 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     g = cache.v5
     gr = cache.v6
     fjac = cache.fjac
-
-    nn = length(x)
 
     copy!(x, initial_x)
     fill!(xold, convert(T, NaN))

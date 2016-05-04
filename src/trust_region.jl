@@ -71,6 +71,8 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
                          factor::T,
                          autoscale::Bool,
                          cache::NLsolveCache{T})
+    nn = length(initial_x)
+    check_lengths(cache, nn)
 
     x = cache.v1            # Current point
     xold = cache.v2         # Old point
@@ -83,7 +85,6 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
 
     x = copy(initial_x)     # Current point
     xold = fill!(xold, convert(T, NaN),) # Old point
-    nn = length(x)
 
     # Count function calls
     f_calls, g_calls = 0, 0
