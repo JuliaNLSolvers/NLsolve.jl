@@ -171,7 +171,7 @@ therefore:
 
 ```jl
 nlsolve(not_in_place(f), initial_x)
-```    
+```
 
 Finite-differencing is used to compute the Jacobian in that case.
 
@@ -235,6 +235,10 @@ nlsolve(df, initial_x)
 ```
 
 If  `g!` conserves the sparsity structure of `gx`, `gx` will always have the same sparsity as `J`. This sometimes allow to write a faster version of `g!`.
+
+# Cache
+
+It is common to repeatedly want to solve a system with for example different initial guesses. If the size of the input is small, the cost of allocating the temporary variables for the algorithm can be expensive. It is therefore possible to create a cache that holds these temporary variables between calls to `nlsolve`. It is created by `NLsolveCache(df, initial_x)` or `NLsolveCache(df, T, len)` where `T` is the type of the initial guess and `len` is it's length.
 
 # Fine tunings
 

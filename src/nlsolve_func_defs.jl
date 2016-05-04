@@ -17,13 +17,14 @@ function nlsolve{T}(df::AbstractDifferentiableMultivariateFunction,
         @printf "Iter     f(x) inf-norm    Step 2-norm \n"
         @printf "------   --------------   --------------\n"
     end
+    cache = NLsolveCache(df, initial_x)
     if method == :newton
         newton(df, initial_x, xtol, ftol, iterations,
-               store_trace, show_trace, extended_trace, linesearch!)
+               store_trace, show_trace, extended_trace, linesearch!, cache)
     elseif method == :trust_region
         trust_region(df, initial_x, xtol, ftol, iterations,
                      store_trace, show_trace, extended_trace, factor,
-                     autoscale)
+                     autoscale, cache)
     else
         throw(ArgumentError("Unknown method $method"))
     end
@@ -61,7 +62,7 @@ function nlsolve{T}(f!::Function,
                  linesearch!::Function = Optim.backtracking_linesearch!,
                  factor::Real = one(T),
                  autoscale::Bool = true,
-                 autodiff::Bool = false)
+                 autodiff::Bool = false,)
     if !autodiff
         df = DifferentiableMultivariateFunction(f!)
     else

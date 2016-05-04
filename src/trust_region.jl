@@ -69,17 +69,21 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
                          show_trace::Bool,
                          extended_trace::Bool,
                          factor::T,
-                         autoscale::Bool)
+                         autoscale::Bool,
+                         cache::NLsolveCache{T})
+
+    x = cache.v1            # Current point
+    xold = cache.v2         # Old point
+    r = cache.v3            # Current residual
+    r_new = cache.v4        # New residual
+    r_predict = cache.v5    # predicted residual
+    p = cache.v6            # Step
+    d2 = cache.v7           # Scaling vector
+    J = cache.fjac          # Jacobian
 
     x = copy(initial_x)     # Current point
+    xold = fill!(xold, convert(T, NaN),) # Old point
     nn = length(x)
-    xold = fill(convert(T, NaN), nn) # Old point
-    r = similar(x)          # Current residual
-    r_new = similar(x)      # New residual
-    r_predict = similar(x)  # predicted residual
-    p = similar(x)          # Step
-    d2 = similar(x)         # Scaling vector
-    J = alloc_jacobian(df, T, nn)    # Jacobian
 
     # Count function calls
     f_calls, g_calls = 0, 0
@@ -183,6 +187,8 @@ function trust_region{T}(df::AbstractDifferentiableMultivariateFunction,
                          show_trace::Bool,
                          extended_trace::Bool,
                          factor::Real,
-                         autoscale::Bool)
-    trust_region_(df, initial_x, convert(T,xtol), convert(T,ftol), iterations, store_trace, show_trace, extended_trace, convert(T,factor), autoscale)
+                         autoscale::Bool,
+                         cache::NLsolveCache{T})
+    trust_region_(df, initial_x, convert(T,xtol), convert(T,ftol), iterations, store_trace,
+                  show_trace, extended_trace, convert(T,factor), autoscale, cache)
 end

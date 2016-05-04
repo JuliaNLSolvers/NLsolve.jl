@@ -22,11 +22,11 @@ Helical Valley-newton                               3      15      10     4.8614
 Helical Valley-newton-AD                            3      15      10     4.861404e-16
 Watson-trust_region                                 6      20      16     2.982250e-13
 Watson-trust_region-AD                              6      20      16     2.903164e-13
-Watson-newton                                       6      23      13     2.310993e-12
+Watson-newton                                       6      23      13     2.307748e-12
 Watson-newton-AD                                    6      23      13     2.311431e-12
 Watson-trust_region                                 9      17      17     1.615243e-12
 Watson-trust_region-AD                              9      17      17     1.651451e-12
-Watson-newton                                       9      25      14     1.157926e-13
+Watson-newton                                       9      25      14     6.751869e-14
 Watson-newton-AD                                    9      25      14     4.562800e-14
 Chebyquad-trust_region                              5       8       5     9.143861e-09
 Chebyquad-trust_region-AD                           5       8       5     9.143861e-09

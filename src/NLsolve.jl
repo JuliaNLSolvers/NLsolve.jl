@@ -14,6 +14,7 @@ import Base.show,
 import Calculus.finite_difference_jacobian!
 
 export DifferentiableMultivariateFunction,
+       NLsolveCache,
        only_f!_and_fg!,
        only_fg!,
        not_in_place,
@@ -33,6 +34,7 @@ show(io::IO, e::IsFiniteException) = print(io,
 
 include("differentiable_functions.jl")
 include("solver_state_results.jl")
+include("cache.jl")
 include("nlsolve_func_defs.jl")
 include("mcp_func_defs.jl")
 include("utils.jl")

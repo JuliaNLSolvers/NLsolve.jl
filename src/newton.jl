@@ -34,19 +34,23 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
                    store_trace::Bool,
                    show_trace::Bool,
                    extended_trace::Bool,
-                   linesearch!::Function)
+                   linesearch!::Function,
+                   cache::NLsolveCache{T})
 
-    x = copy(initial_x)
+    x =  cache.v1
+    xold = cache.v2
+    fvec = cache.v3
+    p = cache.v4
+    g = cache.v5
+    gr = cache.v6
+    fjac = cache.fjac
+
     nn = length(x)
-    xold = fill(convert(T, NaN), nn)
-    fvec = Array(T, nn)
-    fjac = alloc_jacobian(df, T, nn)
 
-    p = Array(T, nn)
-    g = Array(T, nn)
-    gr = Array(T, nn)
+    copy!(x, initial_x)
+    fill!(xold, convert(T, NaN))
 
-    # Count function calls
+    #Count function calls
     f_calls, g_calls = 0, 0
 
     df.fg!(x, fvec, fjac)
@@ -112,7 +116,12 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
         end
 
         try
-            p = fjac\fvec
+            if issparse(fjac) || nn == 1
+                p = fjac \ fvec
+            else
+                copy!(p, fvec)
+                A_ldiv_B!(factorize(fjac), p)
+            end
             scale!(p, -1)
         catch e
             if isa(e, Base.LinAlg.LAPACKException)
@@ -148,6 +157,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
                          f_calls, g_calls)
 end
 
+
 function newton{T}(df::AbstractDifferentiableMultivariateFunction,
                    initial_x::Vector{T},
                    xtol::Real,
@@ -156,6 +166,8 @@ function newton{T}(df::AbstractDifferentiableMultivariateFunction,
                    store_trace::Bool,
                    show_trace::Bool,
                    extended_trace::Bool,
-                   linesearch!::Function)
-    newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch!)
+                   linesearch!::Function,
+                   cache::NLsolveCache{T})
+    newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace,
+            show_trace, extended_trace, linesearch!, cache)
 end
