@@ -66,7 +66,7 @@ function update!(tr::SolverTrace,
 end
 
 type SolverResults{T}
-    method::ASCIIString
+    method::String
     initial_x::Vector{T}
     zero::Vector{T}
     residual_norm::T

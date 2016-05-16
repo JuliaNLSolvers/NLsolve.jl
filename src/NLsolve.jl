@@ -5,6 +5,7 @@ module NLsolve
 using Distances
 using Optim
 using ForwardDiff
+using Compat: String
 
 import Base.show,
        Base.push!,
