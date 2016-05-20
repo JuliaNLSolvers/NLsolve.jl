@@ -47,7 +47,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     gr = Array(T, nn)
 
     # Count function calls
-    f_calls, g_calls = 0, 0
+    f_calls::Int, g_calls::Int = 0, 0
 
     df.fg!(x, fvec, fjac)
     f_calls += 1
