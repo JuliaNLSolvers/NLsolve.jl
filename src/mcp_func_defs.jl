@@ -78,7 +78,7 @@ function mcpsolve{T}(f!::Function,
     if !autodiff
         df = DifferentiableMultivariateFunction(f!)
     else
-        df = NLsolve.autodiff(f!, eltype(initial_x), length(initial_x))
+        df = NLsolve.autodiff(f!, initial_x)
     end
     @reformulate df
     nlsolve(rf,

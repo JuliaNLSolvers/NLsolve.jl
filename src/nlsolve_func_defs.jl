@@ -65,7 +65,7 @@ function nlsolve{T}(f!::Function,
     if !autodiff
         df = DifferentiableMultivariateFunction(f!)
     else
-        df = NLsolve.autodiff(f!, eltype(initial_x), length(initial_x))
+        df = NLsolve.autodiff(f!, initial_x)
     end
     nlsolve(df,
             initial_x, method = method, xtol = xtol, ftol = ftol,
