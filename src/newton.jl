@@ -148,7 +148,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
                          f_calls, g_calls)
 end
 
-function Optim.newton{T}(df::AbstractDifferentiableMultivariateFunction,
+function newton{T}(df::AbstractDifferentiableMultivariateFunction,
                    initial_x::Vector{T},
                    xtol::Real,
                    ftol::Real,

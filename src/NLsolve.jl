@@ -8,7 +8,6 @@ using ForwardDiff
 using Compat
 
 import Compat.String
-import Optim.newton
 
 import Base.show,
        Base.push!,
