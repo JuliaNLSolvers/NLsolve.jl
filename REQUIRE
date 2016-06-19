@@ -1,6 +1,6 @@
 julia 0.4
 Optim
 Calculus
-ForwardDiff 0.1.4 0.2
 Distances
-Compat 0.7.16
+ForwardDiff 0.2.0
+Compat 0.8.0
