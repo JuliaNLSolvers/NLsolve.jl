@@ -369,6 +369,10 @@ julia> fvec
 * Homotopy methods
 * [LMMCP algorithm by C. Kanzow](http://www.mathematik.uni-wuerzburg.de/~kanzow/)
 
+# Related Packages
+
+* [JuMP.jl](https://github.com/JuliaOpt/JuMP.jl) can also solve non linear equations. Just reformulate your problem as an optimization problem with non linear constraints: use the set of equations as constraints, and enter 1.0 as the objective function. JuMP currently supports a number of open-source and commercial solvers.
+
 # References
 
 Nocedal, Jorge and Wright, Stephen J. (2006): "Numerical Optimization", second
