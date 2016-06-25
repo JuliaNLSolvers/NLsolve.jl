@@ -371,7 +371,7 @@ julia> fvec
 
 # Related Packages
 
-* JuMP.jl can also solve non linear equations. To reformulate your problem as an optimization problem with non linear constraint, use the set of equations as constraints, and enter 1.0 as the objective function. JuMP currently supports a number of open-source and commercial solvers.
+* [JuMP.jl](https://github.com/JuliaOpt/JuMP.jl) can also solve non linear equations. Just reformulate your problem as an optimization problem with non linear constraints: use the set of equations as constraints, and enter 1.0 as the objective function. JuMP currently supports a number of open-source and commercial solvers.
 
 # References
 
