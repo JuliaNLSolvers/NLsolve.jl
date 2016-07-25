@@ -9,6 +9,10 @@
 #   MINPACK would test also other initial points which are 10 or 100 times the
 #   original point.
 
+
+# If the results should be printed to a
+const PRINT_FILE = false
+
 @testset "minpack" begin
 
 function rosenbrock()
@@ -494,16 +498,17 @@ alltests = [ rosenbrock(); powell_singular(); powell_badly_scaled(); wood();
 
 TESTS_FAIL_NEWTON = ["Trigonometric"]
 
-f_out = open("minpack_results.dat", "w")
+if PRINT_FILE; f_out = open("minpack_results.dat", "w"); end
 
 @printf("%-45s   %5s   %5s   %5s   %14s     %10s\n", "Function", "Dim", "NFEV",
         "NJEV", "Final inf-norm", "total time")
 println("-"^86)
 
-@printf(f_out, "%-45s   %5s   %5s   %5s   %14s\n", "Function", "Dim", "NFEV",
-        "NJEV", "Final inf-norm")
-println(f_out, "-"^86)
-
+if PRINT_FILE
+    @printf(f_out, "%-45s   %5s   %5s   %5s   %14s\n", "Function", "Dim", "NFEV",
+            "NJEV", "Final inf-norm")
+    println(f_out, "-"^86)
+end
 
 
 for (df, initial, name) in alltests
@@ -515,17 +520,20 @@ for (df, initial, name) in alltests
         @printf("%-45s   %5d   %5d   %5d   %14e   %10e\n", name*"-"*string(method), length(initial),
                 r.f_calls, r.g_calls, r.residual_norm, tot_time)
         @test converged(r)
-        @printf(f_out, "%-45s   %5d   %5d   %5d   %14e\n", name*"-"*string(method), length(initial),
-                r.f_calls, r.g_calls, r.residual_norm)
         # with autodiff
         tot_time = @elapsed r_AD = nlsolve(df.f!, initial, method = method, autodiff = true, linesearch! = Optim.backtracking_linesearch!)
         @printf("%-45s   %5d   %5d   %5d   %14e   %10e\n", name*"-"*string(method)*"-AD",
                 length(initial), r_AD.f_calls, r_AD.g_calls, r_AD.residual_norm, tot_time)
-        @printf(f_out, "%-45s   %5d   %5d   %5d   %14e\n", name*"-"*string(method)*"-AD", length(initial),
-                r_AD.f_calls, r_AD.g_calls, r_AD.residual_norm)
+        if PRINT_FILE
+            @printf(f_out, "%-45s   %5d   %5d   %5d   %14e\n", name*"-"*string(method)*"-AD", length(initial),
+                    r_AD.f_calls, r_AD.g_calls, r_AD.residual_norm)
+            @printf(f_out, "%-45s   %5d   %5d   %5d   %14e\n", name*"-"*string(method), length(initial),
+                    r.f_calls, r.g_calls, r.residual_norm)
+        end
         @test converged(r_AD)
     end
 end
-close(f_out)
+
+if PRINT_FILE; close(f_out); end
 
 end
