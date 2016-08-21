@@ -372,6 +372,7 @@ julia> fvec
 # Related Packages
 
 * [JuMP.jl](https://github.com/JuliaOpt/JuMP.jl) can also solve non linear equations. Just reformulate your problem as an optimization problem with non linear constraints: use the set of equations as constraints, and enter 1.0 as the objective function. JuMP currently supports a number of open-source and commercial solvers.
+* [Complementarity.jl](https://github.com/chkwon/Complementarity.jl) brings the powerful modeling language of JuMP.jl to complementarity problems. It supports two solvers: [PATHSolver.jl](https://github.com/chkwon/PATHSolver.jl) and NLsolve.jl.
 
 # References
 
