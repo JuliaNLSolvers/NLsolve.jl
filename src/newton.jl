@@ -41,6 +41,10 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     xold = fill(convert(T, NaN), nn)
     fvec = Array(T, nn)
     fjac = alloc_jacobian(df, T, nn)
+    Tjac = typeof(fjac)
+    if Tjac <: StridedVecOrMat
+        lujac = alloc_jacobian(df, T, nn)
+    end
 
     p = Array(T, nn)
     g = Array(T, nn)
@@ -112,15 +116,21 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
         end
 
         try
-            p = fjac\fvec
+            if Tjac <: StridedVecOrMat
+                copy!(p, fvec)
+                copy!(lujac, fjac)
+                A_ldiv_B!(lufact!(lujac), p)
+            else
+                p = fjac \ fvec
+            end
             scale!(p, -1)
         catch e
             if isa(e, Base.LinAlg.LAPACKException)
                 # Modify the search direction if the jacobian is singular
                 # FIXME: better selection for lambda, see Nocedal & Wright p. 289
-                fjac2 = fjac'*fjac
+                fjac2 = Ac_mul_B(fjac, fjac)
                 lambda = convert(T,1e6)*sqrt(nn*eps())*norm(fjac2, 1)
-                g = fjac'*fvec
+                g = Ac_mul_B(fjac, fvec)
                 p = -(fjac2 + lambda*eye(nn))\g
             else
                 throw(e)
