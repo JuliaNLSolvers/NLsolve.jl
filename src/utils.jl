@@ -40,3 +40,27 @@ function check_isfinite(x::Vector)
         throw(IsFiniteException(i))
     end
 end
+
+
+function n_ary(f)
+    f!(x::Vector, fx::AbstractArray) = copy!(fx, [f(x...)... ])
+end
+
+function not_in_place(f)
+    f!(x::Vector, y::AbstractArray) = copy!(y, f(x))
+end
+
+function not_in_place(f, g)
+    depwarn("nlsolve(not_in_place(f, g), args...) is deprecated. Use nlsolve(not_in_place(f), not_in_place(g), args...)")
+    DifferentiableMultivariateFunction(not_in_place(f), not_in_place(g))
+end
+
+function not_in_place(f, g, fg)
+    depwarn("nlsolve(not_in_place(f, g, fg), args...) is deprecated. Use nlsolve(not_in_place(f), not_in_place(g), args...)")
+    function fg!(x::Vector, fx::Vector, gx::Array)
+        (fvec, fjac) = fg(x)
+        copy!(fx, fvec)
+        copy!(gx, fjac)
+    end
+    DifferentiableMultivariateFunction(not_in_place(f), not_in_place(g), fg!)
+end
