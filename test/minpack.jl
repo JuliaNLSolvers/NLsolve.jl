@@ -497,6 +497,7 @@ alltests = [ rosenbrock(); powell_singular(); powell_badly_scaled(); wood();
             broyden_tridiagonal(10); broyden_banded(10) ]
 
 TESTS_FAIL_NEWTON = ["Trigonometric"]
+TESTS_FAIL_BROYDEN = ["Trigonometric", "Brown almost-linear", "Wood"]
 
 if PRINT_FILE; f_out = open("minpack_results.dat", "w"); end
 
@@ -512,8 +513,10 @@ end
 
 
 for (df, initial, name) in alltests
-    for method in (:trust_region, :newton)
+    for method in (:trust_region, :newton, :broyden)
         if method == :newton && name in TESTS_FAIL_NEWTON
+            continue
+        elseif method == :broyden && name in TESTS_FAIL_BROYDEN
             continue
         end
         tot_time = @elapsed r = nlsolve(df, initial, method = method, linesearch! = Optim.backtracking_linesearch!)
