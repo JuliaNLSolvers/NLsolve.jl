@@ -6,7 +6,7 @@ using Distances
 using Optim
 using ForwardDiff
 using Compat
-
+import Compat.view
 import Compat.String
 
 import Base.show,
