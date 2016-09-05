@@ -87,9 +87,9 @@ function broyden_{T}(df::AbstractDifferentiableMultivariateFunction,
             catch e
                 if isa(e, Base.LinAlg.LAPACKException)
                     fjac2 = Ac_mul_B(fjac, fjac)
-                    lambda = convert(T,1e6)*sqrt(nn*eps())*norm(fjac2, 1)
+                    lambda = convert(T, 1e6) * sqrt(nn * eps()) * norm(fjac2, 1)
                     g = Ac_mul_B(fjac, fvec)
-                    p = (fjac2 + lambda*eye(nn))\g
+                    p = (fjac2 + lambda * eye(nn)) \ g
                     scale!(p, -1)
                 else
                     throw(e)
@@ -106,7 +106,7 @@ function broyden_{T}(df::AbstractDifferentiableMultivariateFunction,
             d = dot(p, minvjΔf)
             Base.axpy!(1.0, p, minvjΔf)
             scale!(minvjΔf, - 1 / d)
-            A_mul_Bt!(scaleinvfjac, minvjΔf , p)
+            A_mul_Bc!(scaleinvfjac, minvjΔf , p)
             for i in 1:size(scaleinvfjac, 2)
                 scaleinvfjac[i, i] += 1.0
             end
