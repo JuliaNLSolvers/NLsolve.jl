@@ -176,9 +176,11 @@ nlsolve(not_in_place(f), initial_x)
 Finite-differencing is used to compute the Jacobian in that case.
 
 If, in addition, there is a function `g(x::Vector)` returning a newly-allocated
-matrix containing the Jacobian, it can be passed as a second argument to
-`not_in_place`. Similarly, you can pass as a third argument a function
-`fg(x::Vector)` returning a pair consisting of the residuals and the Jacobian.
+matrix containing the Jacobian, 
+
+```jl
+nlsolve(not_in_place(f), not_in_place(g), initial_x)
+```
 
 ## With functions taking several scalar arguments
 
