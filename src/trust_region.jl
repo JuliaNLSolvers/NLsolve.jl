@@ -102,7 +102,7 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
 
     if autoscale
         for j = 1:nn
-            d2[j] = sumabs2j(J, j)
+            d2[j] = sumabs2(view(J, :, j))
             if d2[j] == zero(T)
                 d2[j] = one(T)
             end
@@ -142,7 +142,7 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
             # Update scaling vector
             if autoscale
                 for j = 1:nn
-                    d2[j] = max(convert(T, 0.01) * d2[j], sumabs2j(J, j))
+                    d2[j] = max(convert(T, 0.01) * d2[j], sumabs2(view(J, :, j)))
                 end
             end
 
