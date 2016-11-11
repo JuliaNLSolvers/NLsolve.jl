@@ -16,10 +16,10 @@ function mcp_smooth(df::AbstractDifferentiableMultivariateFunction,
     function f!(x::Vector, fx::Vector)
         df.f!(x, fx)
         for i = 1:length(x)
-            if isfinite.(upper[i])
+            if @compat isfinite.(upper[i])
                 fx[i] += (x[i]-upper[i]) + sqrt(fx[i]^2+(x[i]-upper[i])^2)
             end
-            if isfinite.(lower[i])
+            if @compat isfinite.(lower[i])
                 fx[i] += (x[i]-lower[i]) - sqrt(fx[i]^2+(x[i]-lower[i])^2)
             end
         end
@@ -36,7 +36,7 @@ function mcp_smooth(df::AbstractDifferentiableMultivariateFunction,
 
         dplus_dv = similar(x)
         for i = 1:length(x)
-            if isfinite.(upper[i])
+            if @compat isfinite.(upper[i])
                 dplus_dv[i] = 1 + (x[i]-upper[i])/sqplus[i]
             else
                 dplus_dv[i] = 0
@@ -57,7 +57,7 @@ function mcp_smooth(df::AbstractDifferentiableMultivariateFunction,
 
         dminus_dv = similar(x)
         for i = 1:length(x)
-            if isfinite.(lower[i])
+            if @compat isfinite.(lower[i])
                 dminus_dv[i] = 1 - (x[i]-lower[i])/sqminus[i]
             else
                 dminus_dv[i] = 0
