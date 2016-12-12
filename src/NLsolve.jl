@@ -3,6 +3,7 @@ VERSION >= v"0.4.0-dev+6521" && __precompile__()
 module NLsolve
 
 using Distances
+using LineSearches
 using Optim
 using ForwardDiff
 using Compat

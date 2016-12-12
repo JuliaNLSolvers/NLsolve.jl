@@ -36,20 +36,20 @@ r = nlsolve(df, [ -0.5f0; 1.4f0], method = :trust_region, autoscale = false)
 @test norm(r.zero - [ 0; 1]) < 1e-8
 
 # Test Newton
-r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch! = Optim.backtracking_linesearch!, ftol = 1e-6)
+r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch! = LineSearches.backtracking!, ftol = 1e-6)
 @test converged(r)
 @test norm(r.zero - [ 0; 1]) < 1e-6
-r = nlsolve(df, [ -0.5f0; 1.4f0], method = :newton, linesearch! = Optim.backtracking_linesearch!, ftol = 1e-3)
+r = nlsolve(df, [ -0.5f0; 1.4f0], method = :newton, linesearch! = LineSearches.backtracking!, ftol = 1e-3)
 @test eltype(r.zero) == Float32
 @test converged(r)
 @test norm(r.zero - [ 0; 1]) < 1e-6
 
 
 # Tests of other lineasearches are disabled, they are not stable across runs
-#r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch! = Optim.hz_linesearch!, ftol = 1e-6)
+#r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch! = LineSearches.hz_linesearch!, ftol = 1e-6)
 #@test converged(r)
 #@test norm(r.zero - [ 0; 1]) < 1e-6
-#r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch! = Optim.interpolating_linesearch!, ftol = 1e-6)
+#r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch! = LineSearches.interpolating_linesearch!, ftol = 1e-6)
 #@test converged(r)
 #@test norm(r.zero - [ 0; 1]) < 1e-6
 end
