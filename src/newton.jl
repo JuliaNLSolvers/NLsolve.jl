@@ -7,7 +7,7 @@ function no_linesearch!(dfo, xold, p, x, gr, lsr, alpha, mayterminate)
 end
 
 macro newtontrace(stepnorm)
-    quote
+    esc(quote
         if tracing
             dt = Dict()
             if extended_trace
@@ -23,7 +23,7 @@ macro newtontrace(stepnorm)
                     store_trace,
                     show_trace)
         end
-    end
+    end)
 end
 
 function newton_{T}(df::AbstractDifferentiableMultivariateFunction,

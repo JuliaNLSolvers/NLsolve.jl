@@ -1,5 +1,5 @@
 macro trustregiontrace(stepnorm)
-    quote
+    esc(quote
         if tracing
             dt = Dict()
             if extended_trace
@@ -17,7 +17,7 @@ macro trustregiontrace(stepnorm)
                     store_trace,
                     show_trace)
         end
-    end
+    end)
 end
 
 function dogleg!{T}(p::Vector{T}, r::Vector{T}, d2::Vector{T}, J::AbstractMatrix{T}, delta::Real)
@@ -42,7 +42,7 @@ function dogleg!{T}(p::Vector{T}, r::Vector{T}, d2::Vector{T}, J::AbstractMatrix
     else
         p_c = At_mul_B(J, r) # Gradient direction
         broadcast!(/, p_c, p_c, d2)
-        scale!(p_c, - wnorm(d2, p_c)^2 / sumabs2(J * p_c)) # Cauchy point
+        scale!(p_c, - wnorm(d2, p_c)^2 / sum(abs2,J * p_c)) # Cauchy point
         if wnorm(d2, p_c) >= delta
             # Cauchy point is out of the region, take the largest step along
             # gradient direction
@@ -102,7 +102,7 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
 
     if autoscale
         for j = 1:nn
-            d2[j] = sumabs2(view(J, :, j))
+            d2[j] = sum(abs2,view(J, :, j))
             if d2[j] == zero(T)
                 d2[j] = one(T)
             end
@@ -131,7 +131,7 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
         # Ratio of actual to predicted reduction
         A_mul_B!(r_predict, J, p)
         Base.BLAS.axpy!(one(T), r, r_predict)
-        rho = (sumabs2(r) - sumabs2(r_new)) / (sumabs2(r) - sumabs2(r_predict))
+        rho = (sum(abs2,r) - sum(abs2,r_new)) / (sum(abs2,r) - sum(abs2,r_predict))
 
         if rho > eta
             # Successful iteration
@@ -142,7 +142,7 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
             # Update scaling vector
             if autoscale
                 for j = 1:nn
-                    d2[j] = max(convert(T, 0.01) * d2[j], sumabs2(view(J, :, j)))
+                    d2[j] = max(convert(T, 0.01) * d2[j], sum(abs2,view(J, :, j)))
                 end
             end
 
