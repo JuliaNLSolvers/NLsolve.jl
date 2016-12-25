@@ -24,7 +24,7 @@ r = nlsolve(df, [ -0.5; 1.4], method = :trust_region, autoscale = true)
 @test norm(r.zero - [ 0; 1]) < 1e-8
 
 # Test Newton
-r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch! = Optim.backtracking_linesearch!, ftol = 1e-6)
+r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch! = LineSearches.backtracking!, ftol = 1e-6)
 @test converged(r)
 @test norm(r.zero - [ 0; 1]) < 1e-6
 

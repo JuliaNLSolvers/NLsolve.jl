@@ -62,7 +62,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     mayterminate = false
 
     # Maintain a cache for line search results
-    lsr = Optim.LineSearchResults(T)
+    lsr = LineSearches.LineSearchResults(T)
 
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
@@ -129,7 +129,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
 
         copy!(xold, x)
 
-        Optim.clear!(lsr)
+        LineSearches.clear!(lsr)
         push!(lsr, zero(T), dot(fvec,fvec)/2, dot(g, p))
 
         alpha, f_calls_update, g_calls_update =

@@ -24,7 +24,7 @@ function mcpsolve{T}(df::AbstractDifferentiableMultivariateFunction,
                   store_trace::Bool = false,
                   show_trace::Bool = false,
                   extended_trace::Bool = false,
-                  linesearch!::Function = Optim.backtracking_linesearch!,
+                  linesearch!::Function = LineSearches.backtracking!,
                   factor::Real = one(T),
                   autoscale::Bool = true)
     @reformulate df
@@ -48,7 +48,7 @@ function mcpsolve{T}(f!::Function,
                   store_trace::Bool = false,
                   show_trace::Bool = false,
                   extended_trace::Bool = false,
-                  linesearch!::Function = Optim.backtracking_linesearch!,
+                  linesearch!::Function = LineSearches.backtracking!,
                   factor::Real = one(T),
                   autoscale::Bool = true)
     @reformulate DifferentiableMultivariateFunction(f!, g!)
@@ -71,7 +71,7 @@ function mcpsolve{T}(f!::Function,
                   store_trace::Bool = false,
                   show_trace::Bool = false,
                   extended_trace::Bool = false,
-                  linesearch!::Function = Optim.backtracking_linesearch!,
+                  linesearch!::Function = LineSearches.backtracking!,
                   factor::Real = one(T),
                   autoscale::Bool = true,
                   autodiff::Bool = false)
