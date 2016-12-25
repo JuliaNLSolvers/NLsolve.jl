@@ -271,6 +271,13 @@ the `Optim` package, and are: `Optim.backtracking_linesearch!`,
 **Note:** it is assumed that a passed linesearch function will at least update the solution
 vector and evaluate the function at the new point.
 
+## Broyden Method
+
+Quasi Newton algorithm where the Jacobian is updated at each iteration using the Sherman-Morrison formula.
+
+This method is selected with `method = :broyden`.
+
+
 ## Common options
 
 Other optional arguments to `nlsolve`, available for all algorithms, are:
