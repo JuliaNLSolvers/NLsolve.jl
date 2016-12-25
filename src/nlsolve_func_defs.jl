@@ -20,6 +20,9 @@ function nlsolve{T}(df::AbstractDifferentiableMultivariateFunction,
     if method == :newton
         newton(df, initial_x, xtol, ftol, iterations,
                store_trace, show_trace, extended_trace, linesearch!)
+    elseif method == :broyden
+        broyden(df, initial_x, xtol, ftol, iterations,
+               store_trace, show_trace, extended_trace)
     elseif method == :trust_region
         trust_region(df, initial_x, xtol, ftol, iterations,
                      store_trace, show_trace, extended_trace, factor,
