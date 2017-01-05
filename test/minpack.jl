@@ -486,15 +486,29 @@ function broyden_banded(n::Integer)
     (DifferentiableMultivariateFunction(f!, g!), -ones(n), "Broyden banded")
 end
 
-alltests = [ rosenbrock(); powell_singular(); powell_badly_scaled(); wood();
-            helical_valley(); watson(6); watson(9);
-            chebyquad(5); chebyquad(6); chebyquad(7); #chebyquad(8);
-            chebyquad(9);
-            brown_almost_linear(10); brown_almost_linear(30); brown_almost_linear(40);
-            #discrete_boundary_value(10);
-            discrete_integral_equation(1); discrete_integral_equation(10);
-            trigonometric(10); variably_dimensioned(10);
-            broyden_tridiagonal(10); broyden_banded(10) ]
+alltests = [rosenbrock();
+            powell_singular();
+            powell_badly_scaled();
+            wood();
+            helical_valley();
+            watson(6);
+            watson(9);
+            chebyquad(5);
+            chebyquad(6);
+            chebyquad(7);
+            #chebyquad(8);
+            #chebyquad(9);
+            brown_almost_linear(10);
+            brown_almost_linear(30);
+            #brown_almost_linear(40);
+            discrete_boundary_value(10);
+            #discrete_integral_equation(1);
+            #discrete_integral_equation(10);
+            trigonometric(10);
+            variably_dimensioned(10);
+            broyden_tridiagonal(10);
+            broyden_banded(10);
+           ]
 
 TESTS_FAIL_NEWTON = ["Trigonometric"]
 
