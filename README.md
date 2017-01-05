@@ -266,8 +266,8 @@ This method is selected with `method = :newton`.
 
 This method accepts a custom parameter `linesearch!`, which must be equal to a
 function computing the linesearch. Currently, available values are taken from
-the `Optim` package, and are: `Optim.backtracking_linesearch!`,
-`Optim.hz_linesearch!`, `Optim.interpolating_linesearch!`. By default, no linesearch is performed.
+the [`LineSearches`](https://github.com/anriseth/LineSearches.jl) package.
+By default, no linesearch is performed.
 **Note:** it is assumed that a passed linesearch function will at least update the solution
 vector and evaluate the function at the new point.
 

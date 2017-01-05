@@ -112,6 +112,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
         end
 
         try
+            At_mul_B!(g, fjac, fvec)
             p = fjac\fvec
             scale!(p, -1)
         catch e
@@ -120,7 +121,6 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
                 # FIXME: better selection for lambda, see Nocedal & Wright p. 289
                 fjac2 = fjac'*fjac
                 lambda = convert(T,1e6)*sqrt(nn*eps())*norm(fjac2, 1)
-                g = fjac'*fvec
                 p = -(fjac2 + lambda*eye(nn))\g
             else
                 throw(e)
