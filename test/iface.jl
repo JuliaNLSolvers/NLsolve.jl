@@ -52,14 +52,14 @@ r = nlsolve(only_fg!(fg!), [ -0.5; 1.4])
 # Using functions returning their output
 
 function f(x)
-    fvec = Array(eltype(x), 2)
+    fvec = Array{eltype(x)}(2)
     fvec[1] = (x[1]+3)*(x[2]^3-7)+18
     fvec[2] = sin(x[2]*exp(x[1])-1)
     return(fvec)
 end
 
 function g(x)
-    fjac = Array(eltype(x), 2, 2)
+    fjac = Array{eltype(x)}(2, 2)
     fjac[1, 1] = x[2]^3-7
     fjac[1, 2] = 3*x[2]^2*(x[1]+3)
     u = exp(x[1])*cos(x[2]*exp(x[1])-1)
@@ -69,8 +69,8 @@ function g(x)
 end
 
 function fg(x)
-    fvec = Array(eltype(x), 2)
-    fjac = Array(eltype(x), 2, 2)
+    fvec = Array{eltype(x}(2)
+    fjac = Array{eltype(x}(2, 2)
     fvec[1] = (x[1]+3)*(x[2]^3-7)+18
     fvec[2] = sin(x[2]*exp(x[1])-1)
     fjac[1, 1] = x[2]^3-7

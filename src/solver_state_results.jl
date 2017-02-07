@@ -17,7 +17,7 @@ immutable SolverTrace
     states::Vector{SolverState}
 end
 
-SolverTrace() = SolverTrace(Array(SolverState, 0))
+SolverTrace() = SolverTrace(Array{SolverState}(0))
 
 function Base.show(io::IO, t::SolverState)
     @printf io "%6d   %14e   %14e\n" t.iteration t.fnorm t.stepnorm
