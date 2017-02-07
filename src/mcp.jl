@@ -30,7 +30,7 @@ function mcp_smooth(df::AbstractDifferentiableMultivariateFunction,
         df.fg!(x, fx, gx)
 
         # Derivatives of phiplus
-        sqplus = sqrt(fx.^2+(x-upper).^2)
+        sqplus = @compat sqrt.(fx.^2 .+ (x .- upper).^2)
 
         dplus_du = 1 + fx./sqplus
 
@@ -51,7 +51,7 @@ function mcp_smooth(df::AbstractDifferentiableMultivariateFunction,
             end
         end
 
-        sqminus = sqrt(phiplus.^2+(x-lower).^2)
+        sqminus = @compat sqrt.(phiplus.^2 .+ (x .- lower).^2)
 
         dminus_du = 1-phiplus./sqminus
 

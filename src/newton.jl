@@ -39,12 +39,12 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     x = copy(initial_x)
     nn = length(x)
     xold = fill(convert(T, NaN), nn)
-    fvec = Array(T, nn)
+    fvec = Array{T}(nn)
     fjac = alloc_jacobian(df, T, nn)
 
-    p = Array(T, nn)
-    g = Array(T, nn)
-    gr = Array(T, nn)
+    p = Array{T}(nn)
+    g = Array{T}(nn)
+    gr = Array{T}(nn)
 
     # Count function calls
     f_calls::Int, g_calls::Int = 0, 0

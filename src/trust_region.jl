@@ -11,7 +11,7 @@ macro trustregiontrace(stepnorm)
             end
             update!(tr,
                     it,
-                    maximum(abs(r)),
+                    maximum(abs, r),
                     $stepnorm,
                     dt,
                     store_trace,
