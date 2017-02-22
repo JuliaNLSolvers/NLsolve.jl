@@ -6,11 +6,11 @@ immutable SolverState{T}
 end
 
 function SolverState(i::Integer, fnorm::Real)
-    SolverState(int(i), fnorm, oftype(fnorm, NaN), Dict())
+    SolverState(Int(i), fnorm, oftype(fnorm, NaN), Dict())
 end
 
 function SolverState{T<:Real}(i::Integer, fnorm::T, stepnorm::T)
-    SolverState(int(i), fnorm, stepnorm, Dict())
+    SolverState(Int(i), fnorm, stepnorm, Dict())
 end
 
 immutable SolverTrace
