@@ -1,7 +1,7 @@
 NLsolve.jl
 ==========
 
-[![Build Status](https://travis-ci.org/EconForge/NLsolve.jl.svg?branch=master)](https://travis-ci.org/EconForge/NLsolve.jl)
+[![Build Status](https://travis-ci.org/JuliaNLSolvers/NLsolve.jl.svg?branch=master)](https://travis-ci.org/JuliaNLSolvers/NLsolve.jl)
 
 The NLsolve package solves systems of nonlinear equations. Formally, if `f` is
 a multivariate function, then this package looks for some vector `x` that
@@ -14,7 +14,7 @@ further below for a formal definition and the related commands.
 
 Since there is some overlap between optimizers and nonlinear solvers, this
 package borrows some ideas from the
-[Optim](https://github.com/JuliaOpt/Optim.jl) package, and depends on it for
+[Optim](https://github.com/JuliaNLSolvers/Optim.jl) package, and depends on it for
 linesearch algorithms.
 
 # Simple example
@@ -266,7 +266,7 @@ This method is selected with `method = :newton`.
 
 This method accepts a custom parameter `linesearch!`, which must be equal to a
 function computing the linesearch. Currently, available values are taken from
-the [`LineSearches`](https://github.com/anriseth/LineSearches.jl) package.
+the [`LineSearches`](https://github.com/JuliaNLSolvers/LineSearches.jl) package.
 By default, no linesearch is performed.
 **Note:** it is assumed that a passed linesearch function will at least update the solution
 vector and evaluate the function at the new point.
