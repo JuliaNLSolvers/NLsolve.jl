@@ -52,14 +52,14 @@ r = nlsolve(only_fg!(fg!), [ -0.5; 1.4])
 # Using functions returning their output
 
 function f(x)
-    fvec = Array(Float64, 2)
+    fvec = Array(eltype(x), 2)
     fvec[1] = (x[1]+3)*(x[2]^3-7)+18
     fvec[2] = sin(x[2]*exp(x[1])-1)
     return(fvec)
 end
 
 function g(x)
-    fjac = Array(Float64, 2, 2)
+    fjac = Array(eltype(x), 2, 2)
     fjac[1, 1] = x[2]^3-7
     fjac[1, 2] = 3*x[2]^2*(x[1]+3)
     u = exp(x[1])*cos(x[2]*exp(x[1])-1)
@@ -69,8 +69,8 @@ function g(x)
 end
 
 function fg(x)
-    fvec = Array(Float64, 2)
-    fjac = Array(Float64, 2, 2)
+    fvec = Array(eltype(x), 2)
+    fjac = Array(eltype(x), 2, 2)
     fvec[1] = (x[1]+3)*(x[2]^3-7)+18
     fvec[2] = sin(x[2]*exp(x[1])-1)
     fjac[1, 1] = x[2]^3-7
@@ -84,7 +84,10 @@ end
 r = nlsolve(not_in_place(f), [ -0.5; 1.4])
 @test converged(r)
 
-r = nlsolve(not_in_place(f, g), [ -0.5; 1.4])
+r = nlsolve(not_in_place(f), [ -0.5; 1.4], autodiff = true)
+@test converged(r)
+
+r = nlsolve(not_in_place(f), not_in_place(g), [ -0.5; 1.4])
 @test converged(r)
 
 r = nlsolve(not_in_place(f, g, fg), [ -0.5; 1.4])
@@ -100,6 +103,8 @@ function f(x, y)
 end
 
 r = nlsolve(n_ary(f), [ -0.5; 1.4])
+@test converged(r)
+r = nlsolve(n_ary(f), [ -0.5; 1.4], autodiff = true)
 @test converged(r)
 
 end
