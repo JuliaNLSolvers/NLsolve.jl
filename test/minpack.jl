@@ -559,12 +559,12 @@ for (df, initial, name) in alltests
         continue
     end
 
-    tot_time = @elapsed r = lmmcp(df, lb, ub, initial)
+    tot_time = @elapsed r = mcpsolve(df, lb, ub, initial; method=:lm)
     @printf("%-45s   %5d   %5d   %5d   %14e   %10e\n", name*"-"*string(method), length(initial),
             r.f_calls, r.g_calls, r.residual_norm, tot_time)
     @test converged(r)
     # with autodiff
-    tot_time = @elapsed r_AD = lmmcp(NLsolve.autodiff(df.f!, initial), lb, ub, initial)
+    tot_time = @elapsed r_AD = mcpsolve(df.f!, lb, ub, initial, autodiff=true, method=:lm)
     @printf("%-45s   %5d   %5d   %5d   %14e   %10e\n", name*"-"*string(method)*"-AD",
             length(initial), r_AD.f_calls, r_AD.g_calls, r_AD.residual_norm, tot_time)
     if PRINT_FILE

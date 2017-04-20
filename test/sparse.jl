@@ -39,7 +39,7 @@ r = mcpsolve(df, [-Inf;-Inf], [Inf; Inf], [-0.5; 1.4], reformulation = :minmax)
 @test norm(r.zero - [ 0; 1]) < 1e-8
 
 # Test lmmcp solver
-r = lmmcp(df, [-Inf;-Inf], [Inf; Inf], [-0.5; 1.4])
+r = mcpsolve(df, [-Inf;-Inf], [Inf; Inf], [-0.5; 1.4], method=:lm)
 @test converged(r)
 @test norm(r.zero - [ 0; 1]) < 1e-8
 

@@ -10,7 +10,7 @@
     kwatch::Int = 20  # maximum number of steps
     λ1::Float64 = 0.1
     λ2::Float64 = 1 - λ1
-    maxit::Int = 500
+    iterations::Int = 500
     null::Float64 = 1e-10
     preprocess::Bool = true
     presteps::Int = 20
@@ -30,7 +30,7 @@ function lmmcp{T}(df::AbstractDifferentiableMultivariateFunction, lb, ub, x0::Ab
                kwargs...)
     # process/unpack options
     opts = LMMCPOptions(;kwargs...)
-    @unpack ϵ1, null, Big, maxit, β, σ, tmin, m, kwatch, η = opts
+    @unpack ϵ1, null, Big, iterations, β, σ, tmin, m, kwatch, η = opts
     @unpack watchdog, preprocess, presteps, δ, δmin, σ1, σ2, verbosity = opts
     ϵ2 = 0.5 * opts.ftol * opts.ftol
 
@@ -201,7 +201,7 @@ function lmmcp{T}(df::AbstractDifferentiableMultivariateFunction, lb, ub, x0::Ab
         println("************************** Main program ****************************")
     end
 
-    while (k < maxit) && (Psix > ϵ2)
+    while (k < iterations) && (Psix > ϵ2)
         # choice of Levenberg-Marquardt parameter, note that we do not use
         # the condition estimator for large-scale problems, although this
         # may cause numerical problems in some examples
@@ -288,7 +288,7 @@ function lmmcp{T}(df::AbstractDifferentiableMultivariateFunction, lb, ub, x0::Ab
     end
 
     return SolverResults(
-        "LMMCP", x0, x, norm(Phix, Inf), k, false, 0.0, k < maxit, ϵ2,
+        "LMMCP", x0, x, norm(Phix, Inf), k, false, 0.0, k < iterations, ϵ2,
         SolverTrace(), f_calls, g_calls
     )
 
