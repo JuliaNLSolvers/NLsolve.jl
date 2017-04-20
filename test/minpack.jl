@@ -548,6 +548,35 @@ for (df, initial, name) in alltests
     end
 end
 
+TESTS_FAIL_LMMCP = ["Chebyquad", "Brown almost-linear"]
+
+for (df, initial, name) in alltests
+    method = "lmmcp"
+    lb = fill(-Inf, length(initial))
+    ub = fill(Inf, length(initial))
+
+    if name in TESTS_FAIL_LMMCP
+        continue
+    end
+
+    tot_time = @elapsed r = lmmcp(df, lb, ub, initial)
+    @printf("%-45s   %5d   %5d   %5d   %14e   %10e\n", name*"-"*string(method), length(initial),
+            r.f_calls, r.g_calls, r.residual_norm, tot_time)
+    @test converged(r)
+    # with autodiff
+    tot_time = @elapsed r_AD = lmmcp(NLsolve.autodiff(df.f!, initial), lb, ub, initial)
+    @printf("%-45s   %5d   %5d   %5d   %14e   %10e\n", name*"-"*string(method)*"-AD",
+            length(initial), r_AD.f_calls, r_AD.g_calls, r_AD.residual_norm, tot_time)
+    if PRINT_FILE
+        @printf(f_out, "%-45s   %5d   %5d   %5d   %14e\n", name*"-"*string(method)*"-AD", length(initial),
+                r_AD.f_calls, r_AD.g_calls, r_AD.residual_norm)
+        @printf(f_out, "%-45s   %5d   %5d   %5d   %14e\n", name*"-"*string(method), length(initial),
+                r.f_calls, r.g_calls, r.residual_norm)
+    end
+    @test converged(r_AD)
+
+end
+
 if PRINT_FILE; close(f_out); end
 
 end

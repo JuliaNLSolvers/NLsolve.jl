@@ -38,6 +38,11 @@ r = mcpsolve(df, [-Inf;-Inf], [Inf; Inf], [-0.5; 1.4], reformulation = :minmax)
 @test converged(r)
 @test norm(r.zero - [ 0; 1]) < 1e-8
 
+# Test lmmcp solver
+r = lmmcp(df, [-Inf;-Inf], [Inf; Inf], [-0.5; 1.4])
+@test converged(r)
+@test norm(r.zero - [ 0; 1]) < 1e-8
+
 # Test given sparse
 df = DifferentiableGivenSparseMultivariateFunction(f_sparse!, g_sparse!, spzeros(2, 2))
 r = nlsolve(df, [ -0.5; 1.4], method = :trust_region, autoscale = true)

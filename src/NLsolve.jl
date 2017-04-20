@@ -7,6 +7,7 @@ using LineSearches
 using Optim
 using ForwardDiff
 using Compat
+using Parameters
 import Compat.view
 import Compat.String
 
@@ -26,6 +27,7 @@ export DifferentiableMultivariateFunction,
        DifferentiableGivenSparseMultivariateFunction,
        nlsolve,
        mcpsolve,
+       lmmcp,
        converged
 
 type IsFiniteException <: Exception
@@ -44,5 +46,6 @@ include("newton.jl")
 include("trust_region.jl")
 include("autodiff.jl")
 include("mcp.jl")
+include("lmmcp.jl")
 
 end # module
