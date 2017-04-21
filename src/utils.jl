@@ -6,7 +6,13 @@ function wdot{T}(w::Vector{T}, x::Vector{T}, y::Vector{T})
     return out
 end
 
-wnorm{T}(w::Vector{T}, x::Vector{T}) = sqrt(wdot(w, x, x))
+function wnorm{T}(w::AbstractVector{T}, x::AbstractVector{T})
+    out = zero(T)
+    @inbounds @simd for i in eachindex(w)
+        out += (w[i] * x[i])^2
+    end
+    sqrt(out)
+end
 
 function assess_convergence(x::Vector,
                             x_previous::Vector,
@@ -57,4 +63,3 @@ end
 function n_ary(f::Function)
     f!(x::Vector, fx::AbstractArray) = copy!(fx, [f(x...)... ])
 end
-
