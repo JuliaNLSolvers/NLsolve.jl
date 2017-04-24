@@ -511,6 +511,7 @@ alltests = [rosenbrock();
            ]
 
 TESTS_FAIL_NEWTON = ["Trigonometric", "Chebyquad", "Brown almost-linear"]
+TESTS_FAIL_DFSANE = ["Chebyquad", "Powell singular", "Helical Valley", "Watson", "Powell badly scaled"]
 
 if PRINT_FILE; f_out = open("minpack_results.dat", "w"); end
 
@@ -526,8 +527,11 @@ end
 
 
 for (df, initial, name) in alltests
-    for method in (:trust_region, :newton)
+    for method in (:trust_region, :newton, :df_sane)
         if method == :newton && name in TESTS_FAIL_NEWTON
+            continue
+        end
+        if method == :df_sane && name in TESTS_FAIL_DFSANE
             continue
         end
         tot_time = @elapsed r = nlsolve(df, initial, method = method)
@@ -535,6 +539,7 @@ for (df, initial, name) in alltests
                 r.f_calls, r.g_calls, r.residual_norm, tot_time)
         @test converged(r)
         # with autodiff
+        method == :df_sane && continue  # don't need jac for df_sane
         tot_time = @elapsed r_AD = nlsolve(df.f!, initial, method = method, autodiff = true)
         @printf("%-45s   %5d   %5d   %5d   %14e   %10e\n", name*"-"*string(method)*"-AD",
                 length(initial), r_AD.f_calls, r_AD.g_calls, r_AD.residual_norm, tot_time)

@@ -7,6 +7,7 @@ using LineSearches
 using Optim
 using ForwardDiff
 using Compat
+using DataStructures
 import Compat.view
 import Compat.String
 
@@ -42,6 +43,7 @@ include("mcp_func_defs.jl")
 include("utils.jl")
 include("newton.jl")
 include("trust_region.jl")
+include("df_sane.jl")
 include("autodiff.jl")
 include("mcp.jl")
 
