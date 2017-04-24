@@ -76,7 +76,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
             df.f!(xlin, fvec)
             f_calls += 1
         end
-        return(dot(fvec, fvec) / 2)
+        dot(fvec, fvec) / 2
     end
 
     # The line search algorithm will want to first compute ∇fo(xₖ).
@@ -97,7 +97,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     end
     function fgo!(xlin::Vector, storage::Vector)
         go!(xlin, storage)
-        return(dot(fvec, fvec) / 2)
+        dot(fvec, fvec) / 2
     end
 
     dfo = OnceDifferentiable(fo, go!, fgo!)
@@ -116,7 +116,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
             p = fjac\fvec
             scale!(p, -1)
         catch e
-            if isa(e, Base.LinAlg.LAPACKException)
+            if isa(e, Base.LinAlg.LAPACKException) || isa(e, Base.LinAlg.SingularException)
                 # Modify the search direction if the jacobian is singular
                 # FIXME: better selection for lambda, see Nocedal & Wright p. 289
                 fjac2 = fjac'*fjac

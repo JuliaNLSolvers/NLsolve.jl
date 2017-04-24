@@ -20,7 +20,7 @@ macro trustregiontrace(stepnorm)
     end)
 end
 
-function dogleg!{T}(p::Vector{T}, r::Vector{T}, d2::Vector{T}, J::AbstractMatrix{T}, delta::Real)
+function dogleg!{T}(p::Vector{T}, r::Vector{T}, d::Vector{T}, J::AbstractMatrix{T}, delta::Real)
     local p_i
     try
         p_i = J \ r # Gauss-Newton step
@@ -36,26 +36,44 @@ function dogleg!{T}(p::Vector{T}, r::Vector{T}, d2::Vector{T}, J::AbstractMatrix
         end
     end
     scale!(p_i, -one(T))
+
     # Test if Gauss-Newton step is within the region
-    if wnorm(d2, p_i) <= delta
-        copy!(p, p_i)
+    if wnorm(d, p_i) <= delta
+        copy!(p, p_i)   # accepts equation 4.13 from N&W for this step
     else
-        p_c = At_mul_B(J, r) # Gradient direction
-        broadcast!(/, p_c, p_c, d2)
-        scale!(p_c, - wnorm(d2, p_c)^2 / sum(abs2,J * p_c)) # Cauchy point
-        if wnorm(d2, p_c) >= delta
+        # For intermediate we will use the output array `p` as a buffer to hold
+        # the gradient. To make it easy to remember which variable that array
+        # is representing we make g an alias to p and use g when we want the
+        # gradient
+
+        # compute g = J'r ./ (d .^ 2)
+        g = p
+        At_mul_B!(g, J, r)
+        broadcast!(/, g, g, d)
+        broadcast!(/, g, g, d)
+
+        # compute Cauchy point
+        p_c = - wnorm(d, g)^2 / sum(abs2, J*g) .* g
+
+        if wnorm(d, p_c) >= delta
             # Cauchy point is out of the region, take the largest step along
             # gradient direction
-            scale!(p, p_c, delta / wnorm(d2, p_c))
+            scale!(g, -delta/wnorm(d, g))
+
+            # now we want to set p = g, but that is already true, so we're done
+
         else
+            # from this point on we will only need p_i in the term p_i-p_c.
+            # so we reuse the vector p_i by computing p_i = p_i - p_c and then
+            # just so we aren't confused we name that p_diff
             p_diff = Base.BLAS.axpy!(-one(T), p_c, p_i)
+
             # Compute the optimal point on dogleg path
-            b = 2 * wdot(d2, p_c, p_diff)
-            a = wdot(d2, p_diff, p_diff)
-            c = wdot(d2, p_c, p_c)
-            tau = (-b + sqrt(b^2 - 4 * a * (c - delta^2)))/(2*a)
+            b = 2 * wdot(d, p_c, d, p_diff)
+            a = wnorm(d, p_diff)^2
+            tau = (-b+sqrt(b^2 - 4a*(wnorm(d, p_c)^2 - delta^2)))/(2a)
+            Base.BLAS.axpy!(tau, p_diff, p_c)  # p_c .+= tau .* p_diff
             copy!(p, p_c)
-            Base.BLAS.axpy!(tau, p_diff, p)
         end
     end
 end
@@ -78,7 +96,7 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
     r_new = similar(x)      # New residual
     r_predict = similar(x)  # predicted residual
     p = similar(x)          # Step
-    d2 = similar(x)         # Scaling vector
+    d = similar(x)          # Scaling vector
     J = alloc_jacobian(df, T, nn)    # Jacobian
 
     # Count function calls
@@ -102,33 +120,34 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
 
     if autoscale
         for j = 1:nn
-            d2[j] = sum(abs2,view(J, :, j))
-            if d2[j] == zero(T)
-                d2[j] = one(T)
+            d[j] = norm(view(J, :, j))
+            if d[j] == zero(T)
+                d[j] = one(T)
             end
         end
     else
-        fill!(d2, one(T))
+        fill!(d, one(T))
     end
-    delta = factor * wnorm(d2, x)
-    if delta == 0
+
+    delta = factor * wnorm(d, x)
+    if delta == zero(T)
         delta = factor
     end
+    
     eta = convert(T, 1e-4)
 
     while !converged && it < iterations
-
         it += 1
 
         # Compute proposed iteration step
-        dogleg!(p, r, d2, J, delta)
+        dogleg!(p, r, d, J, delta)
 
         copy!(xold, x)
-        Base.BLAS.axpy!(one(T), p, x)
+        Base.BLAS.axpy!(one(T), p, x)  # x += p
         df.f!(x, r_new)
         f_calls += 1
 
-        # Ratio of actual to predicted reduction
+        # Ratio of actual to predicted reduction (equation 11.47 in N&W)
         A_mul_B!(r_predict, J, p)
         Base.BLAS.axpy!(one(T), r, r_predict)
         rho = (sum(abs2,r) - sum(abs2,r_new)) / (sum(abs2,r) - sum(abs2,r_predict))
@@ -142,7 +161,7 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
             # Update scaling vector
             if autoscale
                 for j = 1:nn
-                    d2[j] = max(convert(T, 0.01) * d2[j], sum(abs2,view(J, :, j)))
+                    d[j] = max(convert(T, 0.1) * d[j], norm(view(J, :, j)))
                 end
             end
 
@@ -152,15 +171,15 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
             x_converged, converged = false, false
         end
 
-        @trustregiontrace sqeuclidean(x, xold)
+        @trustregiontrace euclidean(x, xold)
 
         # Update size of trust region
         if rho < 0.1
             delta = delta/2
         elseif rho >= 0.9
-            delta = 2 * wnorm(d2, p)
+            delta = 2 * wnorm(d, p)
         elseif rho >= 0.5
-            delta = max(delta, 2 * wnorm(d2, p))
+            delta = max(delta, 2 * wnorm(d, p))
         end
     end
 

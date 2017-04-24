@@ -1,18 +1,13 @@
-function wdot{T}(w::Vector{T}, x::Vector{T}, y::Vector{T})
+function wdot{T}(wx::AbstractVector{T}, x::AbstractVector{T},
+                 wy::AbstractVector{T}, y::AbstractVector{T})
     out = zero(T)
     @inbounds @simd for i in 1:length(x)
-        out += w[i] * x[i] * y[i]
+        out += wx[i]*x[i] * wy[i]*y[i]
     end
     return out
 end
 
-function wnorm{T}(w::AbstractVector{T}, x::AbstractVector{T})
-    out = zero(T)
-    @inbounds @simd for i in eachindex(w)
-        out += (w[i] * x[i])^2
-    end
-    sqrt(out)
-end
+wnorm{T}(w::AbstractVector{T}, x::AbstractVector{T}) = sqrt(wdot(w, x, w, x))
 
 function assess_convergence(x::Vector,
                             x_previous::Vector,
