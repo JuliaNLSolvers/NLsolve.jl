@@ -16,7 +16,7 @@ function DifferentiableMultivariateFunction(f!::Function, g!::Function)
     return DifferentiableMultivariateFunction(f!, g!, fg!)
 end
 
-function DifferentiableMultivariateFunction(f!::Function)
+function DifferentiableMultivariateFunction(f!::Function; dtype::Symbol=:central)
     function fg!(x::Vector, fx::Vector, gx::Array)
         f!(x, fx)
         function f(x::Vector)
@@ -24,7 +24,7 @@ function DifferentiableMultivariateFunction(f!::Function)
             f!(x, fx)
             return fx
         end
-        finite_difference_jacobian!(f, x, fx, gx)
+        finite_difference_jacobian!(f, x, fx, gx, dtype)
     end
     function g!(x::Vector, gx::Array)
         fx = similar(x)
