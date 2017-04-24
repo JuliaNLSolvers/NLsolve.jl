@@ -30,9 +30,8 @@ function lmmcp{T}(df::AbstractDifferentiableMultivariateFunction, lb, ub, x0::Ab
                kwargs...)
     # process/unpack options
     opts = LMMCPOptions(;kwargs...)
-    @unpack ϵ1, null, Big, iterations, β, σ, tmin, m, kwatch, η = opts
+    @unpack ϵ1, null, Big, iterations, β, σ, tmin, m, kwatch, η, ftol = opts
     @unpack watchdog, preprocess, presteps, δ, δmin, σ1, σ2, verbosity = opts
-    ϵ2 = 0.5 * opts.ftol * opts.ftol
 
     # initalization
     k = 0
@@ -106,7 +105,7 @@ function lmmcp{T}(df::AbstractDifferentiableMultivariateFunction, lb, ub, x0::Ab
 
         normpLM = 1.0
 
-        while (k < presteps) && (Psix > ϵ2) && (normpLM>null)
+        while (k < presteps) && (Psix > ftol) && (normpLM>null)
             k += 1
 
             # choice of Levenberg-Marquardt parameter, note that we do not use
@@ -176,16 +175,16 @@ function lmmcp{T}(df::AbstractDifferentiableMultivariateFunction, lb, ub, x0::Ab
     end
 
     # terminate program or redefine current iterate as original initial point
-    if preprocess && Psix < ϵ2
+    if preprocess && Psix < ftol
         if verbosity > 0
             @printf("Psix = %1.4e\nnormDPsix = %1.4e\n", Psix, normDPsix)
             println("Approximate solution found.")
         end
         return SolverResults(
-            "LMMCP", x0, x, norm(fx, Inf), k, false, 0.0, true, ϵ2, SolverTrace(),
+            "LMMCP", x0, x, norm(fx, Inf), k, false, 0.0, true, ftol, SolverTrace(),
             f_calls, g_calls
         )
-    elseif preprocess && Psix >= ϵ2
+    elseif preprocess && Psix >= ftol
         x = x0
         Phix = Phix0
         Psix = Psix0
@@ -201,7 +200,7 @@ function lmmcp{T}(df::AbstractDifferentiableMultivariateFunction, lb, ub, x0::Ab
         println("************************** Main program ****************************")
     end
 
-    while (k < iterations) && (Psix > ϵ2)
+    while (k < iterations) && (Psix > ftol)
         # choice of Levenberg-Marquardt parameter, note that we do not use
         # the condition estimator for large-scale problems, although this
         # may cause numerical problems in some examples
@@ -288,7 +287,7 @@ function lmmcp{T}(df::AbstractDifferentiableMultivariateFunction, lb, ub, x0::Ab
     end
 
     return SolverResults(
-        "LMMCP", x0, x, norm(Phix, Inf), k, false, 0.0, k < iterations, ϵ2,
+        "LMMCP", x0, x, norm(Phix, Inf), k, false, 0.0, k < iterations, ftol,
         SolverTrace(), f_calls, g_calls
     )
 
@@ -421,7 +420,7 @@ function DPhi(
             denom1 = max(null, sqrt((x[i]-lb[i])^2 + phi^2))
             denom2 = max(null, sqrt(z[i]^2 + dot(Dfx[i, :], z)^2))
             denom3 = max(null, sqrt((ub[i]-x[i])^2 + fx[i]^2))
-            denom4 = max(null, sqrt(z[i]^2 + (ci*z[i] + di*Dfx[i, :]*z)^2))
+            denom4 = max(null, sqrt(z[i]^2 + (ci*z[i] + di*dot(Dfx[i, :], z))^2))
 
             if !β_u[i]
                 ci = (x[i]-ub[i])/denom3 + 1
