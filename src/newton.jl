@@ -100,7 +100,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
         return(dot(fvec, fvec) / 2)
     end
 
-    dfo = DifferentiableFunction(fo, go!, fgo!)
+    dfo = OnceDifferentiable(fo, go!, fgo!)
 
     while !converged && it < iterations
 

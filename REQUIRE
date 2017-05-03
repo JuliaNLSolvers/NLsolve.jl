@@ -3,6 +3,6 @@ Optim
 Calculus
 Distances
 ForwardDiff 0.3.0
-Compat 0.8.4
+Compat 0.17.0
 LineSearches
 DiffBase
