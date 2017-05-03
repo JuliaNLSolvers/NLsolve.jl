@@ -1,4 +1,4 @@
-abstract AbstractDifferentiableMultivariateFunction
+@compat abstract type AbstractDifferentiableMultivariateFunction end
 
 immutable DifferentiableMultivariateFunction <: AbstractDifferentiableMultivariateFunction
     f!::Function

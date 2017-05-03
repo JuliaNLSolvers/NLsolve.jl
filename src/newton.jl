@@ -132,8 +132,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
         LineSearches.clear!(lsr)
         push!(lsr, zero(T), dot(fvec,fvec)/2, dot(g, p))
 
-        alpha, f_calls_update, g_calls_update =
-            linesearch!(dfo, xold, p, x, gr, lsr, one(T), mayterminate)
+        alpha = linesearch!(dfo, xold, p, x, gr, lsr, one(T), mayterminate)
 
         # fvec is here also updated in the linesearch! so no need to call f again.
 
