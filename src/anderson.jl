@@ -23,6 +23,7 @@ function anderson_{T}(df::AbstractDifferentiableMultivariateFunction,
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
     old_x = xs[:,1]
+    x_converged, f_converged, converged = false, false, false
 
     for n = 1:iterations
         # fixed-point iteration
