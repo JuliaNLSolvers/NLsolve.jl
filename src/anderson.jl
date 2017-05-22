@@ -1,3 +1,5 @@
+# Notations from Walker & Ni, "Anderson acceleration for fixed-point iterations", SINUM 2011
+# Attempts to accelerate the iteration xn+1 = xn + β f(x)
 
 function anderson_{T}(df::AbstractDifferentiableMultivariateFunction,
                       x0::Vector{T},
