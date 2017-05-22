@@ -44,6 +44,10 @@ r = nlsolve(df, [ -0.5f0; 1.4f0], method = :newton, linesearch! = LineSearches.b
 @test converged(r)
 @test norm(r.zero - [ 0; 1]) < 1e-6
 
+# test local convergence of Anderson
+r = nlsolve(df, [ 0.01; .99], method = :anderson, hist_size = 10, beta=.01)
+@test converged(r)
+@test norm(r.zero - [ 0; 1]) < 1e-8
 
 # Tests of other lineasearches are disabled, they are not stable across runs
 #r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch! = LineSearches.hz_linesearch!, ftol = 1e-6)
