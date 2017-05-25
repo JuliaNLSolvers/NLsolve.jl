@@ -1,12 +1,12 @@
-abstract AbstractDifferentiableMultivariateFunction
+abstract type AbstractDifferentiableMultivariateFunction end
 
-immutable DifferentiableMultivariateFunction <: AbstractDifferentiableMultivariateFunction
+struct DifferentiableMultivariateFunction <: AbstractDifferentiableMultivariateFunction
     f!::Function
     g!::Function
     fg!::Function
 end
 
-alloc_jacobian(df::DifferentiableMultivariateFunction, T::Type, n::Integer) = Array(T, n, n)
+alloc_jacobian(df::DifferentiableMultivariateFunction, T::Type, n::Integer) = Array{T}(n, n)
 
 function DifferentiableMultivariateFunction(f!::Function, g!::Function)
     function fg!(x::Vector, fx::Vector, gx::Array)
@@ -45,7 +45,7 @@ end
 # Helper for the case where only fg! is available
 function only_fg!(fg!::Function)
     function f!(x::Vector, fx::Vector)
-        gx = Array(eltype(x), length(x), length(x))
+        gx = Array{eltype(x)}(length(x), length(x))
         fg!(x, fx, gx)
     end
     function g!(x::Vector, gx::Array)
@@ -56,7 +56,7 @@ function only_fg!(fg!::Function)
 end
 
 # For sparse Jacobians
-immutable DifferentiableSparseMultivariateFunction <: AbstractDifferentiableMultivariateFunction
+struct DifferentiableSparseMultivariateFunction <: AbstractDifferentiableMultivariateFunction
     f!::Function
     g!::Function
     fg!::Function
@@ -73,7 +73,7 @@ function DifferentiableSparseMultivariateFunction(f!::Function, g!::Function)
 end
 
 
-immutable DifferentiableGivenSparseMultivariateFunction{Tv, Ti} <: AbstractDifferentiableMultivariateFunction
+struct DifferentiableGivenSparseMultivariateFunction{Tv, Ti} <: AbstractDifferentiableMultivariateFunction
     f!::Function
     g!::Function
     fg!::Function
@@ -89,4 +89,3 @@ function DifferentiableGivenSparseMultivariateFunction(f!::Function, g!::Functio
     end
     DifferentiableGivenSparseMultivariateFunction(f!, g!, fg!, J)
 end
-

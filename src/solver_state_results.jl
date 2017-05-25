@@ -1,4 +1,4 @@
-immutable SolverState{T}
+struct SolverState{T}
     iteration::Int
     fnorm::T
     stepnorm::T
@@ -13,11 +13,11 @@ function SolverState{T<:Real}(i::Integer, fnorm::T, stepnorm::T)
     SolverState(Int(i), fnorm, stepnorm, Dict())
 end
 
-immutable SolverTrace
+struct SolverTrace
     states::Vector{SolverState}
 end
 
-SolverTrace() = SolverTrace(Array(SolverState, 0))
+SolverTrace() = SolverTrace(Array{SolverState}(0))
 
 function Base.show(io::IO, t::SolverState)
     @printf io "%6d   %14e   %14e\n" t.iteration t.fnorm t.stepnorm
@@ -65,7 +65,7 @@ function update!(tr::SolverTrace,
     return
 end
 
-type SolverResults{T}
+mutable struct SolverResults{T}
     method::String
     initial_x::Vector{T}
     zero::Vector{T}

@@ -1,8 +1,7 @@
-julia 0.4
+julia 0.6-
 Optim
 Calculus
 Distances
-ForwardDiff 0.3.0
-Compat 0.8.4
-LineSearches 0.1.2 1.0.0-
+ForwardDiff 0.5.0
+LineSearches
 DiffBase

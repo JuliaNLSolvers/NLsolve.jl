@@ -39,12 +39,12 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     x = copy(initial_x)
     nn = length(x)
     xold = fill(convert(T, NaN), nn)
-    fvec = Array(T, nn)
+    fvec = Array{T}(nn)
     fjac = alloc_jacobian(df, T, nn)
 
-    p = Array(T, nn)
-    g = Array(T, nn)
-    gr = Array(T, nn)
+    p = Array{T}(nn)
+    g = Array{T}(nn)
+    gr = Array{T}(nn)
 
     # Count function calls
     f_calls::Int, g_calls::Int = 0, 0
@@ -100,7 +100,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
         dot(fvec, fvec) / 2
     end
 
-    dfo = OnceDifferentiable(fo, go!, fgo!)
+    dfo = DifferentiableFunction(fo, go!, fgo!)
 
     while !converged && it < iterations
 
@@ -132,8 +132,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
         LineSearches.clear!(lsr)
         push!(lsr, zero(T), dot(fvec,fvec)/2, dot(g, p))
 
-        alpha, f_calls_update, g_calls_update =
-            linesearch!(dfo, xold, p, x, gr, lsr, one(T), mayterminate)
+        alpha = linesearch!(dfo, xold, p, x, gr, lsr, one(T), mayterminate)
 
         # fvec is here also updated in the linesearch! so no need to call f again.
 
