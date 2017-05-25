@@ -1,4 +1,4 @@
-immutable SolverState{T}
+struct SolverState{T}
     iteration::Int
     fnorm::T
     stepnorm::T
@@ -13,7 +13,7 @@ function SolverState{T<:Real}(i::Integer, fnorm::T, stepnorm::T)
     SolverState(Int(i), fnorm, stepnorm, Dict())
 end
 
-immutable SolverTrace
+struct SolverTrace
     states::Vector{SolverState}
 end
 
@@ -65,7 +65,7 @@ function update!(tr::SolverTrace,
     return
 end
 
-type SolverResults{T}
+mutable struct SolverResults{T}
     method::String
     initial_x::Vector{T}
     zero::Vector{T}

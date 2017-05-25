@@ -16,10 +16,10 @@ function mcp_smooth(df::AbstractDifferentiableMultivariateFunction,
     function f!(x::Vector, fx::Vector)
         df.f!(x, fx)
         for i = 1:length(x)
-            if @compat isfinite.(upper[i])
+            if  isfinite.(upper[i])
                 fx[i] += (x[i]-upper[i]) + sqrt(fx[i]^2+(x[i]-upper[i])^2)
             end
-            if @compat isfinite.(lower[i])
+            if  isfinite.(lower[i])
                 fx[i] += (x[i]-lower[i]) - sqrt(fx[i]^2+(x[i]-lower[i])^2)
             end
         end
@@ -30,13 +30,13 @@ function mcp_smooth(df::AbstractDifferentiableMultivariateFunction,
         df.fg!(x, fx, gx)
 
         # Derivatives of phiplus
-        sqplus = @compat sqrt.(fx.^2 .+ (x .- upper).^2)
+        sqplus = sqrt.(fx.^2 .+ (x .- upper).^2)
 
         dplus_du = 1 + fx./sqplus
 
         dplus_dv = similar(x)
         for i = 1:length(x)
-            if @compat isfinite.(upper[i])
+            if isfinite.(upper[i])
                 dplus_dv[i] = 1 + (x[i]-upper[i])/sqplus[i]
             else
                 dplus_dv[i] = 0
@@ -51,13 +51,13 @@ function mcp_smooth(df::AbstractDifferentiableMultivariateFunction,
             end
         end
 
-        sqminus = @compat sqrt.(phiplus.^2 .+ (x .- lower).^2)
+        sqminus = sqrt.(phiplus.^2 .+ (x .- lower).^2)
 
         dminus_du = 1-phiplus./sqminus
 
         dminus_dv = similar(x)
         for i = 1:length(x)
-            if @compat isfinite.(lower[i])
+            if isfinite.(lower[i])
                 dminus_dv[i] = 1 - (x[i]-lower[i])/sqminus[i]
             else
                 dminus_dv[i] = 0

@@ -1,4 +1,4 @@
-VERSION >= v"0.4.0-dev+6521" && __precompile__()
+__precompile__()
 
 module NLsolve
 
@@ -6,9 +6,6 @@ using Distances
 using LineSearches
 using Optim
 using ForwardDiff
-using Compat
-import Compat.view
-import Compat.String
 
 import Base.show,
        Base.push!,
@@ -28,7 +25,7 @@ export DifferentiableMultivariateFunction,
        mcpsolve,
        converged
 
-type IsFiniteException <: Exception
+struct IsFiniteException <: Exception
   indices::Vector{Int}
 end
 show(io::IO, e::IsFiniteException) = print(io,

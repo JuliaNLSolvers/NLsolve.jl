@@ -1,6 +1,6 @@
-@compat abstract type AbstractDifferentiableMultivariateFunction end
+abstract type AbstractDifferentiableMultivariateFunction end
 
-immutable DifferentiableMultivariateFunction <: AbstractDifferentiableMultivariateFunction
+struct DifferentiableMultivariateFunction <: AbstractDifferentiableMultivariateFunction
     f!::Function
     g!::Function
     fg!::Function
@@ -56,7 +56,7 @@ function only_fg!(fg!::Function)
 end
 
 # For sparse Jacobians
-immutable DifferentiableSparseMultivariateFunction <: AbstractDifferentiableMultivariateFunction
+struct DifferentiableSparseMultivariateFunction <: AbstractDifferentiableMultivariateFunction
     f!::Function
     g!::Function
     fg!::Function
@@ -73,7 +73,7 @@ function DifferentiableSparseMultivariateFunction(f!::Function, g!::Function)
 end
 
 
-immutable DifferentiableGivenSparseMultivariateFunction{Tv, Ti} <: AbstractDifferentiableMultivariateFunction
+struct DifferentiableGivenSparseMultivariateFunction{Tv, Ti} <: AbstractDifferentiableMultivariateFunction
     f!::Function
     g!::Function
     fg!::Function
