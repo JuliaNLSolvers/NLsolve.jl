@@ -21,19 +21,19 @@ df = DifferentiableMultivariateFunction(f_2by2!, g_2by2!)
 # Test trust region
 r = nlsolve(df, [ -0.5; 1.4], method = :trust_region, autoscale = true)
 @test converged(r)
-@test norm(r.zero - [ 0; 1]) < 1e-8
+@test norm(r.zero - [ 0; 1]) < 1e-7
 r = nlsolve(df, [ -0.5; 1.4], method = :trust_region, autoscale = false)
 @test converged(r)
-@test norm(r.zero - [ 0; 1]) < 1e-8
+@test norm(r.zero - [ 0; 1]) < 1e-7
 
 r = nlsolve(df, [ -0.5f0; 1.4f0], method = :trust_region, autoscale = true)
 @test eltype(r.zero) == Float32
 @test converged(r)
-@test norm(r.zero - [ 0; 1]) < 1e-8
+@test norm(r.zero - [ 0; 1]) < 1e-7
 r = nlsolve(df, [ -0.5f0; 1.4f0], method = :trust_region, autoscale = false)
 @test eltype(r.zero) == Float32
 @test converged(r)
-@test norm(r.zero - [ 0; 1]) < 1e-8
+@test norm(r.zero - [ 0; 1]) < 1e-7
 
 # Test Newton
 r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch! = LineSearches.backtracking!, ftol = 1e-6)
