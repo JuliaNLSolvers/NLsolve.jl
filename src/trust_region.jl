@@ -49,8 +49,7 @@ function dogleg!{T}(p::Vector{T}, r::Vector{T}, d::Vector{T}, J::AbstractMatrix{
         # compute g = J'r ./ (d .^ 2)
         g = p
         At_mul_B!(g, J, r)
-        broadcast!(/, g, g, d)
-        broadcast!(/, g, g, d)
+        g .= g ./ d.^2
 
         # compute Cauchy point
         p_c = - wnorm(d, g)^2 / sum(abs2, J*g) .* g
@@ -66,13 +65,14 @@ function dogleg!{T}(p::Vector{T}, r::Vector{T}, d::Vector{T}, J::AbstractMatrix{
             # from this point on we will only need p_i in the term p_i-p_c.
             # so we reuse the vector p_i by computing p_i = p_i - p_c and then
             # just so we aren't confused we name that p_diff
-            p_diff = Base.BLAS.axpy!(-one(T), p_c, p_i)
+            p_i .-= p_c
+            p_diff = p_i
 
             # Compute the optimal point on dogleg path
             b = 2 * wdot(d, p_c, d, p_diff)
             a = wnorm(d, p_diff)^2
             tau = (-b+sqrt(b^2 - 4a*(wnorm(d, p_c)^2 - delta^2)))/(2a)
-            Base.BLAS.axpy!(tau, p_diff, p_c)  # p_c .+= tau .* p_diff
+            p_c .+= tau .* p_diff
             copy!(p, p_c)
         end
     end
@@ -133,7 +133,7 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
     if delta == zero(T)
         delta = factor
     end
-    
+
     eta = convert(T, 1e-4)
 
     while !converged && it < iterations
@@ -143,18 +143,18 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
         dogleg!(p, r, d, J, delta)
 
         copy!(xold, x)
-        Base.BLAS.axpy!(one(T), p, x)  # x += p
+        x .+= p
         df.f!(x, r_new)
         f_calls += 1
 
         # Ratio of actual to predicted reduction (equation 11.47 in N&W)
         A_mul_B!(r_predict, J, p)
-        Base.BLAS.axpy!(one(T), r, r_predict)
+        r_predict .+= r
         rho = (sum(abs2,r) - sum(abs2,r_new)) / (sum(abs2,r) - sum(abs2,r_predict))
 
         if rho > eta
             # Successful iteration
-            copy!(r, r_new)
+            r .= r_new
             df.g!(x, J)
             g_calls += 1
 
@@ -167,7 +167,7 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
 
             x_converged, f_converged, converged = assess_convergence(x, xold, r, xtol, ftol)
         else
-            Base.BLAS.axpy!(-one(T), p, x)
+            x .-= p
             x_converged, converged = false, false
         end
 
