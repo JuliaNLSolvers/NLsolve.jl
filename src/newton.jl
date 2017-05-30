@@ -1,4 +1,4 @@
-function no_linesearch!(dfo, xold, p, x, gr, lsr, alpha, mayterminate)
+function no_linesearch!(dfo, xold, p, x, lsr, alpha, mayterminate)
     @simd for i in eachindex(x)
         @inbounds x[i] = xold[i] + p[i]
     end
@@ -132,7 +132,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
         LineSearches.clear!(lsr)
         push!(lsr, zero(T), dot(fvec,fvec)/2, dot(g, p))
 
-        alpha = linesearch!(dfo, xold, p, x, gr, lsr, one(T), mayterminate)
+        alpha = linesearch!(dfo, xold, p, x, lsr, one(T), mayterminate)
 
         # fvec is here also updated in the linesearch! so no need to call f again.
 
