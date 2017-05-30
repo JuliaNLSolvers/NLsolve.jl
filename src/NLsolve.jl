@@ -5,7 +5,6 @@ module NLsolve
 using Distances
 using NLSolversBase
 using LineSearches
-using Optim
 using ForwardDiff
 
 import Base.show,
