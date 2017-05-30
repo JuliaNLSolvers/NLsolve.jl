@@ -1,11 +1,5 @@
 using NLsolve
-
-if VERSION >= v"0.5-"
-    using Base.Test
-else
-    using BaseTestNext
-    const Test = BaseTestNext
-end
+using Base.Test
 
 add_jl(x) = endswith(x, ".jl") ? x : x*".jl"
 
