@@ -84,7 +84,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     # is expensive to recompute.
     # We solve this using the already computed ∇f(xₖ)
     # in case of the line search asking us for the gradient at xₖ.
-    function go!(xlin::Vector, storage::Vector)
+    function go!(storage::Vector, xlin::Vector)
         if xlin == xold
             At_mul_B!(storage, fjac, fvec)
         # Else we need to recompute it.
@@ -95,8 +95,8 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
             At_mul_B!(storage, fjac, fvec)
         end
     end
-    function fgo!(xlin::Vector, storage::Vector)
-        go!(xlin, storage)
+    function fgo!(storage::Vector, xlin::Vector)
+        go!(storage, xlin)
         dot(fvec, fvec) / 2
     end
 
