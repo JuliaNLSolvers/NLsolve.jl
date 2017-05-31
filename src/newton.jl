@@ -17,7 +17,7 @@ macro newtontrace(stepnorm)
             end
             update!(tr,
                     it,
-                    maximum(abs(fvec)),
+                    maximum(abs, fvec),
                     $stepnorm,
                     dt,
                     store_trace,
