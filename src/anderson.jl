@@ -1,7 +1,7 @@
 # Notations from Walker & Ni, "Anderson acceleration for fixed-point iterations", SINUM 2011
 # Attempts to accelerate the iteration xn+1 = xn + β f(x)
 
-function anderson_{T}(df::AbstractDifferentiableMultivariateFunction,
+@views function anderson_{T}(df::AbstractDifferentiableMultivariateFunction,
                       x0::Vector{T},
                       xtol::T,
                       ftol::T,
@@ -24,6 +24,8 @@ function anderson_{T}(df::AbstractDifferentiableMultivariateFunction,
     tracing = store_trace || show_trace || extended_trace
     old_x = xs[:,1]
     x_converged, f_converged, converged = false, false, false
+    mat = zeros(T, N, m) #pre-allocation
+    alphas = zeros(T, m)
 
     for n = 1:iterations
         # fixed-point iteration
@@ -56,10 +58,11 @@ function anderson_{T}(df::AbstractDifferentiableMultivariateFunction,
 
         #update of new_x
         m_eff = min(n-1,m)
-        new_x = gs[:,1]
+        new_x = copy(gs[:,1])
         if m_eff > 0
-            mat = (gs[:,2:m_eff+1] .- xs[:,2:m_eff+1]) .- (gs[:,1] - xs[:,1])
-            alphas = -mat \ (gs[:,1] .- xs[:,1])
+            mat[:, 1:m_eff] .= (gs[:,2:m_eff+1] .- xs[:,2:m_eff+1]) .- (gs[:,1] .- xs[:,1])
+            A_ldiv_B!(alphas[1:m_eff], mat[:,1:m_eff], xs[:,1] .- gs[:,1])
+            alphas[m_eff+1:end] .= zero(T)
             for i = 1:m_eff
                 new_x .+= alphas[i].*(gs[:,i+1] .- gs[:,1])
             end
@@ -73,7 +76,7 @@ function anderson_{T}(df::AbstractDifferentiableMultivariateFunction,
 
     return SolverResults("Anderson m=$m β=$β",
                          # returning gs[:,1] would be slightly better here, but the fnorm is not guaranteed
-                         x0, xs[:,1], maximum(abs,fx),
+                         x0, copy(xs[:,1]), maximum(abs,fx),
                          n, x_converged, xtol, f_converged, ftol, tr,
                          f_calls, 0)
 end

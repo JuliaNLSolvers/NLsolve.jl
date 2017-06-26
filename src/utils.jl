@@ -8,9 +8,9 @@ end
 
 wnorm{T}(w::Vector{T}, x::Vector{T}) = sqrt(wdot(w, x, x))
 
-function assess_convergence(x::Vector,
-                            x_previous::Vector,
-                            f::Vector,
+function assess_convergence(x::AbstractArray,
+                            x_previous::AbstractArray,
+                            f::AbstractArray,
                             xtol::Real,
                             ftol::Real)
     x_converged, f_converged = false, false
