@@ -61,8 +61,7 @@
         new_x = copy(gs[:,1])
         if m_eff > 0
             mat[:, 1:m_eff] .= (gs[:,2:m_eff+1] .- xs[:,2:m_eff+1]) .- (gs[:,1] .- xs[:,1])
-            A_ldiv_B!(alphas[1:m_eff], mat[:,1:m_eff], xs[:,1] .- gs[:,1])
-            alphas[m_eff+1:end] .= zero(T)
+            alphas[1:m_eff] .= mat[:,1:m_eff] \ (xs[:,1] .- gs[:,1])
             for i = 1:m_eff
                 new_x .+= alphas[i].*(gs[:,i+1] .- gs[:,1])
             end
