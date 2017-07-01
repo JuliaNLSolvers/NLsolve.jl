@@ -10,7 +10,7 @@ function nlsolve{T}(df::AbstractDifferentiableMultivariateFunction,
                  linesearch!::Function = no_linesearch!,
                  factor::Real = one(T),
                  autoscale::Bool = true,
-                 hist_size::Integer = 0,
+                 m::Integer = 0,
                  beta::Real = 1.0)
     if extended_trace
         show_trace = true
@@ -28,7 +28,7 @@ function nlsolve{T}(df::AbstractDifferentiableMultivariateFunction,
                      autoscale)
     elseif method == :anderson
         anderson(df, initial_x, xtol, ftol, iterations,
-                 store_trace, show_trace, extended_trace, hist_size, beta)
+                 store_trace, show_trace, extended_trace, m, beta)
     else
         throw(ArgumentError("Unknown method $method"))
     end
@@ -47,14 +47,14 @@ function nlsolve{T}(f!::Function,
                  linesearch!::Function = no_linesearch!,
                  factor::Real = one(T),
                  autoscale::Bool = true,
-                 hist_size::Integer = 0,
+                 m::Integer = 0,
                  beta::Real = 1.0)
     nlsolve(DifferentiableMultivariateFunction(f!, g!),
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
             linesearch! = linesearch!, factor = factor, autoscale = autoscale,
-            hist_size = hist_size, beta = beta)
+            m = m, beta = beta)
 end
 
 function nlsolve{T}(f!::Function,
@@ -69,7 +69,7 @@ function nlsolve{T}(f!::Function,
                  linesearch!::Function = no_linesearch!,
                  factor::Real = one(T),
                  autoscale::Bool = true,
-                 hist_size::Integer = 0,
+                 m::Integer = 0,
                  beta::Real = 1.0,
                  autodiff::Bool = false)
     if !autodiff
@@ -82,5 +82,5 @@ function nlsolve{T}(f!::Function,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
             linesearch! = linesearch!, factor = factor, autoscale = autoscale,
-            hist_size = hist_size, beta = beta)
+            m = m, beta = beta)
 end

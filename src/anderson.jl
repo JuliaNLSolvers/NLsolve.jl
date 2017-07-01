@@ -90,7 +90,7 @@ function anderson{T}(df::AbstractDifferentiableMultivariateFunction,
                      store_trace::Bool,
                      show_trace::Bool,
                      extended_trace::Bool,
-                     hist_size::Integer,
+                     m::Integer,
                      beta::Real)
-    anderson_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, hist_size, beta)
+    anderson_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, m, beta)
 end
