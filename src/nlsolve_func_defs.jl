@@ -9,7 +9,9 @@ function nlsolve{T}(df::AbstractDifferentiableMultivariateFunction,
                  extended_trace::Bool = false,
                  linesearch!::Function = no_linesearch!,
                  factor::Real = one(T),
-                 autoscale::Bool = true)
+                 autoscale::Bool = true,
+                 m::Integer = 0,
+                 beta::Real = 1.0)
     if extended_trace
         show_trace = true
     end
@@ -24,6 +26,9 @@ function nlsolve{T}(df::AbstractDifferentiableMultivariateFunction,
         trust_region(df, initial_x, xtol, ftol, iterations,
                      store_trace, show_trace, extended_trace, factor,
                      autoscale)
+    elseif method == :anderson
+        anderson(df, initial_x, xtol, ftol, iterations,
+                 store_trace, show_trace, extended_trace, m, beta)
     else
         throw(ArgumentError("Unknown method $method"))
     end
@@ -41,12 +46,15 @@ function nlsolve{T}(f!::Function,
                  extended_trace::Bool = false,
                  linesearch!::Function = no_linesearch!,
                  factor::Real = one(T),
-                 autoscale::Bool = true)
+                 autoscale::Bool = true,
+                 m::Integer = 0,
+                 beta::Real = 1.0)
     nlsolve(DifferentiableMultivariateFunction(f!, g!),
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
-            linesearch! = linesearch!, factor = factor, autoscale = autoscale)
+            linesearch! = linesearch!, factor = factor, autoscale = autoscale,
+            m = m, beta = beta)
 end
 
 function nlsolve{T}(f!::Function,
@@ -61,6 +69,8 @@ function nlsolve{T}(f!::Function,
                  linesearch!::Function = no_linesearch!,
                  factor::Real = one(T),
                  autoscale::Bool = true,
+                 m::Integer = 0,
+                 beta::Real = 1.0,
                  autodiff::Bool = false)
     if !autodiff
         df = DifferentiableMultivariateFunction(f!)
@@ -71,5 +81,6 @@ function nlsolve{T}(f!::Function,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
-            linesearch! = linesearch!, factor = factor, autoscale = autoscale)
+            linesearch! = linesearch!, factor = factor, autoscale = autoscale,
+            m = m, beta = beta)
 end

@@ -237,7 +237,7 @@ If  `g!` conserves the sparsity structure of `gx`, `gx` will always have the sam
 
 # Fine tunings
 
-Two algorithms are currently available. The choice between the two is achieved
+Three algorithms are currently available. The choice between these is achieved
 by setting the optional `method` argument of `nlsolve`. The default algorithm
 is the trust region method.
 
@@ -269,6 +269,23 @@ the [`LineSearches`](https://github.com/JuliaNLSolvers/LineSearches.jl) package.
 By default, no linesearch is performed.
 **Note:** it is assumed that a passed linesearch function will at least update the solution
 vector and evaluate the function at the new point.
+
+## Anderson acceleration
+
+Also known as DIIS or Pulay mixing, this method is based on the
+acceleration of the fixed-point iteration `xn+1 = xn + β f(xn)`, where
+by default `β=1`. It does not use Jacobian information or linesearch,
+but has a history whose size is controlled by the `m` parameter: `m=0`
+(the default) corresponds to the simple fixed-point iteration above,
+and higher values use a larger history size to accelerate the
+iterations. Higher values of `m` usually increase the speed of
+convergence, but increase the storage and computation requirements and
+might lead to instabilities. This method is useful to accelerate a
+fixed-point iteration `xn+1 = g(xn)` (in which case use this solver
+with `f(x) = g(x) - x`).
+
+Reference: H. Walker, P. Ni, Anderson acceleration for fixed-point
+iterations, SIAM Journal on Numerical Analysis, 2011
 
 ## Common options
 
@@ -367,6 +384,7 @@ julia> fvec
 * Broyden updating of Jacobian in trust-region
 * Homotopy methods
 * [LMMCP algorithm by C. Kanzow](http://www.mathematik.uni-wuerzburg.de/~kanzow/)
+* QR updating of the least-squares problem in the Anderson acceleration solver
 
 # Related Packages
 
