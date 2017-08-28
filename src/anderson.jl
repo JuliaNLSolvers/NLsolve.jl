@@ -1,8 +1,8 @@
 # Notations from Walker & Ni, "Anderson acceleration for fixed-point iterations", SINUM 2011
 # Attempts to accelerate the iteration xn+1 = xn + β f(x)
 
-@views function anderson_{T}(df::AbstractDifferentiableMultivariateFunction,
-                      x0::Vector{T},
+function anderson_{T}(df::AbstractDifferentiableMultivariateFunction,
+                      x0::AbstractArray{T},
                       xtol::T,
                       ftol::T,
                       iterations::Integer,
@@ -10,7 +10,7 @@
                       show_trace::Bool,
                       extended_trace::Bool,
                       m::Integer,
-                      β :: Real)
+                      β::Real)
 
     f_calls = 0
     N = length(x0)
@@ -18,16 +18,16 @@
     gs = zeros(T,N,m+1) #ring buffer storing the g of the iterates, from newest to oldest
     residuals = zeros(T, N, m) #matrix of residuals used for the least-squares problem
     alphas = zeros(T, m) #coefficients obtained by least-squares
-    fx = similar(x0) # temp variable to store f!
-    xs[:,1] = x0
+    fx = similar(x0, N) # temp variable to store f!
+    xs[:,1] = vec(x0)
     errs = zeros(iterations)
     n = 1
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
-    old_x = xs[:,1]
+    old_x = @view xs[:,1]
     x_converged, f_converged, converged = false, false, false
 
-    for n = 1:iterations
+    @views for n = 1:iterations
         # fixed-point iteration
         df.f!(xs[:,1], fx)
         f_calls += 1
@@ -36,7 +36,7 @@
 
         # FIXME: How should this flag be set?
         mayterminate = false
-        
+
         if tracing
             dt = Dict()
             if extended_trace
@@ -49,9 +49,9 @@
                     n > 1 ? sqeuclidean(xs[:,1],old_x) : convert(T,NaN),
                     dt,
                     store_trace,
-                    show_trace)            
+                    show_trace)
         end
-        
+
         if converged
             break
         end
@@ -77,13 +77,13 @@
     # xn+1 = xn+beta*f(xn) is convergent, but the convergence
     # criterion is not guaranteed
     return SolverResults("Anderson m=$m β=$β",
-                         x0, copy(xs[:,1]), maximum(abs,fx),
+                         x0, reshape(xs[:,1], size(x0)...), maximum(abs,fx),
                          n, x_converged, xtol, f_converged, ftol, tr,
                          f_calls, 0)
 end
 
 function anderson{T}(df::AbstractDifferentiableMultivariateFunction,
-                     initial_x::Vector{T},
+                     initial_x::AbstractArray{T},
                      xtol::Real,
                      ftol::Real,
                      iterations::Integer,

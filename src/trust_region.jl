@@ -79,17 +79,17 @@ function dogleg!{T}(p::Vector{T}, r::Vector{T}, d::Vector{T}, J::AbstractMatrix{
 end
 
 function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
-                         initial_x::Vector{T},
-                         xtol::T,
-                         ftol::T,
-                         iterations::Integer,
-                         store_trace::Bool,
-                         show_trace::Bool,
-                         extended_trace::Bool,
-                         factor::T,
-                         autoscale::Bool)
+                          initial_x::AbstractArray{T},
+                          xtol::T,
+                          ftol::T,
+                          iterations::Integer,
+                          store_trace::Bool,
+                          show_trace::Bool,
+                          extended_trace::Bool,
+                          factor::T,
+                          autoscale::Bool)
 
-    x = copy(initial_x)     # Current point
+    x = vec(copy(initial_x))     # Current point
     nn = length(x)
     xold = fill(convert(T, NaN), nn) # Old point
     r = similar(x)          # Current residual
@@ -188,13 +188,13 @@ function trust_region_{T}(df::AbstractDifferentiableMultivariateFunction,
         name *= " and autoscaling"
     end
     return SolverResults(name,
-                         initial_x, x, norm(r, Inf),
+                         initial_x, reshape(x, size(initial_x)...), norm(r, Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
                          f_calls, g_calls)
 end
 
 function trust_region{T}(df::AbstractDifferentiableMultivariateFunction,
-                         initial_x::Vector{T},
+                         initial_x::AbstractArray{T},
                          xtol::Real,
                          ftol::Real,
                          iterations::Integer,

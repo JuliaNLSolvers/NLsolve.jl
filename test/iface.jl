@@ -87,7 +87,7 @@ r = nlsolve(not_in_place(f), [ -0.5; 1.4])
 r = nlsolve(not_in_place(f), [ -0.5; 1.4], autodiff = true)
 @test converged(r)
 
-r = nlsolve(not_in_place(f), not_in_place(g), [ -0.5; 1.4])
+r = nlsolve(not_in_place(f, g), [ -0.5; 1.4])
 @test converged(r)
 
 r = nlsolve(not_in_place(f, g, fg), [ -0.5; 1.4])

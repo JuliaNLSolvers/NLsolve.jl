@@ -27,16 +27,16 @@ macro newtontrace(stepnorm)
 end
 
 function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
-                   initial_x::Vector{T},
-                   xtol::T,
-                   ftol::T,
-                   iterations::Integer,
-                   store_trace::Bool,
-                   show_trace::Bool,
-                   extended_trace::Bool,
-                   linesearch!::Function)
+                    initial_x::AbstractArray{T},
+                    xtol::T,
+                    ftol::T,
+                    iterations::Integer,
+                    store_trace::Bool,
+                    show_trace::Bool,
+                    extended_trace::Bool,
+                    linesearch!::Function)
 
-    x = copy(initial_x)
+    x = vec(copy(initial_x))
     nn = length(x)
     xold = fill(convert(T, NaN), nn)
     fvec = Array{T}(nn)
@@ -100,7 +100,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
         dot(fvec, fvec) / 2
     end
 
-    dfo = OnceDifferentiable(fo, go!, fgo!, initial_x)
+    dfo = OnceDifferentiable(fo, go!, fgo!, x)
 
     while !converged && it < iterations
 
@@ -142,13 +142,13 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     end
 
     return SolverResults("Newton with line-search",
-                         initial_x, x, norm(fvec, Inf),
+                         initial_x, reshape(x, size(initial_x)...), norm(fvec, Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
                          f_calls, g_calls)
 end
 
 function newton{T}(df::AbstractDifferentiableMultivariateFunction,
-                   initial_x::Vector{T},
+                   initial_x::AbstractArray{T},
                    xtol::Real,
                    ftol::Real,
                    iterations::Integer,

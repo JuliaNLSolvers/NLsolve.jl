@@ -1,5 +1,5 @@
 function nlsolve{T}(df::AbstractDifferentiableMultivariateFunction,
-                 initial_x::Vector{T};
+                 initial_x::AbstractArray{T};
                  method::Symbol = :trust_region,
                  xtol::Real = zero(T),
                  ftol::Real = convert(T,1e-8),
@@ -36,7 +36,7 @@ end
 
 function nlsolve{T}(f!::Function,
                  g!::Function,
-                 initial_x::Vector{T};
+                 initial_x::AbstractArray{T};
                  method::Symbol = :trust_region,
                  xtol::Real = zero(T),
                  ftol::Real = convert(T, 1e-8),
@@ -49,7 +49,7 @@ function nlsolve{T}(f!::Function,
                  autoscale::Bool = true,
                  m::Integer = 0,
                  beta::Real = 1.0)
-    nlsolve(DifferentiableMultivariateFunction(f!, g!),
+    nlsolve(DifferentiableMultivariateFunction(f!, g!, initial_x),
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
@@ -58,7 +58,7 @@ function nlsolve{T}(f!::Function,
 end
 
 function nlsolve{T}(f!::Function,
-                 initial_x::Vector{T};
+                 initial_x::AbstractArray{T};
                  method::Symbol = :trust_region,
                  xtol::Real = zero(T),
                  ftol::Real = convert(T,1e-8),
@@ -73,7 +73,7 @@ function nlsolve{T}(f!::Function,
                  beta::Real = 1.0,
                  autodiff::Bool = false)
     if !autodiff
-        df = DifferentiableMultivariateFunction(f!)
+        df = DifferentiableMultivariateFunction(f!, initial_x)
     else
         df = NLsolve.autodiff(f!, initial_x)
     end

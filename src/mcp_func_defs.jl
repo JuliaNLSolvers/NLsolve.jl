@@ -15,7 +15,7 @@ end
 function mcpsolve{T}(df::AbstractDifferentiableMultivariateFunction,
                   lower::Vector,
                   upper::Vector,
-                  initial_x::Vector{T};
+                  initial_x::AbstractArray{T};
                   method::Symbol = :trust_region,
                   reformulation::Symbol = :smooth,
                   xtol::Real = zero(T),
@@ -39,7 +39,7 @@ function mcpsolve{T}(f!::Function,
                   g!::Function,
                   lower::Vector,
                   upper::Vector,
-                  initial_x::Vector{T};
+                  initial_x::AbstractArray{T};
                   method::Symbol = :trust_region,
                   reformulation::Symbol = :smooth,
                   xtol::Real = zero(T),
@@ -51,7 +51,7 @@ function mcpsolve{T}(f!::Function,
                   linesearch!::Function = LineSearches.backtracking!,
                   factor::Real = one(T),
                   autoscale::Bool = true)
-    @reformulate DifferentiableMultivariateFunction(f!, g!)
+    @reformulate DifferentiableMultivariateFunction(f!, g!, initial_x)
     nlsolve(rf,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
@@ -62,7 +62,7 @@ end
 function mcpsolve{T}(f!::Function,
                   lower::Vector,
                   upper::Vector,
-                  initial_x::Vector{T};
+                  initial_x::AbstractArray{T};
                   method::Symbol = :trust_region,
                   reformulation::Symbol = :smooth,
                   xtol::Real = zero(T),
@@ -76,7 +76,7 @@ function mcpsolve{T}(f!::Function,
                   autoscale::Bool = true,
                   autodiff::Bool = false)
     if !autodiff
-        df = DifferentiableMultivariateFunction(f!)
+        df = DifferentiableMultivariateFunction(f!, initial_x)
     else
         df = NLsolve.autodiff(f!, initial_x)
     end

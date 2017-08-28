@@ -70,9 +70,10 @@ Jacobian.
 
 This is the most efficient method, because it minimizes the memory allocations.
 
-In the following, it is assumed that have defined a function `f!(x::Vector,
-fx::Vector)` computing the residual of the system at point `x` and putting it
-into the `fx` argument.
+In the following, it is assumed that you have defined a function
+`f!(x::AbstractVector, fx::AbstractVector)` or, more general,
+`f!(x::AbstractArray, fx::AbstractArray)` computing the residual of the system
+at point `x` and putting it into the `fx` argument.
 
 In turn, there 3 ways of specifying how the Jacobian should be computed:
 
@@ -93,6 +94,15 @@ df = DifferentiableMultivariateFunction(f!)
 nlsolve(df, initial_x)
 ```
 
+If your function `f!` operates not on `AbstractVector` but on arbitrary
+`AbstractArray` you have to specify `initial_x` in the constructor of the
+`DifferentiableMultivariateFunction`:
+
+```jl
+df = DifferentiableMultivariateFunction(f!, initial_x)
+nlsolve(df, initial_x)
+```
+
 ### Automatic differentiation
 
 Another option if you do not have a function computing the Jacobian is to use
@@ -105,13 +115,17 @@ nlsolve(f!, initial_x, autodiff = true)
 
 ### Jacobian available
 
-If, in addition to `f!`, you have a function `g!(x::Vector, gx::Array)` for
-computing the Jacobian of the system, then the syntax is, as in the example
-above:
+If, in addition to `f!(x::AbstractVector, fx::AbstractVector)`, you have a
+function `g!(x::AbstractVector, gx::AbstractMatrix)` for computing the Jacobian
+of the system, then the syntax is, as in the example above:
 
 ```jl
 nlsolve(f!, g!, initial_x)
 ```
+
+Again it is also possible to specify two functions `f!(x::AbstractArray,
+fx::AbstractArray)` and `g!(x::AbstractArray, gx::AbstractMatrix)` that work on
+arbitrary arrays `x`.
 
 Note that you should not assume that the Jacobian `gx` passed in argument is
 initialized to a zero matrix. You must set all the elements of the matrix in
@@ -125,14 +139,29 @@ df = DifferentiableMultivariateFunction(f!, g!)
 nlsolve(df, initial_x)
 ```
 
+If `f!` and `g!` do not operate on vectors the syntax is:
+
+```jl
+df = DifferentiableMultivariateFunction(f!, g!, initial_x)
+nlsolve(df, initial_x)
+```
+
 ### Optimization of simultaneous residuals and Jacobian
 
-If, in addition to `f!` and `g!`, you have a function `fg!(x::Vector,
-fx::Vector, gx::Array)` that computes both the residual and the Jacobian at
-the same time, you can use the following syntax:
+If, in addition to `f!` and `g!`, you have a function `fg!(x::AbstractVector,
+fx::AbstractVector, gx::AbstractMatrix)` or `fg!(x::AbstractArray,
+fx::AbstractArray, gx::AbstractMatrix)` that computes both the residual and the
+Jacobian at the same time, you can use the following syntax for vectors
 
 ```jl
 df = DifferentiableMultivariateFunction(f!, g!, fg!)
+nlsolve(df, initial_x)
+```
+
+and similarly for arbitrary arrays
+
+```jl
+df = DifferentiableMultivariateFunction(f!, g!, fg!, initial_x)
 nlsolve(df, initial_x)
 ```
 
@@ -147,45 +176,89 @@ cases are not optimal in terms of memory management.
 
 If only `f!` and `fg!` are available, the helper function `only_f!_and_fg!` can be
 used to construct a `DifferentiableMultivariateFunction` object, that can be
-used as first argument of `nlsolve`. The complete syntax is therefore:
+used as first argument of `nlsolve`. The complete syntax is therefore
 
 ```jl
 nlsolve(only_f!_and_fg!(f!, fg!), initial_x)
 ```
 
+if `f!` and `fg!` operate on vectors, and otherwise
+
+```jl
+nlsolve(only_f!_and_fg!(f!, fg!, initial_x), initial_x)
+```
+
 If only `fg!` is available, the helper function `only_fg!` can be used to
 construct a `DifferentiableMultivariateFunction` object, that can be used as
-first argument of `nlsolve`. The complete syntax is therefore:
+first argument of `nlsolve`. The complete syntax is therefore
 
 ```jl
 nlsolve(only_fg!(fg!), initial_x)
 ```
 
+if `f!` and `fg!` operate on vectors, and otherwise
+
+```jl
+nlsolve(only_fg!(f!, fg!, initial_x), initial_x)
+```
+
 ## With functions returning residuals and Jacobian as output
 
-Here it is assumed that you have a function `f(x::Vector)` that returns a
-newly-allocated vector containing the residuals. The helper function
-`not_in_place` can be used to construct a `DifferentiableMultivariateFunction`
-object, that can be used as first argument of `nlsolve`. The complete syntax is
-therefore:
+Here it is assumed that you have a function `f(x::AbstractVector)` that returns
+a newly-allocated vector containing the residuals. The helper function
+`not_in_place` can be used to construct a function, that can be used as first
+argument of `nlsolve`. The complete syntax is therefore:
 
 ```jl
 nlsolve(not_in_place(f), initial_x)
 ```
 
-Finite-differencing is used to compute the Jacobian in that case.
+If `f` does not operate on vectors but on arbitrary arrays the syntax is
 
-If, in addition, there is a function `g(x::Vector)` returning a newly-allocated
-matrix containing the Jacobian, 
 ```jl
-nlsolve(not_in_place(f), not_in_place(g), initial_x)
+nlsolve(not_in_place(f, initial_x), initial_x)
+```
+
+Via the `autodiff` keyword both finite-differencing and autodifferentiation can
+be used to compute the Jacobian in that case.
+
+If, in addition to `f(x::AbstractVector)`, there is a function
+`g(x::AbstractVector)` returning a newly-allocated matrix containing the
+Jacobian, `not_in_place` can be used to construct an object of type
+`DifferentiableMultivariateFunction` that can be used as first argument of
+`nlsolve`:
+
+```jl
+nlsolve(not_in_place(f, g), initial_x)
+```
+
+For functions `f` and `g` that operate on arbitrary arrays the syntax is:
+
+```jl
+nlsolve(not_in_place(f, g, initial_x), initial_x)
+```
+
+If, in addition to `f` and `g`, there is a function `fg` returning a tuple of a
+newly-allocated vector of residuals and a newly-allocated matrix of the
+Jacobian, `not_in_place` can be used to construct an object of type
+`DifferentiableMultivariateFunction`:
+
+```jl
+nlsolve(not_in_place(f, g, fg), initial_x)
+```
+
+For functions `f`, `g`, and `fg` that operate on arbitrary arrays the syntax is:
+
+```jl
+nlsolve(not_in_place(f, g, fg, initial_x), initial_x)
 ```
 
 ## With functions taking several scalar arguments
 
 If you have a function `f(x::Float64, y::Float64, ...)` that takes the point of
 interest as several scalars and returns a vector or a tuple containing the
-residuals, you can use the helper function `n_ary`. The complete syntax is therefore:
+residuals, you can use the helper function `n_ary`. The complete syntax is
+therefore:
 
 ```jl
 nlsolve(n_ary(f), initial_x)
@@ -198,10 +271,17 @@ Finite-differencing is used to compute the Jacobian.
 If the Jacobian of your function is sparse, it is possible to ask the routines
 to manipulate sparse matrices instead of full ones, in order to increase
 performance on large systems. This can be achieved by constructing an object of
-type `DifferentiableSparseMultivariateFunction`:
+type `DifferentiableSparseMultivariateFunction`. The syntax is therefore
 
 ```jl
 df = DifferentiableSparseMultivariateFunction(f!, g!)
+nlsolve(df, initial_x)
+```
+
+if `f!` and `g!` operate on vectors, and otherwise
+
+```jl
+df = DifferentiableSparseMultivariateFunction(f!, g!, initial_x)
 nlsolve(df, initial_x)
 ```
 
@@ -226,14 +306,24 @@ empty!(gx.rowval)
 empty!(gx.nzval)
 ```
 
-Another solution is to directly pass a Jacobian matrix with a given sparsity. To do so, construct an object of type `DifferentiableGivenSparseMultivariateFunction`
+Another solution is to directly pass a Jacobian matrix with a given sparsity. To
+do so, construct an object of type
+`DifferentiableGivenSparseMultivariateFunction` by
 
 ```jl
 df = DifferentiableGivenSparseMultivariateFunction(f!, g!, J)
 nlsolve(df, initial_x)
 ```
 
-If  `g!` conserves the sparsity structure of `gx`, `gx` will always have the same sparsity as `J`. This sometimes allow to write a faster version of `g!`.
+if `f!` and `g!` operate on vectors, and otherwise
+
+```jl
+df = DifferentiableGivenSparseMultivariateFunction(f!, g!, J, initial_x)
+nlsolve(df, initial_x)
+```
+
+If `g!` conserves the sparsity structure of `gx`, `gx` will always have the same
+sparsity as `J`. This sometimes allow to write a faster version of `g!`.
 
 # Fine tunings
 
