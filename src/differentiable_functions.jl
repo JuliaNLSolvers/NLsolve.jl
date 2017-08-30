@@ -1,21 +1,31 @@
 abstract type AbstractDifferentiableMultivariateFunction end
 
-struct DifferentiableMultivariateFunction <: AbstractDifferentiableMultivariateFunction
-    f!::Function
-    g!::Function
-    fg!::Function
+struct DifferentiableMultivariateFunction{F1,F2,F3} <: AbstractDifferentiableMultivariateFunction
+    f!::F1
+    g!::F2
+    fg!::F3
+
+    DifferentiableMultivariateFunction{F1,F2,F3}(f!, g!, fg!) where {F1,F2,F3} =
+        new{F1,F2,F3}(f!, g!, fg!)
 end
 
 alloc_jacobian(df::DifferentiableMultivariateFunction, T::Type, n::Integer) = Array{T}(n, n)
 
-function DifferentiableMultivariateFunction(f!::Function, g!::Function, fg!::Function,
-                                            initial_x::AbstractArray)
+DifferentiableMultivariateFunction(f!, g!, fg!) =
+    DifferentiableMultivariateFunction{typeof(f!),typeof(g!),typeof(fg!)}(f!, g!, fg!)
+
+function DifferentiableMultivariateFunction(f!, g!, initial_x::AbstractArray)
+    return DifferentiableMultivariateFunction(reshape_f(f!, initial_x),
+                                              reshape_g(g!, initial_x))
+end
+
+function DifferentiableMultivariateFunction(f!, g!, fg!, initial_x::AbstractArray)
     return DifferentiableMultivariateFunction(reshape_f(f!, initial_x),
                                               reshape_g(g!, initial_x),
                                               reshape_fg(fg!, initial_x))
 end
 
-function DifferentiableMultivariateFunction(f!::Function, g!::Function)
+function DifferentiableMultivariateFunction(f!, g!)
     function fg!(x::AbstractVector, fx::AbstractVector, gx::AbstractMatrix)
         f!(x, fx)
         g!(x, gx)
@@ -23,13 +33,7 @@ function DifferentiableMultivariateFunction(f!::Function, g!::Function)
     return DifferentiableMultivariateFunction(f!, g!, fg!)
 end
 
-function DifferentiableMultivariateFunction(f!::Function, g!::Function,
-                                            initial_x::AbstractArray)
-    return DifferentiableMultivariateFunction(reshape_f(f!, initial_x),
-                                              reshape_g(g!, initial_x))
-end
-
-function DifferentiableMultivariateFunction(f!::Function; dtype::Symbol=:central)
+function DifferentiableMultivariateFunction(f!; dtype::Symbol=:central)
     function fg!(x::AbstractVector, fx::AbstractVector, gx::AbstractMatrix)
         f!(x, fx)
         function f(x::AbstractVector)
@@ -46,13 +50,13 @@ function DifferentiableMultivariateFunction(f!::Function; dtype::Symbol=:central
     return DifferentiableMultivariateFunction(f!, g!, fg!)
 end
 
-function DifferentiableMultivariateFunction(f!::Function, initial_x::AbstractArray;
+function DifferentiableMultivariateFunction(f!, initial_x::AbstractArray;
                                             dtype::Symbol=:central)
     return DifferentiableMultivariateFunction(reshape_f(f!, initial_x); dtype=dtype)
 end
 
 # Helper for the case where only f! and fg! are available
-function only_f!_and_fg!(f!::Function, fg!::Function)
+function only_f!_and_fg!(f!, fg!)
     function g!(x::AbstractVector, gx::AbstractMatrix)
         fx = similar(x)
         fg!(x, fx, gx)
@@ -60,13 +64,13 @@ function only_f!_and_fg!(f!::Function, fg!::Function)
     return DifferentiableMultivariateFunction(f!, g!, fg!)
 end
 
-function only_f!_and_fg!(f!::Function, fg!::Function, initial_x::AbstractArray)
+function only_f!_and_fg!(f!, fg!, initial_x::AbstractArray)
     return only_f!_and_fg!(reshape_f(f!, initial_x),
                            reshape_fg(fg!, initial_x))
 end
 
 # Helper for the case where only fg! is available
-function only_fg!(fg!::Function)
+function only_fg!(fg!)
     function f!(x::AbstractVector, fx::AbstractVector)
         gx = Array{eltype(x)}(length(x), length(x))
         fg!(x, fx, gx)
@@ -78,27 +82,37 @@ function only_fg!(fg!::Function)
     return DifferentiableMultivariateFunction(f!, g!, fg!)
 end
 
-function only_fg!(fg!::Function, initial_x::AbstractArray)
+function only_fg!(fg!, initial_x::AbstractArray)
     return only_fg!(reshape_fg(fg!, initial_x))
 end
 
 # For sparse Jacobians
-struct DifferentiableSparseMultivariateFunction <: AbstractDifferentiableMultivariateFunction
-    f!::Function
-    g!::Function
-    fg!::Function
+struct DifferentiableSparseMultivariateFunction{F1,F2,F3} <: AbstractDifferentiableMultivariateFunction
+    f!::F1
+    g!::F2
+    fg!::F3
+
+    DifferentiableSparseMultivariateFunction{F1,F2,F3}(f!, g!, fg!) where {F1,F2,F3} =
+        new{F1,F2,F3}(f!, g!, fg!)
 end
 
 alloc_jacobian(df::DifferentiableSparseMultivariateFunction, T::Type, n::Integer) = spzeros(T, n, n)
 
-function DifferentiableSparseMultivariateFunction(f!::Function, g!::Function, fg!::Function,
-                                                  initial_x::AbstractArray)
+DifferentiableSparseMultivariateFunction(f!, g!, fg!) =
+    DifferentiableSparseMultivariateFunction{typeof(f!),typeof(g!),typeof(fg!)}(f!, g!, fg!)
+
+function DifferentiableSparseMultivariateFunction(f!, g!, initial_x::AbstractArray)
+    return DifferentiableSparseMultivariateFunction(reshape_f(f!, initial_x),
+                                                    reshape_g_sparse(g!, initial_x))
+end
+
+function DifferentiableSparseMultivariateFunction(f!, g!, fg!, initial_x::AbstractArray)
     return DifferentiableSparseMultivariateFunction(reshape_f(f!, initial_x),
                                                     reshape_g_sparse(g!, initial_x),
                                                     reshape_fg_sparse(fg!, initial_x))
 end
 
-function DifferentiableSparseMultivariateFunction(f!::Function, g!::Function)
+function DifferentiableSparseMultivariateFunction(f!, g!)
     function fg!(x::AbstractVector, fx::AbstractVector, gx::SparseMatrixCSC)
         f!(x, fx)
         g!(x, gx)
@@ -106,23 +120,22 @@ function DifferentiableSparseMultivariateFunction(f!::Function, g!::Function)
     return DifferentiableSparseMultivariateFunction(f!, g!, fg!)
 end
 
-function DifferentiableSparseMultivariateFunction(f!::Function, g!::Function,
-                                                  initial_x::AbstractArray)
-    return DifferentiableSparseMultivariateFunction(reshape_f(f!, initial_x),
-                                                    reshape_g_sparse(g!, initial_x))
-end
-
-struct DifferentiableGivenSparseMultivariateFunction{Tv, Ti} <: AbstractDifferentiableMultivariateFunction
-    f!::Function
-    g!::Function
-    fg!::Function
+struct DifferentiableGivenSparseMultivariateFunction{F1,F2,F3,Tv,Ti} <: AbstractDifferentiableMultivariateFunction
+    f!::F1
+    g!::F2
+    fg!::F3
     J::SparseMatrixCSC{Tv, Ti}
+
+    DifferentiableGivenSparseMultivariateFunction{F1,F2,F3,Tv,Ti}(f!, g!, fg!, J) where {F1,F2,F3,Tv,Ti} =
+        new{F1,F2,F3,Tv,Ti}(f!, g!, fg!, J)
 end
 
 alloc_jacobian(df::DifferentiableGivenSparseMultivariateFunction, args...) = deepcopy(df.J)
 
-function DifferentiableGivenSparseMultivariateFunction(f!::Function, g!::Function,
-                                                       fg!::Function, J::SparseMatrixCSC,
+DifferentiableGivenSparseMultivariateFunction(f!, g!, fg!, J::SparseMatrixCSC{Tv,Ti}) where {Tv,Ti} =
+    DifferentiableGivenSparseMultivariateFunction{typeof(f!),typeof(g!),typeof(fg!),Tv,Ti}(f!, g!, fg!, J)
+
+function DifferentiableGivenSparseMultivariateFunction(f!, g!, fg!, J::SparseMatrixCSC,
                                                        initial_x::AbstractArray)
     return DifferentiableGivenSparseMultivariateFunction(reshape_f(f!, initial_x),
                                                          reshape_g_sparse(g!, initial_x),
@@ -130,8 +143,7 @@ function DifferentiableGivenSparseMultivariateFunction(f!::Function, g!::Functio
                                                          J)
 end
 
-function DifferentiableGivenSparseMultivariateFunction(f!::Function, g!::Function,
-                                                       J::SparseMatrixCSC)
+function DifferentiableGivenSparseMultivariateFunction(f!, g!, J::SparseMatrixCSC)
     function fg!(x::AbstractVector, fx::AbstractVector, gx::SparseMatrixCSC)
         f!(x, fx)
         g!(x, gx)
@@ -139,8 +151,7 @@ function DifferentiableGivenSparseMultivariateFunction(f!::Function, g!::Functio
     DifferentiableGivenSparseMultivariateFunction(f!, g!, fg!, J)
 end
 
-function DifferentiableGivenSparseMultivariateFunction(f!::Function, g!::Function,
-                                                       J::SparseMatrixCSC,
+function DifferentiableGivenSparseMultivariateFunction(f!, g!, J::SparseMatrixCSC,
                                                        initial_x::AbstractArray)
     return DifferentiableGivenSparseMultivariateFunction(reshape_f(f!, initial_x),
                                                          reshape_g_sparse(g!, initial_x),

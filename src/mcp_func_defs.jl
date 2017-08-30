@@ -24,7 +24,7 @@ function mcpsolve{T}(df::AbstractDifferentiableMultivariateFunction,
                   store_trace::Bool = false,
                   show_trace::Bool = false,
                   extended_trace::Bool = false,
-                  linesearch!::Function = LineSearches.backtracking!,
+                  linesearch! = LineSearches.BackTracking(),
                   factor::Real = one(T),
                   autoscale::Bool = true)
     @reformulate df
@@ -35,8 +35,8 @@ function mcpsolve{T}(df::AbstractDifferentiableMultivariateFunction,
             linesearch! = linesearch!, factor = factor, autoscale = autoscale)
 end
 
-function mcpsolve{T}(f!::Function,
-                  g!::Function,
+function mcpsolve{T}(f!,
+                  g!,
                   lower::Vector,
                   upper::Vector,
                   initial_x::AbstractArray{T};
@@ -48,7 +48,7 @@ function mcpsolve{T}(f!::Function,
                   store_trace::Bool = false,
                   show_trace::Bool = false,
                   extended_trace::Bool = false,
-                  linesearch!::Function = LineSearches.backtracking!,
+                  linesearch! = LineSearches.BackTracking(),
                   factor::Real = one(T),
                   autoscale::Bool = true)
     @reformulate DifferentiableMultivariateFunction(f!, g!, initial_x)
@@ -59,7 +59,7 @@ function mcpsolve{T}(f!::Function,
             linesearch! = linesearch!, factor = factor, autoscale = autoscale)
 end
 
-function mcpsolve{T}(f!::Function,
+function mcpsolve{T}(f!,
                   lower::Vector,
                   upper::Vector,
                   initial_x::AbstractArray{T};
@@ -71,7 +71,7 @@ function mcpsolve{T}(f!::Function,
                   store_trace::Bool = false,
                   show_trace::Bool = false,
                   extended_trace::Bool = false,
-                  linesearch!::Function = LineSearches.backtracking!,
+                  linesearch! = LineSearches.BackTracking(),
                   factor::Real = one(T),
                   autoscale::Bool = true,
                   autodiff::Bool = false)

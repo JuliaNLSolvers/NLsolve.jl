@@ -1,4 +1,4 @@
-function autodiff(f!::Function, initial_x::AbstractArray)
+function autodiff(f!, initial_x::AbstractArray)
 
     fvec! = reshape_f(f!, initial_x)
     permf! = (fx::AbstractVector, x::AbstractVector) -> fvec!(x, fx)

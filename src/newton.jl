@@ -34,7 +34,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
                     store_trace::Bool,
                     show_trace::Bool,
                     extended_trace::Bool,
-                    linesearch!::Function)
+                    linesearch!)
 
     x = vec(copy(initial_x))
     nn = length(x)
@@ -155,6 +155,6 @@ function newton{T}(df::AbstractDifferentiableMultivariateFunction,
                    store_trace::Bool,
                    show_trace::Bool,
                    extended_trace::Bool,
-                   linesearch!::Function)
+                   linesearch!)
     newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch!)
 end

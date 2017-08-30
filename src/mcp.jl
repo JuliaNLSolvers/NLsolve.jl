@@ -73,9 +73,11 @@ function mcp_smooth(df::AbstractDifferentiableMultivariateFunction,
         end
     end
 
-    dfT = typeof(df)
-
-    return dfT(f!, g!)
+    if typeof(df) <: DifferentiableSparseMultivariateFunction
+        return DifferentiableSparseMultivariateFunction(f!, g!)
+    else
+        return DifferentiableMultivariateFunction(f!, g!)
+    end
 end
 
 # Generate a function whose roots are the solutions of the MCP.
@@ -112,7 +114,9 @@ function mcp_minmax(df::AbstractDifferentiableMultivariateFunction,
         end
     end
 
-    dfT = typeof(df)
-
-    return dfT(f!, g!)
+    if typeof(df) <: DifferentiableSparseMultivariateFunction
+        return DifferentiableSparseMultivariateFunction(f!, g!)
+    else
+        return DifferentiableMultivariateFunction(f!, g!)
+    end
 end
