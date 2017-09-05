@@ -29,7 +29,7 @@ function assess_convergence(x::AbstractArray,
     return x_converged, f_converged, converged
 end
 
-function check_isfinite(x::Vector)
+function check_isfinite(x::AbstractVector)
     i = find((!).(isfinite.(x)))
     if !isempty(i)
         throw(IsFiniteException(i))

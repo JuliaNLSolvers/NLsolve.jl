@@ -1,16 +1,16 @@
 # Notations from Walker & Ni, "Anderson acceleration for fixed-point iterations", SINUM 2011
 # Attempts to accelerate the iteration xn+1 = xn + β f(x)
 
-function anderson_{T}(df::AbstractDifferentiableMultivariateFunction,
-                      x0::AbstractArray{T},
-                      xtol::T,
-                      ftol::T,
-                      iterations::Integer,
-                      store_trace::Bool,
-                      show_trace::Bool,
-                      extended_trace::Bool,
-                      m::Integer,
-                      β::Real)
+@views function anderson_{T}(df::AbstractDifferentiableMultivariateFunction,
+                             x0::AbstractArray{T},
+                             xtol::T,
+                             ftol::T,
+                             iterations::Integer,
+                             store_trace::Bool,
+                             show_trace::Bool,
+                             extended_trace::Bool,
+                             m::Integer,
+                             β::Real)
 
     f_calls = 0
     N = length(x0)
@@ -24,10 +24,10 @@ function anderson_{T}(df::AbstractDifferentiableMultivariateFunction,
     n = 1
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
-    old_x = @view xs[:,1]
+    old_x = xs[:,1]
     x_converged, f_converged, converged = false, false, false
 
-    @views for n = 1:iterations
+    for n = 1:iterations
         # fixed-point iteration
         df.f!(xs[:,1], fx)
         f_calls += 1
@@ -76,8 +76,10 @@ function anderson_{T}(df::AbstractDifferentiableMultivariateFunction,
     # returning gs[:,1] rather than xs[:,1] would be better here if
     # xn+1 = xn+beta*f(xn) is convergent, but the convergence
     # criterion is not guaranteed
+    x = similar(x0)
+    copy!(x, xs[:,1])
     return SolverResults("Anderson m=$m β=$β",
-                         x0, reshape(xs[:,1], size(x0)...), maximum(abs,fx),
+                         x0, x, maximum(abs,fx),
                          n, x_converged, xtol, f_converged, ftol, tr,
                          f_calls, 0)
 end

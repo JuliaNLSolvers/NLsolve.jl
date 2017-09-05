@@ -20,7 +20,8 @@ macro trustregiontrace(stepnorm)
     end)
 end
 
-function dogleg!{T}(p::Vector{T}, r::Vector{T}, d::Vector{T}, J::AbstractMatrix{T}, delta::Real)
+function dogleg!{T}(p::AbstractVector{T}, r::AbstractVector{T}, d::AbstractVector{T},
+                    J::AbstractMatrix{T}, delta::Real)
     local p_i
     try
         p_i = J \ r # Gauss-Newton step

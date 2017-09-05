@@ -71,7 +71,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     # Create objective function for the linesearch.
     # This function is defined as fo(x) = 0.5 * f(x) ⋅ f(x) and thus
     # has the gradient ∇fo(x) = ∇f(x) ⋅ f(x)
-    function fo(xlin::Vector)
+    function fo(xlin::AbstractVector)
         if xlin != xold
             df.f!(xlin, fvec)
             f_calls += 1
@@ -84,7 +84,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     # is expensive to recompute.
     # We solve this using the already computed ∇f(xₖ)
     # in case of the line search asking us for the gradient at xₖ.
-    function go!(storage::Vector, xlin::Vector)
+    function go!(storage::AbstractVector, xlin::AbstractVector)
         if xlin == xold
             At_mul_B!(storage, fjac, fvec)
         # Else we need to recompute it.
@@ -95,7 +95,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
             At_mul_B!(storage, fjac, fvec)
         end
     end
-    function fgo!(storage::Vector, xlin::Vector)
+    function fgo!(storage::AbstractVector, xlin::AbstractVector)
         go!(storage, xlin)
         dot(fvec, fvec) / 2
     end
