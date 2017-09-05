@@ -2,6 +2,8 @@
 
 @testset "abstractarray" begin
 
+using MappedArrays
+
 const c3 = 2e2
 const c4 = 2.02e1
 const c5 = 1.98e1
@@ -34,23 +36,33 @@ end
 
 initial_x_matrix = [-3. -3; -1 -1]
 initial_x = vec(initial_x_matrix)
+initial_x_mapped_matrix = mappedarray((x -> -2*x, x -> -x/2), [1.5 1.5; 0.5 0.5])
 
 for method in (:trust_region, :newton, :anderson)
     r = nlsolve(f!, g!, initial_x, method = method)
     r_matrix = nlsolve(f!, g!, initial_x_matrix, method = method)
+    r_mapped_matrix = nlsolve(f!, g!, initial_x_mapped_matrix, method = method)
 
     @test r.zero == vec(r_matrix.zero)
+    @test r_matrix.zero == r_mapped_matrix.zero
     @test r.residual_norm == r_matrix.residual_norm
+    @test r_matrix.residual_norm == r_mapped_matrix.residual_norm
     @test size(r.zero) == size(initial_x)
     @test size(r_matrix.zero) == size(initial_x_matrix)
+    @test size(r_mapped_matrix.zero) == size(initial_x_mapped_matrix)
 
     r_AD = nlsolve(f!, initial_x, method = method, autodiff = true)
     r_matrix_AD = nlsolve(f!, initial_x_matrix, method = method, autodiff = true)
+    r_mapped_matrix_AD = nlsolve(f!, initial_x_mapped_matrix, method = method,
+                                 autodiff = true)
 
     @test r_AD.zero == vec(r_matrix_AD.zero)
+    @test r_matrix_AD.zero == r_mapped_matrix_AD.zero
     @test r_AD.residual_norm == r_matrix_AD.residual_norm
+    @test r_matrix_AD.residual_norm == r_mapped_matrix_AD.residual_norm
     @test size(r_AD.zero) == size(initial_x)
     @test size(r_matrix_AD.zero) == size(initial_x_matrix)
+    @test size(r_mapped_matrix_AD.zero) == size(initial_x_mapped_matrix)
 end
 
 end
