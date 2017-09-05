@@ -1,7 +1,15 @@
 using NLsolve
+using DiffEqBase
 using Base.Test
 
 add_jl(x) = endswith(x, ".jl") ? x : x*".jl"
+
+type WrappedArray{T,N} <: DEDataArray{T,N}
+    x::Array{T,N}
+end
+
+Base.A_ldiv_B!(F::Factorization, B::WrappedArray) = A_ldiv_B!(F, B.x)
+Base.reshape(A::WrappedArray, dims::Int...) = WrappedArray(reshape(A.x, dims...))
 
 if length(ARGS) > 0
     tests = map(add_jl, ARGS)
