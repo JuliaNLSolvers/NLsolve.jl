@@ -13,7 +13,7 @@
 function mcp_smooth(df::AbstractDifferentiableMultivariateFunction,
                     lower::Vector, upper::Vector)
 
-    function f!(x::Vector, fx::Vector)
+    function f!(x::AbstractVector, fx::AbstractVector)
         df.f!(x, fx)
         for i = 1:length(x)
             if  isfinite.(upper[i])
@@ -25,7 +25,7 @@ function mcp_smooth(df::AbstractDifferentiableMultivariateFunction,
         end
     end
 
-    function g!(x::Vector, gx::AbstractArray)
+    function g!(x::AbstractVector, gx::AbstractMatrix)
         fx = similar(x)
         df.fg!(x, fx, gx)
 
@@ -73,9 +73,11 @@ function mcp_smooth(df::AbstractDifferentiableMultivariateFunction,
         end
     end
 
-    dfT = typeof(df)
-
-    return dfT(f!, g!)
+    if typeof(df) <: DifferentiableSparseMultivariateFunction
+        return DifferentiableSparseMultivariateFunction(f!, g!)
+    else
+        return DifferentiableMultivariateFunction(f!, g!)
+    end
 end
 
 # Generate a function whose roots are the solutions of the MCP.
@@ -88,7 +90,7 @@ end
 function mcp_minmax(df::AbstractDifferentiableMultivariateFunction,
                     lower::Vector, upper::Vector)
 
-    function f!(x::Vector, fx::Vector)
+    function f!(x::AbstractVector, fx::AbstractVector)
         df.f!(x, fx)
         for i = 1:length(x)
             if fx[i] < x[i]-upper[i]
@@ -100,7 +102,7 @@ function mcp_minmax(df::AbstractDifferentiableMultivariateFunction,
         end
     end
 
-    function g!(x::Vector, gx::AbstractArray)
+    function g!(x::AbstractVector, gx::AbstractMatrix)
         fx = similar(x)
         df.fg!(x, fx, gx)
         for i = 1:length(x)
@@ -112,7 +114,9 @@ function mcp_minmax(df::AbstractDifferentiableMultivariateFunction,
         end
     end
 
-    dfT = typeof(df)
-
-    return dfT(f!, g!)
+    if typeof(df) <: DifferentiableSparseMultivariateFunction
+        return DifferentiableSparseMultivariateFunction(f!, g!)
+    else
+        return DifferentiableMultivariateFunction(f!, g!)
+    end
 end

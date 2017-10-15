@@ -27,16 +27,16 @@ macro newtontrace(stepnorm)
 end
 
 function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
-                   initial_x::Vector{T},
-                   xtol::T,
-                   ftol::T,
-                   iterations::Integer,
-                   store_trace::Bool,
-                   show_trace::Bool,
-                   extended_trace::Bool,
-                   linesearch!::Function)
+                    initial_x::AbstractArray{T},
+                    xtol::T,
+                    ftol::T,
+                    iterations::Integer,
+                    store_trace::Bool,
+                    show_trace::Bool,
+                    extended_trace::Bool,
+                    linesearch!)
 
-    x = copy(initial_x)
+    x = vec(copy(initial_x))
     nn = length(x)
     xold = fill(convert(T, NaN), nn)
     fvec = Array{T}(nn)
@@ -71,7 +71,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     # Create objective function for the linesearch.
     # This function is defined as fo(x) = 0.5 * f(x) ⋅ f(x) and thus
     # has the gradient ∇fo(x) = ∇f(x) ⋅ f(x)
-    function fo(xlin::Vector)
+    function fo(xlin::AbstractVector)
         if xlin != xold
             df.f!(xlin, fvec)
             f_calls += 1
@@ -84,7 +84,7 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     # is expensive to recompute.
     # We solve this using the already computed ∇f(xₖ)
     # in case of the line search asking us for the gradient at xₖ.
-    function go!(storage::Vector, xlin::Vector)
+    function go!(storage::AbstractVector, xlin::AbstractVector)
         if xlin == xold
             At_mul_B!(storage, fjac, fvec)
         # Else we need to recompute it.
@@ -95,12 +95,12 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
             At_mul_B!(storage, fjac, fvec)
         end
     end
-    function fgo!(storage::Vector, xlin::Vector)
+    function fgo!(storage::AbstractVector, xlin::AbstractVector)
         go!(storage, xlin)
         dot(fvec, fvec) / 2
     end
 
-    dfo = OnceDifferentiable(fo, go!, fgo!, initial_x)
+    dfo = OnceDifferentiable(fo, go!, fgo!, x)
 
     while !converged && it < iterations
 
@@ -142,19 +142,19 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     end
 
     return SolverResults("Newton with line-search",
-                         initial_x, x, norm(fvec, Inf),
+                         initial_x, reshape(x, size(initial_x)...), norm(fvec, Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
                          f_calls, g_calls)
 end
 
 function newton{T}(df::AbstractDifferentiableMultivariateFunction,
-                   initial_x::Vector{T},
+                   initial_x::AbstractArray{T},
                    xtol::Real,
                    ftol::Real,
                    iterations::Integer,
                    store_trace::Bool,
                    show_trace::Bool,
                    extended_trace::Bool,
-                   linesearch!::Function)
+                   linesearch!)
     newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch!)
 end

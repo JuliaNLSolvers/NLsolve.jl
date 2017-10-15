@@ -15,7 +15,7 @@ end
 function mcpsolve{T}(df::AbstractDifferentiableMultivariateFunction,
                   lower::Vector,
                   upper::Vector,
-                  initial_x::Vector{T};
+                  initial_x::AbstractArray{T};
                   method::Symbol = :trust_region,
                   reformulation::Symbol = :smooth,
                   xtol::Real = zero(T),
@@ -24,7 +24,7 @@ function mcpsolve{T}(df::AbstractDifferentiableMultivariateFunction,
                   store_trace::Bool = false,
                   show_trace::Bool = false,
                   extended_trace::Bool = false,
-                  linesearch!::Function = LineSearches.backtracking!,
+                  linesearch! = LineSearches.BackTracking(),
                   factor::Real = one(T),
                   autoscale::Bool = true)
     @reformulate df
@@ -35,11 +35,11 @@ function mcpsolve{T}(df::AbstractDifferentiableMultivariateFunction,
             linesearch! = linesearch!, factor = factor, autoscale = autoscale)
 end
 
-function mcpsolve{T}(f!::Function,
-                  g!::Function,
+function mcpsolve{T}(f!,
+                  g!,
                   lower::Vector,
                   upper::Vector,
-                  initial_x::Vector{T};
+                  initial_x::AbstractArray{T};
                   method::Symbol = :trust_region,
                   reformulation::Symbol = :smooth,
                   xtol::Real = zero(T),
@@ -48,10 +48,10 @@ function mcpsolve{T}(f!::Function,
                   store_trace::Bool = false,
                   show_trace::Bool = false,
                   extended_trace::Bool = false,
-                  linesearch!::Function = LineSearches.backtracking!,
+                  linesearch! = LineSearches.BackTracking(),
                   factor::Real = one(T),
                   autoscale::Bool = true)
-    @reformulate DifferentiableMultivariateFunction(f!, g!)
+    @reformulate DifferentiableMultivariateFunction(f!, g!, initial_x)
     nlsolve(rf,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
@@ -59,10 +59,10 @@ function mcpsolve{T}(f!::Function,
             linesearch! = linesearch!, factor = factor, autoscale = autoscale)
 end
 
-function mcpsolve{T}(f!::Function,
+function mcpsolve{T}(f!,
                   lower::Vector,
                   upper::Vector,
-                  initial_x::Vector{T};
+                  initial_x::AbstractArray{T};
                   method::Symbol = :trust_region,
                   reformulation::Symbol = :smooth,
                   xtol::Real = zero(T),
@@ -71,12 +71,12 @@ function mcpsolve{T}(f!::Function,
                   store_trace::Bool = false,
                   show_trace::Bool = false,
                   extended_trace::Bool = false,
-                  linesearch!::Function = LineSearches.backtracking!,
+                  linesearch! = LineSearches.BackTracking(),
                   factor::Real = one(T),
                   autoscale::Bool = true,
                   autodiff::Bool = false)
     if !autodiff
-        df = DifferentiableMultivariateFunction(f!)
+        df = DifferentiableMultivariateFunction(f!, initial_x)
     else
         df = NLsolve.autodiff(f!, initial_x)
     end

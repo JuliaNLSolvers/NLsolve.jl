@@ -65,10 +65,10 @@ function update!(tr::SolverTrace,
     return
 end
 
-mutable struct SolverResults{T}
+mutable struct SolverResults{T,I<:AbstractArray{T},Z<:AbstractArray{T}}
     method::String
-    initial_x::Vector{T}
-    zero::Vector{T}
+    initial_x::I
+    zero::Z
     residual_norm::T
     iterations::Int
     x_converged::Bool
