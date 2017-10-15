@@ -4,17 +4,12 @@ struct DifferentiableMultivariateFunction{F1,F2,F3} <: AbstractDifferentiableMul
     f!::F1
     g!::F2
     fg!::F3
-
-    DifferentiableMultivariateFunction{F1,F2,F3}(f!, g!, fg!) where {F1,F2,F3} =
-        new{F1,F2,F3}(f!, g!, fg!)
 end
 
 alloc_jacobian(df::DifferentiableMultivariateFunction, T::Type, n::Integer) = Array{T}(n, n)
 
-DifferentiableMultivariateFunction(f!, g!, fg!) =
-    DifferentiableMultivariateFunction{typeof(f!),typeof(g!),typeof(fg!)}(f!, g!, fg!)
-
-function DifferentiableMultivariateFunction(f!, g!, initial_x::AbstractArray)
+function DifferentiableMultivariateFunction(f!::F1, g!::F2,
+                                            initial_x::AbstractArray) where {F1,F2}
     return DifferentiableMultivariateFunction(reshape_f(f!, initial_x),
                                               reshape_g(g!, initial_x))
 end
@@ -91,17 +86,12 @@ struct DifferentiableSparseMultivariateFunction{F1,F2,F3} <: AbstractDifferentia
     f!::F1
     g!::F2
     fg!::F3
-
-    DifferentiableSparseMultivariateFunction{F1,F2,F3}(f!, g!, fg!) where {F1,F2,F3} =
-        new{F1,F2,F3}(f!, g!, fg!)
 end
 
 alloc_jacobian(df::DifferentiableSparseMultivariateFunction, T::Type, n::Integer) = spzeros(T, n, n)
 
-DifferentiableSparseMultivariateFunction(f!, g!, fg!) =
-    DifferentiableSparseMultivariateFunction{typeof(f!),typeof(g!),typeof(fg!)}(f!, g!, fg!)
-
-function DifferentiableSparseMultivariateFunction(f!, g!, initial_x::AbstractArray)
+function DifferentiableSparseMultivariateFunction(f!::F1, g!::F2,
+                                                  initial_x::AbstractArray) where {F1,F2}
     return DifferentiableSparseMultivariateFunction(reshape_f(f!, initial_x),
                                                     reshape_g_sparse(g!, initial_x))
 end
@@ -125,15 +115,9 @@ struct DifferentiableGivenSparseMultivariateFunction{F1,F2,F3,Tv,Ti} <: Abstract
     g!::F2
     fg!::F3
     J::SparseMatrixCSC{Tv, Ti}
-
-    DifferentiableGivenSparseMultivariateFunction{F1,F2,F3,Tv,Ti}(f!, g!, fg!, J) where {F1,F2,F3,Tv,Ti} =
-        new{F1,F2,F3,Tv,Ti}(f!, g!, fg!, J)
 end
 
 alloc_jacobian(df::DifferentiableGivenSparseMultivariateFunction, args...) = deepcopy(df.J)
-
-DifferentiableGivenSparseMultivariateFunction(f!, g!, fg!, J::SparseMatrixCSC{Tv,Ti}) where {Tv,Ti} =
-    DifferentiableGivenSparseMultivariateFunction{typeof(f!),typeof(g!),typeof(fg!),Tv,Ti}(f!, g!, fg!, J)
 
 function DifferentiableGivenSparseMultivariateFunction(f!, g!, fg!, J::SparseMatrixCSC,
                                                        initial_x::AbstractArray)
@@ -143,7 +127,8 @@ function DifferentiableGivenSparseMultivariateFunction(f!, g!, fg!, J::SparseMat
                                                          J)
 end
 
-function DifferentiableGivenSparseMultivariateFunction(f!, g!, J::SparseMatrixCSC)
+function DifferentiableGivenSparseMultivariateFunction(f!::F1, g!::F2,
+                                                       J::SparseMatrixCSC) where {F1,F2}
     function fg!(x::AbstractVector, fx::AbstractVector, gx::SparseMatrixCSC)
         f!(x, fx)
         g!(x, gx)

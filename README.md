@@ -71,7 +71,7 @@ Jacobian.
 This is the most efficient method, because it minimizes the memory allocations.
 
 In the following, it is assumed that you have defined a function
-`f!(x::AbstractVector, fx::AbstractVector)` or, more general,
+`f!(x::AbstractVector, fx::AbstractVector)` or, more generally,
 `f!(x::AbstractArray, fx::AbstractArray)` computing the residual of the system
 at point `x` and putting it into the `fx` argument.
 
