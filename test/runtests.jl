@@ -13,7 +13,8 @@ Base.reshape(A::WrappedArray, dims::Int...) = WrappedArray(reshape(A.x, dims...)
 if length(ARGS) > 0
     tests = map(add_jl, ARGS)
 else
-    tests = ["2by2.jl",
+    tests = ["api.jl",
+             "2by2.jl",
              "singular.jl",
              "finite_difference.jl",
              "minpack.jl",
