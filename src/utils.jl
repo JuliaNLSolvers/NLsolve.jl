@@ -38,7 +38,7 @@ end
 
 # Helpers for functions that do not modify arguments in place but return
 function not_in_place(f)
-    function f!(x::AbstractVector, fx::AbstractVector)
+    function f!(x, fx)
         copy!(fx, f(x))
     end
 end

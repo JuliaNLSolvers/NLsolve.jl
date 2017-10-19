@@ -21,7 +21,7 @@ function DifferentiableMultivariateFunction(f!, g!, fg!, initial_x::AbstractArra
 end
 
 function DifferentiableMultivariateFunction(f!, g!)
-    function fg!(x::AbstractVector, fx::AbstractVector, gx::AbstractMatrix)
+    function fg!(x, fx, gx)
         f!(x, fx)
         g!(x, gx)
     end
@@ -38,7 +38,7 @@ function DifferentiableMultivariateFunction(f!; dtype::Symbol=:central)
         end
         finite_difference_jacobian!(f, x, fx, gx, dtype)
     end
-    function g!(x::AbstractVector, gx::AbstractMatrix)
+    function g!(x, gx)
         fx = similar(x)
         fg!(x, fx, gx)
     end
@@ -52,7 +52,7 @@ end
 
 # Helper for the case where only f! and fg! are available
 function only_f!_and_fg!(f!, fg!)
-    function g!(x::AbstractVector, gx::AbstractMatrix)
+    function g!(x, gx)
         fx = similar(x)
         fg!(x, fx, gx)
     end
@@ -66,11 +66,11 @@ end
 
 # Helper for the case where only fg! is available
 function only_fg!(fg!)
-    function f!(x::AbstractVector, fx::AbstractVector)
+    function f!(x, fx)
         gx = Array{eltype(x)}(length(x), length(x))
         fg!(x, fx, gx)
     end
-    function g!(x::AbstractVector, gx::AbstractMatrix)
+    function g!(x, gx)
         fx = similar(x)
         fg!(x, fx, gx)
     end
