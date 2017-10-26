@@ -3,15 +3,15 @@
 # Presented in Miranda and Fackler (2002): "Applied Computational Economics and
 # Finance", p. 51
 @testset "difficult_mcp" begin
-function f_diffmcp!(x, fvec)
+function f_diffmcp!(fvec, x)
     fvec[1] = (1-x[1])^2-1.01
 end
 
-function g_diffmcp!(x, fjac)
+function g_diffmcp!(fjac, x)
     fjac[1] = 2(x[1]-1)
 end
 
-df = DifferentiableMultivariateFunction(f_diffmcp!, g_diffmcp!)
+df = DifferentiableVector(f_diffmcp!, g_diffmcp!)
 
 solution = [ 2.004987562 ]
 

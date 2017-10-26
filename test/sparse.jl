@@ -3,20 +3,20 @@
 
 @testset "sparse" begin
 
-function f_sparse!(x, fvec)
-    fvec[1] = (x[1]+3)*(x[2]^3-7)+18
-    fvec[2] = sin(x[2]*exp(x[1])-1)
+function f_sparse!(F, x)
+    F[1] = (x[1]+3)*(x[2]^3-7)+18
+    F[2] = sin(x[2]*exp(x[1])-1)
 end
 
-function g_sparse!(x, fjac)
-    fjac[1, 1] = x[2]^3-7
-    fjac[1, 2] = 3*x[2]^2*(x[1]+3)
+function g_sparse!(J, x)
+    J[1, 1] = x[2]^3-7
+    J[1, 2] = 3*x[2]^2*(x[1]+3)
     u = exp(x[1])*cos(x[2]*exp(x[1])-1)
-    fjac[2, 1] = x[2]*u
-    fjac[2, 2] = u
+    J[2, 1] = x[2]*u
+    J[2, 2] = u
 end
 
-df = DifferentiableSparseMultivariateFunction(f_sparse!, g_sparse!)
+df = DifferentiableVector(f_sparse!, g_sparse!; J = spzeros(2, 2))
 
 # Test trust region
 r = nlsolve(df, [ -0.5; 1.4], method = :trust_region, autoscale = true)
@@ -39,7 +39,7 @@ r = mcpsolve(df, [-Inf;-Inf], [Inf; Inf], [-0.5; 1.4], reformulation = :minmax)
 @test norm(r.zero - [ 0; 1]) < 1e-8
 
 # Test given sparse
-df = DifferentiableGivenSparseMultivariateFunction(f_sparse!, g_sparse!, spzeros(2, 2))
+df = DifferentiableVector(f_sparse!, g_sparse!; J = spzeros(2, 2))
 r = nlsolve(df, [ -0.5; 1.4], method = :trust_region, autoscale = true)
 @test converged(r)
 @test norm(r.zero - [ 0; 1]) < 1e-8

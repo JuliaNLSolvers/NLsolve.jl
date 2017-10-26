@@ -2,16 +2,16 @@ import NLsolve: IsFiniteException
 
 @testset "throws" begin
 
-function f_inf!(x, fx)
-    copy!(fx, x)
-    fx[1] = Inf
-    return fx
+function f_inf!(F, x)
+    copy!(F, x)
+    F[1] = Inf
+    return F
 end
 
-function f_nan!(x, fx)
-    copy!(fx, x)
-    fx[1] = NaN
-    return fx
+function f_nan!(F, x)
+    copy!(F, x)
+    F[1] = NaN
+    return F
 end
 
 @test_throws IsFiniteException nlsolve(f_inf!, [ -0.5; 1.4], method = :trust_region, autodiff=true)

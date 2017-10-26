@@ -31,12 +31,12 @@ following program:
 ```jl
 using NLsolve
 
-function f!(x, fvec)
+function f!(fvec, x)
     fvec[1] = (x[1]+3)*(x[2]^3-7)+18
     fvec[2] = sin(x[2]*exp(x[1])-1)
 end
 
-function g!(x, fjac)
+function j!(fjac, x)
     fjac[1, 1] = x[2]^3-7
     fjac[1, 2] = 3*x[2]^2*(x[1]+3)
     u = exp(x[1])*cos(x[2]*exp(x[1])-1)
@@ -44,12 +44,12 @@ function g!(x, fjac)
     fjac[2, 2] = u
 end
 
-nlsolve(f!, g!, [ 0.1; 1.2])
+nlsolve(f!, j!, [ 0.1; 1.2])
 ```
 
 First, note that the function `f!` computes the residuals of the nonlinear
 system, and stores them in a preallocated vector passed as second argument.
-Similarly, the function `g!` computes the Jacobian of the system and stores it
+Similarly, the function `j!` computes the Jacobian of the system and stores it
 in a preallocated matrix passed as second argument. Residuals and Jacobian
 functions can take different shapes, see below.
 
@@ -87,19 +87,19 @@ nlsolve(f!, initial_x)
 ```
 
 Alternatively, you can construct an object of type
-`DifferentiableMultivariateFunction` and pass it to `nlsolve`, as in:
+`DifferentiableVector` and pass it to `nlsolve`, as in:
 
 ```jl
-df = DifferentiableMultivariateFunction(f!)
+df = DifferentiableVector(f!)
 nlsolve(df, initial_x)
 ```
 
 If your function `f!` operates not on `AbstractVector` but on arbitrary
 `AbstractArray` you have to specify `initial_x` in the constructor of the
-`DifferentiableMultivariateFunction`:
+`DifferentiableVector`:
 
 ```jl
-df = DifferentiableMultivariateFunction(f!, initial_x)
+df = DifferentiableVector(f!, initial_x)
 nlsolve(df, initial_x)
 ```
 
@@ -116,57 +116,57 @@ nlsolve(f!, initial_x, autodiff = true)
 ### Jacobian available
 
 If, in addition to `f!(x::AbstractVector, fx::AbstractVector)`, you have a
-function `g!(x::AbstractVector, gx::AbstractMatrix)` for computing the Jacobian
+function `j!(x::AbstractVector, gx::AbstractMatrix)` for computing the Jacobian
 of the system, then the syntax is, as in the example above:
 
 ```jl
-nlsolve(f!, g!, initial_x)
+nlsolve(f!, j!, initial_x)
 ```
 
 Again it is also possible to specify two functions `f!(x::AbstractArray,
-fx::AbstractArray)` and `g!(x::AbstractArray, gx::AbstractMatrix)` that work on
+fx::AbstractArray)` and `j!(x::AbstractArray, gx::AbstractMatrix)` that work on
 arbitrary arrays `x`.
 
 Note that you should not assume that the Jacobian `gx` passed in argument is
 initialized to a zero matrix. You must set all the elements of the matrix in
-the function `g!`.
+the function `j!`.
 
 Alternatively, you can construct an object of type
-`DifferentiableMultivariateFunction` and pass it to `nlsolve`, as in:
+`DifferentiableVector` and pass it to `nlsolve`, as in:
 
 ```jl
-df = DifferentiableMultivariateFunction(f!, g!)
+df = DifferentiableVector(f!, j!)
 nlsolve(df, initial_x)
 ```
 
-If `f!` and `g!` do not operate on vectors the syntax is:
+If `f!` and `j!` do not operate on vectors the syntax is:
 
 ```jl
-df = DifferentiableMultivariateFunction(f!, g!, initial_x)
+df = DifferentiableVector(f!, j!, initial_x)
 nlsolve(df, initial_x)
 ```
 
 ### Optimization of simultaneous residuals and Jacobian
 
-If, in addition to `f!` and `g!`, you have a function `fg!(x::AbstractVector,
-fx::AbstractVector, gx::AbstractMatrix)` or `fg!(x::AbstractArray,
+If, in addition to `f!` and `j!`, you have a function `fj!(x::AbstractVector,
+fx::AbstractVector, gx::AbstractMatrix)` or `fj!(x::AbstractArray,
 fx::AbstractArray, gx::AbstractMatrix)` that computes both the residual and the
 Jacobian at the same time, you can use the following syntax for vectors
 
 ```jl
-df = DifferentiableMultivariateFunction(f!, g!, fg!)
+df = DifferentiableVector(f!, j!, fj!)
 nlsolve(df, initial_x)
 ```
 
 and similarly for arbitrary arrays
 
 ```jl
-df = DifferentiableMultivariateFunction(f!, g!, fg!, initial_x)
+df = DifferentiableVector(f!, j!, fj!, initial_x)
 nlsolve(df, initial_x)
 ```
 
-If the function `fg!` uses some optimization that make it costless than
-calling `f!` and `g!` successively, then this syntax can possibly improve the
+If the function `fj!` uses some optimization that make it costless than
+calling `f!` and `j!` successively, then this syntax can possibly improve the
 performance.
 
 ### Other combinations
@@ -174,32 +174,32 @@ performance.
 There are other helpers for two other cases, described below. Note that these
 cases are not optimal in terms of memory management.
 
-If only `f!` and `fg!` are available, the helper function `only_f!_and_fg!` can be
-used to construct a `DifferentiableMultivariateFunction` object, that can be
+If only `f!` and `fj!` are available, the helper function `only_f!_and_fj!` can be
+used to construct a `DifferentiableVector` object, that can be
 used as first argument of `nlsolve`. The complete syntax is therefore
 
 ```jl
-nlsolve(only_f!_and_fg!(f!, fg!), initial_x)
+nlsolve(only_f!_and_fj!(f!, fj!), initial_x)
 ```
 
-if `f!` and `fg!` operate on vectors, and otherwise
+if `f!` and `fj!` operate on vectors, and otherwise
 
 ```jl
-nlsolve(only_f!_and_fg!(f!, fg!, initial_x), initial_x)
+nlsolve(only_f!_and_fj!(f!, fj!, initial_x), initial_x)
 ```
 
-If only `fg!` is available, the helper function `only_fg!` can be used to
-construct a `DifferentiableMultivariateFunction` object, that can be used as
+If only `fj!` is available, the helper function `only_fj!` can be used to
+construct a `DifferentiableVector` object, that can be used as
 first argument of `nlsolve`. The complete syntax is therefore
 
 ```jl
-nlsolve(only_fg!(fg!), initial_x)
+nlsolve(only_fj!(fj!), initial_x)
 ```
 
-if `f!` and `fg!` operate on vectors, and otherwise
+if `f!` and `fj!` operate on vectors, and otherwise
 
 ```jl
-nlsolve(only_fg!(f!, fg!, initial_x), initial_x)
+nlsolve(only_fj!(f!, fj!, initial_x), initial_x)
 ```
 
 ## With functions returning residuals and Jacobian as output
@@ -225,7 +225,7 @@ be used to compute the Jacobian in that case.
 If, in addition to `f(x::AbstractVector)`, there is a function
 `g(x::AbstractVector)` returning a newly-allocated matrix containing the
 Jacobian, `not_in_place` can be used to construct an object of type
-`DifferentiableMultivariateFunction` that can be used as first argument of
+`DifferentiableVector` that can be used as first argument of
 `nlsolve`:
 
 ```jl
@@ -241,7 +241,7 @@ nlsolve(not_in_place(f, g, initial_x), initial_x)
 If, in addition to `f` and `g`, there is a function `fg` returning a tuple of a
 newly-allocated vector of residuals and a newly-allocated matrix of the
 Jacobian, `not_in_place` can be used to construct an object of type
-`DifferentiableMultivariateFunction`:
+`DifferentiableVector`:
 
 ```jl
 nlsolve(not_in_place(f, g, fg), initial_x)
@@ -274,25 +274,25 @@ performance on large systems. This can be achieved by constructing an object of
 type `DifferentiableSparseMultivariateFunction`. The syntax is therefore
 
 ```jl
-df = DifferentiableSparseMultivariateFunction(f!, g!)
+df = DifferentiableSparseMultivariateFunction(f!, j!)
 nlsolve(df, initial_x)
 ```
 
-if `f!` and `g!` operate on vectors, and otherwise
+if `f!` and `j!` operate on vectors, and otherwise
 
 ```jl
-df = DifferentiableSparseMultivariateFunction(f!, g!, initial_x)
+df = DifferentiableSparseMultivariateFunction(f!, j!, initial_x)
 nlsolve(df, initial_x)
 ```
 
-It is possible to give an optional third function `fg!` to the constructor, as
+It is possible to give an optional third function `fj!` to the constructor, as
 for the full Jacobian case.
 
-The second argument of `g!` (and the third of `fg!`) is assumed to be of the
+The second argument of `j!` (and the third of `fj!`) is assumed to be of the
 same type as the one returned by the function `spzeros` (i.e.
 `SparseMatrixCSC`).
 
-Note that on the first call to `g!` or `fg!`, the sparse matrix passed in
+Note that on the first call to `j!` or `fj!`, the sparse matrix passed in
 argument is empty, i.e. all its elements are zeros. But this matrix is not
 reset across function calls. So you need to be careful and ensure that you
 don't forget to overwrite all nonzeros elements that could have been
@@ -311,19 +311,19 @@ do so, construct an object of type
 `DifferentiableGivenSparseMultivariateFunction` by
 
 ```jl
-df = DifferentiableGivenSparseMultivariateFunction(f!, g!, J)
+df = DifferentiableGivenSparseMultivariateFunction(f!, j!, J)
 nlsolve(df, initial_x)
 ```
 
-if `f!` and `g!` operate on vectors, and otherwise
+if `f!` and `j!` operate on vectors, and otherwise
 
 ```jl
-df = DifferentiableGivenSparseMultivariateFunction(f!, g!, J, initial_x)
+df = DifferentiableGivenSparseMultivariateFunction(f!, j!, J, initial_x)
 nlsolve(df, initial_x)
 ```
 
-If `g!` conserves the sparsity structure of `gx`, `gx` will always have the same
-sparsity as `J`. This sometimes allow to write a faster version of `g!`.
+If `j!` conserves the sparsity structure of `gx`, `gx` will always have the same
+sparsity as `J`. This sometimes allow to write a faster version of `j!`.
 
 # Fine tunings
 
@@ -430,7 +430,7 @@ Here is a complete example:
 ```jl
 using NLsolve
 
-function f!(x, fvec)
+function f!(fvec, x)
     fvec[1]=3*x[1]^2+2*x[1]*x[2]+2*x[2]^2+x[3]+3*x[4]-6
     fvec[2]=2*x[1]^2+x[1]+x[2]^2+3*x[3]+2*x[4]-2
     fvec[3]=3*x[1]^2+x[1]*x[2]+2*x[2]^2+2*x[3]+3*x[4]-1

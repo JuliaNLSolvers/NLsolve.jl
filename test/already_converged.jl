@@ -1,11 +1,11 @@
 # Verify that we handle correctly the case where the starting point is a zero
 @testset "already converged" begin
-function f!(x, fvec)
+function f!(fvec, x)
     fvec[1] = (x[1]+3)*(x[2]^3-7)+18
     fvec[2] = sin(x[2]*exp(x[1])-1)
 end
 
-df = DifferentiableMultivariateFunction(f!)
+df = DifferentiableVector(f!)
 
 r = nlsolve(df, [ 0.; 1.], method = :trust_region)
 @test converged(r)
