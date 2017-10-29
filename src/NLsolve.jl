@@ -29,20 +29,20 @@ end
 show(io::IO, e::IsFiniteException) = print(io,
   "During the resolution of the non-linear system, the evaluation" *
   " of the following equation(s) resulted in a non-finite number: $(e.indices)")
-df_path = "differentiable_vectors/"
-include(df_path*"differentiable_functions.jl")
-include(df_path*"interface.jl")
-include(df_path*"autodiff.jl")
-include(df_path*"helpers.jl")
-s_path = "solvers/"
-include(s_path*"newton.jl")
-include(s_path*"trust_region.jl")
-include(s_path*"anderson.jl")
-include(s_path*"mcp_func_defs.jl")
-include(s_path*"mcp.jl")
-nls_path = "nlsolve/"
-include(nls_path*"solver_state_results.jl")
-include(nls_path*"nlsolve.jl")
-include(nls_path*"utils.jl")
+
+include("differentiable_vectors/differentiable_functions.jl")
+include("differentiable_vectors/interface.jl")
+include("differentiable_vectors/autodiff.jl")
+include("differentiable_vectors/helpers.jl")
+
+include("solvers/newton.jl")
+include("solvers/trust_region.jl")
+include("solvers/anderson.jl")
+include("solvers/mcp_func_defs.jl")
+include("solvers/mcp.jl")
+
+include("nlsolve/solver_state_results.jl")
+include("nlsolve/nlsolve.jl")
+include("nlsolve/utils.jl")
 
 end # module
