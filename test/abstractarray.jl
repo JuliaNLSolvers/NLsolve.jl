@@ -61,5 +61,26 @@ for method in (:trust_region, :newton, :anderson)
     @test typeof(r_matrix_AD.zero) == typeof(initial_x_matrix)
     @test typeof(r_wrapped_AD.zero) == typeof(initial_x_wrapped)
 end
-
 end
+#=
+when BandedMatrices are not super slow to precompile, we can add this test
+remember to add REQUIRE in test and using BandedMatrices.
+@testset "banded matrices" begin
+function f!(fstor, x)
+    fstor.=(1/3).*x.^3
+end
+function j!(jstor, x)
+   for i = 1:3
+       jstor[i,i] = x[i]^2
+   end
+end
+
+dv = DifferentiableVector(f!, j!, ones(3); J = bones(Float64, 3, 0, 0))
+
+zer = nlsolve(dv, ones(3))
+F = zeros(3)
+f!(F, zer.zero)
+@test norm(F, Inf) < 1e-8
+@test typeof(NLsolve.jacobian(dv)) <: BandedMatrix
+end
+=#
