@@ -31,17 +31,17 @@ following program:
 ```jl
 using NLsolve
 
-function f!(fvec, x)
-    fvec[1] = (x[1]+3)*(x[2]^3-7)+18
-    fvec[2] = sin(x[2]*exp(x[1])-1)
+function f!(F, x)
+    F[1] = (x[1]+3)*(x[2]^3-7)+18
+    F[2] = sin(x[2]*exp(x[1])-1)
 end
 
-function j!(fjac, x)
-    fjac[1, 1] = x[2]^3-7
-    fjac[1, 2] = 3*x[2]^2*(x[1]+3)
+function j!(J, x)
+    J[1, 1] = x[2]^3-7
+    J[1, 2] = 3*x[2]^2*(x[1]+3)
     u = exp(x[1])*cos(x[2]*exp(x[1])-1)
-    fjac[2, 1] = x[2]*u
-    fjac[2, 2] = u
+    J[2, 1] = x[2]*u
+    J[2, 2] = u
 end
 
 nlsolve(f!, j!, [ 0.1; 1.2])
@@ -71,9 +71,9 @@ Jacobian.
 This is the most efficient method, because it minimizes the memory allocations.
 
 In the following, it is assumed that you have defined a function
-`f!(x::AbstractVector, fx::AbstractVector)` or, more generally,
-`f!(x::AbstractArray, fx::AbstractArray)` computing the residual of the system
-at point `x` and putting it into the `fx` argument.
+`f!(x::AbstractVector, F::AbstractVector)` or, more generally,
+`f!(x::AbstractArray, F::AbstractArray)` computing the residual of the system
+at point `x` and putting it into the `F` argument.
 
 In turn, there 3 ways of specifying how the Jacobian should be computed:
 
@@ -115,8 +115,8 @@ nlsolve(f!, initial_x, autodiff = true)
 
 ### Jacobian available
 
-If, in addition to `f!(x::AbstractVector, fx::AbstractVector)`, you have a
-function `j!(x::AbstractVector, gx::AbstractMatrix)` for computing the Jacobian
+If, in addition to `f!(x::AbstractVector, F::AbstractVector)`, you have a
+function `j!(x::AbstractVector, J::AbstractMatrix)` for computing the Jacobian
 of the system, then the syntax is, as in the example above:
 
 ```jl
@@ -124,10 +124,10 @@ nlsolve(f!, j!, initial_x)
 ```
 
 Again it is also possible to specify two functions `f!(x::AbstractArray,
-fx::AbstractArray)` and `j!(x::AbstractArray, gx::AbstractMatrix)` that work on
+F::AbstractArray)` and `j!(x::AbstractArray, J::AbstractMatrix)` that work on
 arbitrary arrays `x`.
 
-Note that you should not assume that the Jacobian `gx` passed in argument is
+Note that you should not assume that the Jacobian `J` passed in argument is
 initialized to a zero matrix. You must set all the elements of the matrix in
 the function `j!`.
 
@@ -149,8 +149,8 @@ nlsolve(df, initial_x)
 ### Optimization of simultaneous residuals and Jacobian
 
 If, in addition to `f!` and `j!`, you have a function `fj!(x::AbstractVector,
-fx::AbstractVector, gx::AbstractMatrix)` or `fj!(x::AbstractArray,
-fx::AbstractArray, gx::AbstractMatrix)` that computes both the residual and the
+F::AbstractVector, J::AbstractMatrix)` or `fj!(x::AbstractArray,
+F::AbstractArray, J::AbstractMatrix)` that computes both the residual and the
 Jacobian at the same time, you can use the following syntax for vectors
 
 ```jl
@@ -229,28 +229,28 @@ Jacobian, `not_in_place` can be used to construct an object of type
 `nlsolve`:
 
 ```jl
-nlsolve(not_in_place(f, g), initial_x)
+nlsolve(not_in_place(f, j), initial_x)
 ```
 
-For functions `f` and `g` that operate on arbitrary arrays the syntax is:
+For functions `f` and `j` that operate on arbitrary arrays the syntax is:
 
 ```jl
-nlsolve(not_in_place(f, g, initial_x), initial_x)
+nlsolve(not_in_place(f, j, initial_x), initial_x)
 ```
 
-If, in addition to `f` and `g`, there is a function `fg` returning a tuple of a
+If, in addition to `f` and `j`, there is a function `fj` returning a tuple of a
 newly-allocated vector of residuals and a newly-allocated matrix of the
 Jacobian, `not_in_place` can be used to construct an object of type
 `DifferentiableVector`:
 
 ```jl
-nlsolve(not_in_place(f, g, fg), initial_x)
+nlsolve(not_in_place(f, j, fj), initial_x)
 ```
 
-For functions `f`, `g`, and `fg` that operate on arbitrary arrays the syntax is:
+For functions `f`, `j`, and `fj` that operate on arbitrary arrays the syntax is:
 
 ```jl
-nlsolve(not_in_place(f, g, fg, initial_x), initial_x)
+nlsolve(not_in_place(f, j, fj, initial_x), initial_x)
 ```
 
 ## With functions taking several scalar arguments
@@ -297,13 +297,13 @@ argument is empty, i.e. all its elements are zeros. But this matrix is not
 reset across function calls. So you need to be careful and ensure that you
 don't forget to overwrite all nonzeros elements that could have been
 initialized by a previous function call. If in doubt, you can clear the sparse
-matrix at the beginning of the function. If `gx` is the sparse Jacobian, this
+matrix at the beginning of the function. If `J` is the sparse Jacobian, this
 can be achieved with:
 
 ```jl
-fill!(gx.colptr, 1)
-empty!(gx.rowval)
-empty!(gx.nzval)
+fill!(J.colptr, 1)
+empty!(J.rowval)
+empty!(J.nzval)
 ```
 
 Another solution is to directly pass a Jacobian matrix with a given sparsity. To
@@ -322,7 +322,7 @@ df = DifferentiableGivenSparseMultivariateFunction(f!, j!, J, initial_x)
 nlsolve(df, initial_x)
 ```
 
-If `j!` conserves the sparsity structure of `gx`, `gx` will always have the same
+If `j!` conserves the sparsity structure of `J`, `J` will always have the same
 sparsity as `J`. This sometimes allow to write a faster version of `j!`.
 
 # Fine tunings
@@ -430,11 +430,11 @@ Here is a complete example:
 ```jl
 using NLsolve
 
-function f!(fvec, x)
-    fvec[1]=3*x[1]^2+2*x[1]*x[2]+2*x[2]^2+x[3]+3*x[4]-6
-    fvec[2]=2*x[1]^2+x[1]+x[2]^2+3*x[3]+2*x[4]-2
-    fvec[3]=3*x[1]^2+x[1]*x[2]+2*x[2]^2+2*x[3]+3*x[4]-1
-    fvec[4]=x[1]^2+3*x[2]^2+2*x[3]+3*x[4]-3
+function f!(F, x)
+    F[1]=3*x[1]^2+2*x[1]*x[2]+2*x[2]^2+x[3]+3*x[4]-6
+    F[2]=2*x[1]^2+x[1]+x[2]^2+3*x[3]+2*x[4]-2
+    F[3]=3*x[1]^2+x[1]*x[2]+2*x[2]^2+2*x[3]+3*x[4]-1
+    F[4]=x[1]^2+3*x[2]^2+2*x[3]+3*x[4]-3
 end
 
 r = mcpsolve(f!, [0., 0., 0., 0.], [Inf, Inf, Inf, Inf],
@@ -457,11 +457,11 @@ and third components of the function are positive at the solution. On the other
 hand, the first and fourth components of the function are zero at the solution.
 
 ```jl
-julia> fvec = similar(r.zero)
+julia> F = similar(r.zero)
 
-julia> f!(r.zero, fvec)
+julia> f!(r.zero, F)
 
-julia> fvec
+julia> F
 4-element Array{Float64,1}:
  -1.26298e-9
   3.22474
