@@ -12,8 +12,8 @@ import Base.show,
        Base.getindex,
        Base.setindex!
 
-import Calculus.finite_difference_jacobian!
-import NLSolversBase: OnceDifferentiable
+import DiffEqDiffTools.finite_difference_jacobian!
+
 export OnceDifferentiable,
        n_ary,
        nlsolve,
