@@ -21,3 +21,5 @@ function J(x)
 end
 
 x0 = [3.0, 12.0]
+
+solution = nlsolve(not_in_place(f), not_in_place(J), x0)
