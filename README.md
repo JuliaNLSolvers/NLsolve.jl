@@ -1,21 +1,21 @@
 NLsolve.jl
 ==========
 
+Solving non-linear systems of equations in Julia.
+
+NLsolve.jl is part of the [JuliaNLSolveres](https://julianlsolvers.github.io) family.
+
 [![Build Status](https://travis-ci.org/JuliaNLSolvers/NLsolve.jl.svg?branch=master)](https://travis-ci.org/JuliaNLSolvers/NLsolve.jl)
 
+# Non-linear systems of equations
 The NLsolve package solves systems of nonlinear equations. Formally, if `f` is
-a multivariate function, then this package looks for some vector `x` that
+a multivalued function, then this package looks for some vector `x` that
 satisfies `f(x)=0`.
 
 The package is also able to solve mixed complementarity problems, which are
 similar to systems of nonlinear equations, except that the equality to zero is
 allowed to become an inequality if some boundary condition is satisfied. See
 further below for a formal definition and the related commands.
-
-Since there is some overlap between optimizers and nonlinear solvers, this
-package borrows some ideas from the
-[Optim](https://github.com/JuliaNLSolvers/Optim.jl) package, and depends on it for
-linesearch algorithms.
 
 # Simple example
 
