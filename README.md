@@ -3,7 +3,7 @@ NLsolve.jl
 
 Solving non-linear systems of equations in Julia.
 
-NLsolve.jl is part of the [JuliaNLSolveres](https://julianlsolvers.github.io) family.
+NLsolve.jl is part of the [JuliaNLSolveres](https://github.com/JuliaNLSolvers) family.
 
 [![Build Status](https://travis-ci.org/JuliaNLSolvers/NLsolve.jl.svg?branch=master)](https://travis-ci.org/JuliaNLSolvers/NLsolve.jl)
 
