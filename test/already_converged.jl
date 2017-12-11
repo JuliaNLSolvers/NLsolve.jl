@@ -5,7 +5,7 @@ function f!(fvec, x)
     fvec[2] = sin(x[2]*exp(x[1])-1)
 end
 
-df = DifferentiableVector(f!)
+df = OnceDifferentiable(f!, rand(2), rand(2))
 
 r = nlsolve(df, [ 0.; 1.], method = :trust_region)
 @test converged(r)

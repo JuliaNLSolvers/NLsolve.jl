@@ -81,7 +81,7 @@ function dogleg!{T}(p::AbstractVector{T}, r::AbstractVector{T}, d::AbstractVecto
     end
 end
 
-function trust_region_{T}(df::AbstractDifferentiableVector,
+function trust_region_{T}(df::OnceDifferentiable,
                           initial_x::AbstractArray{T},
                           xtol::T,
                           ftol::T,
@@ -115,7 +115,7 @@ function trust_region_{T}(df::AbstractDifferentiableVector,
 
     if autoscale
         for j = 1:nn
-            d[j] = norm(view(df.J, :, j))
+            d[j] = norm(view(jacobian(df), :, j))
             if d[j] == zero(T)
                 d[j] = one(T)
             end
@@ -135,14 +135,14 @@ function trust_region_{T}(df::AbstractDifferentiableVector,
         it += 1
 
         # Compute proposed iteration step
-        dogleg!(p, r, d, df.J, delta)
+        dogleg!(p, r, d, jacobian(df), delta)
 
         copy!(xold, x)
         x .+= p
         value!(df, x)
 
         # Ratio of actual to predicted reduction (equation 11.47 in N&W)
-        A_mul_B!(r_predict, df.J, p)
+        A_mul_B!(r_predict, jacobian(df), p)
         r_predict .+= r
         rho = (sum(abs2,r) - sum(abs2, value(df))) / (sum(abs2,r) - sum(abs2,r_predict))
 
@@ -154,7 +154,7 @@ function trust_region_{T}(df::AbstractDifferentiableVector,
             # Update scaling vector
             if autoscale
                 for j = 1:nn
-                    d[j] = max(convert(T, 0.1) * d[j], norm(view(df.J, :, j)))
+                    d[j] = max(convert(T, 0.1) * d[j], norm(view(jacobian(df), :, j)))
                 end
             end
 
@@ -183,10 +183,10 @@ function trust_region_{T}(df::AbstractDifferentiableVector,
     return SolverResults(name,
                          initial_x, reshape(x, size(initial_x)...), norm(r, Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
-                         first(df.f_calls), first(df.j_calls))
+                         first(df.f_calls), first(df.df_calls))
 end
 
-function trust_region{T}(df::AbstractDifferentiableVector,
+function trust_region{T}(df::OnceDifferentiable,
                          initial_x::AbstractArray{T},
                          xtol::Real,
                          ftol::Real,

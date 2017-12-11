@@ -11,10 +11,7 @@ function nlsolve(df::TDF,
                  factor::Real = one(T),
                  autoscale::Bool = true,
                  m::Integer = 0,
-                 beta::Real = 1.0) where {T, TDF <: AbstractDifferentiableVector}
-    if TDF <: Uninitialized
-        df = df(initial_x)
-    end
+                 beta::Real = 1.0) where {T, TDF <: OnceDifferentiable}
     if extended_trace
         show_trace = true
     end
@@ -52,7 +49,7 @@ function nlsolve(f!,
                  autoscale::Bool = true,
                  m::Integer = 0,
                  beta::Real = 1.0) where T
-    nlsolve(DifferentiableVector(f!, j!, initial_x),
+    nlsolve(OnceDifferentiable(f!, j!, similar(initial_x), initial_x),
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
@@ -74,12 +71,8 @@ function nlsolve{T}(f!,
                  autoscale::Bool = true,
                  m::Integer = 0,
                  beta::Real = 1.0,
-                 autodiff::Bool = false)
-    if !autodiff
-        df = DifferentiableVector(f!, initial_x)
-    else
-        df = NLsolve.autodiff(f!, initial_x)
-    end
+                 autodiff = :forward)
+        df = OnceDifferentiable(f!, initial_x, initial_x, autodiff)
     nlsolve(df,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,

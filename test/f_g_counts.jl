@@ -20,9 +20,10 @@
     end
     g_counts!(fjac, x) = g_counts_ref!(x, fjac, gcalls)
 
-    df = DifferentiableVector(f_counts!, g_counts!)
-
     x0 = [-1.2; 1.]
+
+    df = OnceDifferentiable(f_counts!, g_counts!, similar(x0), similar(x0))
+
 
     fcalls[] = 0
     gcalls[] = 0
@@ -30,7 +31,8 @@
     r = nlsolve(df, x0, method = :trust_region)
     @test r.f_calls == fcalls[]
     @test r.g_calls == gcalls[]
-    df = DifferentiableVector(f_counts!, g_counts!)
+
+    df = OnceDifferentiable(f_counts!, g_counts!, similar(x0), similar(x0))
 
     fcalls[] = 0
     gcalls[] = 0

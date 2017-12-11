@@ -28,7 +28,7 @@ macro newtontrace(stepnorm)
     end)
 end
 
-function newton_{T}(df::AbstractDifferentiableVector,
+function newton_{T}(df::OnceDifferentiable,
                     initial_x::AbstractArray{T},
                     xtol::T,
                     ftol::T,
@@ -85,8 +85,7 @@ function newton_{T}(df::AbstractDifferentiableVector,
         go!(storage, xlin)
         dot(value(df), value(df)) / 2
     end
-
-    dfo = OnceDifferentiable(fo, go!, fgo!, x)
+    dfo = OnceDifferentiable(fo, go!, fgo!, real(zero(T)), x)
 
     while !converged && it < iterations
 
@@ -129,10 +128,10 @@ function newton_{T}(df::AbstractDifferentiableVector,
     return SolverResults("Newton with line-search",
                          initial_x, reshape(x, size(initial_x)...), norm(value(df), Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
-                         first(df.f_calls), first(df.j_calls))
+                         first(df.f_calls), first(df.df_calls))
 end
 
-function newton{T}(df::AbstractDifferentiableVector,
+function newton{T}(df::OnceDifferentiable,
                    initial_x::AbstractArray{T},
                    xtol::Real,
                    ftol::Real,

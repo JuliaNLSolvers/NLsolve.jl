@@ -13,11 +13,8 @@ import Base.show,
        Base.setindex!
 
 import Calculus.finite_difference_jacobian!
-
-export DifferentiableVector,
-       only_f!_and_fj!,
-       only_fj!,
-       not_in_place,
+import NLSolversBase: OnceDifferentiable
+export OnceDifferentiable,
        n_ary,
        nlsolve,
        mcpsolve,
@@ -30,8 +27,6 @@ show(io::IO, e::IsFiniteException) = print(io,
   "During the resolution of the non-linear system, the evaluation" *
   " of the following equation(s) resulted in a non-finite number: $(e.indices)")
 
-include("differentiable_vectors/differentiable_functions.jl")
-include("differentiable_vectors/interface.jl")
 include("differentiable_vectors/autodiff.jl")
 include("differentiable_vectors/helpers.jl")
 

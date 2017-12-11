@@ -26,7 +26,7 @@ function rosenbrock()
         fjac[2,1] = -20x[1]
         fjac[2,2] = 10
     end
-    (DifferentiableVector(f!, j!), [-1.2; 1.], "Rosenbrock")
+    (OnceDifferentiable(f!, j!, [-1.2, 1.0], [-1.2, 1.0]), [-1.2; 1.0], "Rosenbrock")
 end
 
 function powell_singular()
@@ -47,7 +47,7 @@ function powell_singular()
         fjac[4,1] = 2sqrt(10)*(x[1] - x[4])
         fjac[4,4] = -fjac[4,1]
     end
-    (DifferentiableVector(f!, j!), [3.; -1.; 0.; 1.], "Powell singular")
+    (OnceDifferentiable(f!, j!, rand(4), [3.; -1.; 0.; 1.]), [3.; -1.; 0.; 1.], "Powell singular")
 end
 
 function powell_badly_scaled()
@@ -63,7 +63,7 @@ function powell_badly_scaled()
         fjac[2,1] = -exp(-x[1])
         fjac[2,2] = -exp(-x[2])
     end
-    (DifferentiableVector(f!, j!), [0.; 1.], "Powell badly scaled")
+    (OnceDifferentiable(f!, j!, rand(2), [0.; 1.]), [0.; 1.], "Powell badly scaled")
 end
 
 function wood()
@@ -96,7 +96,7 @@ function wood()
         fjac[4,3] = -2*c6*x[3]
         fjac[4,4] = c6 + c4
     end
-    (DifferentiableVector(f!, j!), [-3.; -1; -3; -1], "Wood")
+    (OnceDifferentiable(f!, j!, rand(4), [-3.; -1; -3; -1]), [-3.; -1; -3; -1], "Wood")
 end
 
 function helical_valley()
@@ -132,7 +132,7 @@ function helical_valley()
         fjac[3,2] = 0
         fjac[3,3] = 1
     end
-    (DifferentiableVector(f!, j!), [-1.; 0; 0], "Helical Valley")
+    (OnceDifferentiable(f!, j!, rand(3), [-1.; 0; 0]), [-1.; 0; 0], "Helical Valley")
 end
 
 function watson(n::Integer)
@@ -207,7 +207,7 @@ function watson(n::Integer)
             end
         end
     end
-    (DifferentiableVector(f!, j!), zeros(n), "Watson")
+    (OnceDifferentiable(f!, j!, zeros(n), zeros(n)), zeros(n), "Watson")
 end
 
 function chebyquad(n::Integer)
@@ -254,7 +254,7 @@ function chebyquad(n::Integer)
             end
         end
     end
-    (DifferentiableVector(f!, j!), collect(1:n)/(n+1), "Chebyquad")
+    (OnceDifferentiable(f!, j!, collect(1:n)/(n+1), collect(1:n)/(n+1)), collect(1:n)/(n+1), "Chebyquad")
 end
 
 function brown_almost_linear(n::Integer)
@@ -283,7 +283,7 @@ function brown_almost_linear(n::Integer)
             end
         end
     end
-    (DifferentiableVector(f!, j!), 0.5*ones(n), "Brown almost-linear")
+    (OnceDifferentiable(f!, j!, 0.5*ones(n), 0.5*ones(n)), 0.5*ones(n), "Brown almost-linear")
 end
 
 function discrete_boundary_value(n::Integer)
@@ -324,7 +324,7 @@ function discrete_boundary_value(n::Integer)
     initial_x = collect(1:n)*h
     initial_x = initial_x .* (initial_x .- 1)
 
-    (DifferentiableVector(f!, j!), initial_x, "Discrete boundary value")
+    (OnceDifferentiable(f!, j!, initial_x, initial_x), initial_x, "Discrete boundary value")
 end
 
 function discrete_integral_equation(n::Integer)
@@ -364,7 +364,7 @@ function discrete_integral_equation(n::Integer)
     initial_x = collect(1:n)*h
     initial_x = initial_x .* (initial_x .- 1)
 
-    (DifferentiableVector(f!, j!), initial_x, "Discrete integral equation")
+    (OnceDifferentiable(f!, j!, initial_x, initial_x), initial_x, "Discrete integral equation")
 end
 
 function trigonometric(n::Integer)
@@ -387,7 +387,7 @@ function trigonometric(n::Integer)
             fjac[j,j] = (j+1)*temp - cos(x[j])
         end
     end
-    (DifferentiableVector(f!, j!), ones(n)/n, "Trigonometric")
+    (OnceDifferentiable(f!, j!,ones(n)/n, ones(n)/n), ones(n)/n, "Trigonometric")
 end
 
 function variably_dimensioned(n::Integer)
@@ -416,7 +416,7 @@ function variably_dimensioned(n::Integer)
             fjac[k,k] += 1
         end
     end
-    (DifferentiableVector(f!, j!), 1 .- collect(1:n)/n, "Variably dimensioned")
+    (OnceDifferentiable(f!, j!, 1 .- collect(1:n)/n, 1 .- collect(1:n)/n), 1 .- collect(1:n)/n, "Variably dimensioned")
 end
 
 function broyden_tridiagonal(n::Integer)
@@ -449,7 +449,7 @@ function broyden_tridiagonal(n::Integer)
             end
         end
     end
-    (DifferentiableVector(f!, j!), -ones(n), "Broyden tridiagonal")
+    (OnceDifferentiable(f!, j!, -ones(n), -ones(n)), -ones(n), "Broyden tridiagonal")
 end
 
 function broyden_banded(n::Integer)
@@ -483,7 +483,7 @@ function broyden_banded(n::Integer)
             fjac[k,k] = 2+15x[k]^2
         end
     end
-    (DifferentiableVector(f!, j!), -ones(n), "Broyden banded")
+    (OnceDifferentiable(f!, j!, -ones(n), -ones(n)), -ones(n), "Broyden banded")
 end
 
 alltests = [rosenbrock();
@@ -535,7 +535,7 @@ for (df, initial, name) in alltests
                 r.f_calls, r.g_calls, r.residual_norm, tot_time)
         @test converged(r)
         # with autodiff
-        tot_time = @elapsed r_AD = nlsolve(df.f!, initial, method = method, autodiff = true)
+        tot_time = @elapsed r_AD = nlsolve(df.f, initial, method = method, autodiff = true)
         @printf("%-45s   %5d   %5d   %5d   %14e   %10e\n", name*"-"*string(method)*"-AD",
                 length(initial), r_AD.f_calls, r_AD.g_calls, r_AD.residual_norm, tot_time)
         if PRINT_FILE

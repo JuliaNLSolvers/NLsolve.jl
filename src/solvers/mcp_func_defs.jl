@@ -26,10 +26,8 @@ function mcpsolve(df::TDF,
                   extended_trace::Bool = false,
                   linesearch! = LineSearches.BackTracking(),
                   factor::Real = one(T),
-                  autoscale::Bool = true) where {TDF <: AbstractDifferentiableVector, T}
-    if TDF <: Uninitialized
-      df = df(initial_x)
-    end
+                  autoscale::Bool = true) where {TDF <: OnceDifferentiable, T}
+
     @reformulate df
     nlsolve(rf,
             initial_x, method = method, xtol = xtol, ftol = ftol,
@@ -54,7 +52,7 @@ function mcpsolve{T}(f!,
                   linesearch! = LineSearches.BackTracking(),
                   factor::Real = one(T),
                   autoscale::Bool = true)
-    @reformulate DifferentiableVector(f!, j!, initial_x)
+    @reformulate OnceDifferentiable(f!, j!, similar(initial_x), initial_x)
     nlsolve(rf,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
@@ -79,9 +77,9 @@ function mcpsolve{T}(f!,
                   autoscale::Bool = true,
                   autodiff::Bool = false)
     if !autodiff
-        df = DifferentiableVector(f!, initial_x)
+        df = OnceDifferentiable(f!, similar(initial_x), initial_x)
     else
-        df = NLsolve.autodiff(f!, initial_x)
+        df = OnceDifferentiable(f!, initial_x, initial_x)
     end
     @reformulate df
     nlsolve(rf,

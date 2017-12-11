@@ -15,18 +15,19 @@ function g_sinj!(J, x)
     J[2, 2] = 4*x[2]
 end
 
-df = DifferentiableVector(f_sinj!, g_sinj!)
+df = OnceDifferentiable(f_sinj!, g_sinj!, [3.0, 0.0], [3.0, 0.0])
+df32 = OnceDifferentiable(f_sinj!, g_sinj!, [3.0f0, 0.0f0], [3.0f0, 0.0f0])
 
 # Test disabled, not stable across runs
 #r = nlsolve(df, [ 3.0; 0], method = :newton, ftol = 1e-5)
 #@assert converged(r)
 #@assert norm(r.zero) < 1e-5
 
-r = nlsolve(df, [ 3.0; 0], method = :trust_region)
+r = nlsolve(df, [ 3.0; 0.0], method = :trust_region)
 @assert converged(r)
 @assert norm(r.zero) < 1e-6
 
-r = nlsolve(df, [3.0f0; 0], method = :trust_region)
+r = nlsolve(df32, [3.0f0; 0.0f0], method = :trust_region)
 @assert converged(r)
 @assert norm(r.zero) < 1e-6
 
@@ -42,5 +43,5 @@ let a = rand(10)
     end
 end
 
-df = DifferentiableVector(f_let!, g_let!)
+df = OnceDifferentiable(f_let!, g_let!, rand(10), rand(10))
 r = nlsolve(df, rand(10), method = :trust_region)

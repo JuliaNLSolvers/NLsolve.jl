@@ -390,7 +390,7 @@ Other optional arguments to `nlsolve`, available for all algorithms, are:
   stored? Default: `false`.
 * `show_trace`: should a trace of the optimization algorithm's state be shown
   on `STDOUT`? Default: `false`.
-* `extended_trace`: should additional algorithm internals be added to the state
+* `extended_trace`: should additifonal algorithm internals be added to the state
   trace? Default: `false`.
 
 # Mixed complementarity problems

@@ -16,7 +16,7 @@ function g_2by2!(J, x)
     J[2, 2] = u
 end
 
-df = DifferentiableVector(f_2by2!, g_2by2!)
+df = OnceDifferentiable(f_2by2!, g_2by2!, [ -0.5; 1.4], [ -0.5; 1.4])
 
 # Test trust region
 r = nlsolve(df, [ -0.5; 1.4], method = :trust_region, autoscale = true)
@@ -26,11 +26,12 @@ r = nlsolve(df, [ -0.5; 1.4], method = :trust_region, autoscale = false)
 @test converged(r)
 @test norm(r.zero - [ 0; 1]) < 1e-7
 
-r = nlsolve(df, [ -0.5f0; 1.4f0], method = :trust_region, autoscale = true)
+df32 = OnceDifferentiable(f_2by2!, g_2by2!, [ -0.5f0; 1.4f0], [ -0.5f0; 1.4f0])
+r = nlsolve(df32, [ -0.5f0; 1.4f0], method = :trust_region, autoscale = true)
 @test eltype(r.zero) == Float32
 @test converged(r)
 @test norm(r.zero - [ 0; 1]) < 1e-7
-r = nlsolve(df, [ -0.5f0; 1.4f0], method = :trust_region, autoscale = false)
+r = nlsolve(df32, [ -0.5f0; 1.4f0], method = :trust_region, autoscale = false)
 @test eltype(r.zero) == Float32
 @test converged(r)
 @test norm(r.zero - [ 0; 1]) < 1e-7
@@ -39,7 +40,7 @@ r = nlsolve(df, [ -0.5f0; 1.4f0], method = :trust_region, autoscale = false)
 r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch! = LineSearches.BackTracking(), ftol = 1e-6)
 @test converged(r)
 @test norm(r.zero - [ 0; 1]) < 1e-6
-r = nlsolve(df, [ -0.5f0; 1.4f0], method = :newton, linesearch! = LineSearches.BackTracking(), ftol = 1e-3)
+r = nlsolve(df32, [ -0.5f0; 1.4f0], method = :newton, linesearch! = LineSearches.BackTracking(), ftol = 1e-3)
 @test eltype(r.zero) == Float32
 @test converged(r)
 @test norm(r.zero - [ 0; 1]) < 1e-6

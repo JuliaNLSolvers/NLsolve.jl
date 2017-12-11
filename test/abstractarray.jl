@@ -75,7 +75,7 @@ function j!(jstor, x)
    end
 end
 
-dv = DifferentiableVector(f!, j!, ones(3); J = bones(Float64, 3, 0, 0))
+dv = OnceDifferentiable(f!, j!, ones(3); J = bones(Float64, 3, 0, 0))
 
 zer = nlsolve(dv, ones(3))
 F = zeros(3)

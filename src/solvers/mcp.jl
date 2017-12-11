@@ -12,7 +12,7 @@
 # hence the difference in the smooth function.
 struct MCP
 end
-function mcp_smooth(df::AbstractDifferentiableVector,
+function mcp_smooth(df::OnceDifferentiable,
                     lower::Vector, upper::Vector)
 
     function f!(fx, x)
@@ -74,8 +74,7 @@ function mcp_smooth(df::AbstractDifferentiableVector,
             gx[i,i] += dminus_dv[i] + dminus_du[i]*dplus_dv[i]
         end
     end
-
-    return DifferentiableVector(f!, j!; J = df.J)
+    return OnceDifferentiable(f!, j!, similar(lower), jacobian(df), similar(lower))
 end
 
 # Generate a function whose roots are the solutions of the MCP.
@@ -85,7 +84,7 @@ end
 #
 # Note that Miranda and Fackler use the opposite sign convention for the MCP,
 # hence the difference in the function.
-function mcp_minmax(df::AbstractDifferentiableVector,
+function mcp_minmax(df::OnceDifferentiable,
                     lower::Vector, upper::Vector)
     function f!(fx, x)
         value!(df, fx, x)
@@ -110,5 +109,5 @@ function mcp_minmax(df::AbstractDifferentiableVector,
             end
         end
     end
-    return DifferentiableVector(f!, j!)
+    return OnceDifferentiable(f!, j!, similar(lower), similar(lower))
 end

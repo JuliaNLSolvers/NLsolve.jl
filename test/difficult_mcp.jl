@@ -11,7 +11,7 @@ function g_diffmcp!(fjac, x)
     fjac[1] = 2(x[1]-1)
 end
 
-df = DifferentiableVector(f_diffmcp!, g_diffmcp!)
+df = OnceDifferentiable(f_diffmcp!, g_diffmcp!, [0.0], [0.0])
 
 solution = [ 2.004987562 ]
 

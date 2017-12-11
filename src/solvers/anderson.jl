@@ -1,7 +1,7 @@
 # Notations from Walker & Ni, "Anderson acceleration for fixed-point iterations", SINUM 2011
 # Attempts to accelerate the iteration xn+1 = xn + β f(x)
 
-@views function anderson_{T}(df::AbstractDifferentiableVector,
+@views function anderson_{T}(df::OnceDifferentiable,
                              x0::AbstractArray{T},
                              xtol::T,
                              ftol::T,
@@ -81,7 +81,7 @@
                          first(df.f_calls), 0)
 end
 
-function anderson{T}(df::AbstractDifferentiableVector,
+function anderson{T}(df::OnceDifferentiable,
                      initial_x::AbstractArray{T},
                      xtol::Real,
                      ftol::Real,

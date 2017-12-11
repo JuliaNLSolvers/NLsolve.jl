@@ -30,7 +30,7 @@ end
 
 solution = [ 1.22474487, 0., 0., 0.5 ]
 
-df = DifferentiableVector(f!, j!)
+df = OnceDifferentiable(f!, j!, rand(4), rand(4))
 
 
 # Test smooth reformulation with trust region
