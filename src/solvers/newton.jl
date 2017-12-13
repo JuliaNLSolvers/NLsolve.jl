@@ -67,7 +67,7 @@ function newton_{T}(df::OnceDifferentiable,
         if xlin != xold
             value!(df, xlin)
         end
-        dot(value(df), value(df)) / 2
+        vecdot(value(df), value(df)) / 2
     end
 
     # The line search algorithm will want to first compute ∇fo(xₖ).
@@ -79,11 +79,11 @@ function newton_{T}(df::OnceDifferentiable,
         if xlin != xold
             value_jacobian!(df, xlin)
         end
-        At_mul_B!(storage, jacobian(df), value(df))
+        At_mul_B!(storage, jacobian(df), vec(value(df)))
     end
     function fgo!(storage::AbstractVector, xlin::AbstractVector)
         go!(storage, xlin)
-        dot(value(df), value(df)) / 2
+        vecdot(value(df), value(df)) / 2
     end
     dfo = OnceDifferentiable(fo, go!, fgo!, real(zero(T)), x)
 
@@ -96,8 +96,8 @@ function newton_{T}(df::OnceDifferentiable,
         end
 
         try
-            At_mul_B!(g, jacobian(df), value(df))
-            p = jacobian(df)\value(df)
+            At_mul_B!(g, jacobian(df), vec(value(df)))
+            p = jacobian(df)\vec(value(df))
             scale!(p, -1)
         catch e
             if isa(e, Base.LinAlg.LAPACKException) || isa(e, Base.LinAlg.SingularException)
@@ -105,7 +105,7 @@ function newton_{T}(df::OnceDifferentiable,
                 # FIXME: better selection for lambda, see Nocedal & Wright p. 289
                 fjac2 = jacobian(df)'*jacobian(df)
                 lambda = convert(T,1e6)*sqrt(n*eps())*norm(fjac2, 1)
-                p = -(fjac2 + lambda*eye(n))\g
+                p = -(fjac2 + lambda*eye(n))\vec(g)
             else
                 throw(e)
             end
@@ -114,7 +114,7 @@ function newton_{T}(df::OnceDifferentiable,
         copy!(xold, x)
 
         LineSearches.clear!(lsr)
-        push!(lsr, zero(T), dot(value(df),value(df))/2, dot(g, p))
+        push!(lsr, zero(T), vecdot(value(df),value(df))/2, vecdot(g, p))
 
         alpha = linesearch!(dfo, xold, p, x, lsr, one(T), mayterminate)
 
@@ -126,7 +126,7 @@ function newton_{T}(df::OnceDifferentiable,
     end
 
     return SolverResults("Newton with line-search",
-                         initial_x, reshape(x, size(initial_x)...), norm(value(df), Inf),
+                         initial_x, reshape(x, size(initial_x)...), vecnorm(value(df), Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
                          first(df.f_calls), first(df.df_calls))
 end

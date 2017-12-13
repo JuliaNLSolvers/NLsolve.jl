@@ -22,18 +22,18 @@ macro trustregiontrace(stepnorm)
     end)
 end
 
-function dogleg!{T}(p::AbstractVector{T}, r::AbstractVector{T}, d::AbstractVector{T},
+function dogleg!{T}(p::AbstractArray{T}, r::AbstractArray{T}, d::AbstractArray{T},
                     J::AbstractMatrix{T}, delta::Real)
     local p_i
     try
-        p_i = J \ r # Gauss-Newton step
+        p_i = J \ vec(r) # Gauss-Newton step
     catch e
         if isa(e, Base.LinAlg.LAPACKException) || isa(e, Base.LinAlg.SingularException)
             # If Jacobian is singular, compute a least-squares solution to J*x+r=0
             U, S, V = svd(full(J)) # Convert to full matrix because sparse SVD not implemented as of Julia 0.3
             k = sum(S .> eps())
             mrinv = V * diagm([1./S[1:k]; zeros(eltype(S), length(S)-k)]) * U' # Moore-Penrose generalized inverse of J
-            p_i = mrinv * r
+            p_i = mrinv * vec(r)
         else
             throw(e)
         end
@@ -51,11 +51,11 @@ function dogleg!{T}(p::AbstractVector{T}, r::AbstractVector{T}, d::AbstractVecto
 
         # compute g = J'r ./ (d .^ 2)
         g = p
-        At_mul_B!(g, J, r)
+        At_mul_B!(vec(g), J, vec(r))
         g .= g ./ d.^2
 
         # compute Cauchy point
-        p_c = - wnorm(d, g)^2 / sum(abs2, J*g) .* g
+        p_c = - wnorm(d, g)^2 / sum(abs2, J*vec(g)) .* vec(g)
 
         if wnorm(d, p_c) >= delta
             # Cauchy point is out of the region, take the largest step along
@@ -68,13 +68,13 @@ function dogleg!{T}(p::AbstractVector{T}, r::AbstractVector{T}, d::AbstractVecto
             # from this point on we will only need p_i in the term p_i-p_c.
             # so we reuse the vector p_i by computing p_i = p_i - p_c and then
             # just so we aren't confused we name that p_diff
-            p_i .-= p_c
+            p_i .-= vec(p_c)
             p_diff = p_i
 
             # Compute the optimal point on dogleg path
             b = 2 * wdot(d, p_c, d, p_diff)
             a = wnorm(d, p_diff)^2
-            tau = (-b+sqrt(b^2 - 4a*(wnorm(d, p_c)^2 - delta^2)))/(2a)
+            tau = (-b + sqrt(b^2 - 4a*(wnorm(d, p_c)^2 - delta^2)))/(2a)
             p_c .+= tau .* p_diff
             copy!(p, p_c)
         end
@@ -91,10 +91,10 @@ function trust_region_{T}(df::OnceDifferentiable,
                           extended_trace::Bool,
                           factor::T,
                           autoscale::Bool)
-    x = vec(copy(initial_x)) # Current point
+    x = copy(initial_x) # Current point
     nn = length(x)
     xold = similar(x) # Old point
-    r = similar(x)          # Current residual
+    r = similar(df.F)       # Current residual
     r_predict = similar(x)  # predicted residual
     p = similar(x)          # Step
     d = similar(x)          # Scaling vector
@@ -142,9 +142,9 @@ function trust_region_{T}(df::OnceDifferentiable,
         value!(df, x)
 
         # Ratio of actual to predicted reduction (equation 11.47 in N&W)
-        A_mul_B!(r_predict, jacobian(df), p)
+        A_mul_B!(vec(r_predict), jacobian(df), vec(p))
         r_predict .+= r
-        rho = (sum(abs2,r) - sum(abs2, value(df))) / (sum(abs2,r) - sum(abs2,r_predict))
+        rho = (sum(abs2, r) - sum(abs2, value(df))) / (sum(abs2, r) - sum(abs2, r_predict))
 
         if rho > eta
             # Successful iteration
@@ -181,7 +181,7 @@ function trust_region_{T}(df::OnceDifferentiable,
         name *= " and autoscaling"
     end
     return SolverResults(name,
-                         initial_x, reshape(x, size(initial_x)...), norm(r, Inf),
+                         initial_x, reshape(x, size(initial_x)...), vecnorm(r, Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
                          first(df.f_calls), first(df.df_calls))
 end

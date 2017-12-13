@@ -76,11 +76,9 @@ function mcpsolve{T}(f!,
                   factor::Real = one(T),
                   autoscale::Bool = true,
                   autodiff::Bool = false)
-    if !autodiff
-        df = OnceDifferentiable(f!, similar(initial_x), initial_x)
-    else
+#    if !autodiff
         df = OnceDifferentiable(f!, initial_x, initial_x)
-    end
+#    end
     @reformulate df
     nlsolve(rf,
             initial_x, method = method, xtol = xtol, ftol = ftol,

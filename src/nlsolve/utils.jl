@@ -1,5 +1,5 @@
-function wdot{T}(wx::AbstractVector{T}, x::AbstractVector{T},
-                 wy::AbstractVector{T}, y::AbstractVector{T})
+function wdot{T}(wx::AbstractArray{T}, x::AbstractArray{T},
+                 wy::AbstractArray{T}, y::AbstractArray{T})
     out = zero(T)
     @inbounds @simd for i in 1:length(x)
         out += wx[i]*x[i] * wy[i]*y[i]
@@ -7,7 +7,7 @@ function wdot{T}(wx::AbstractVector{T}, x::AbstractVector{T},
     return out
 end
 
-wnorm{T}(w::AbstractVector{T}, x::AbstractVector{T}) = sqrt(wdot(w, x, w, x))
+wnorm{T}(w::AbstractArray{T}, x::AbstractArray{T}) = sqrt(wdot(w, x, w, x))
 assess_convergence(f, ftol) = assess_convergence(NaN, NaN, f, NaN, ftol)
 function assess_convergence(x,
                             x_previous,
@@ -29,7 +29,7 @@ function assess_convergence(x,
     return x_converged, f_converged, converged
 end
 
-function check_isfinite(x::AbstractVector)
+function check_isfinite(x::AbstractArray)
     i = find((!).(isfinite.(x)))
     if !isempty(i)
         throw(IsFiniteException(i))

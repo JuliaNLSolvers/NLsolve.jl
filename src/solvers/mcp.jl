@@ -15,26 +15,26 @@ end
 function mcp_smooth(df::OnceDifferentiable,
                     lower::Vector, upper::Vector)
 
-    function f!(fx, x)
-        value!(df, fx, x)
+    function f!(F, x)
+        value!(df, F, x)
         for i = 1:length(x)
             if  isfinite.(upper[i])
-                fx[i] += (x[i]-upper[i]) + sqrt(fx[i]^2+(x[i]-upper[i])^2)
+                F[i] += (x[i]-upper[i]) + sqrt(F[i]^2+(x[i]-upper[i])^2)
             end
             if  isfinite.(lower[i])
-                fx[i] += (x[i]-lower[i]) - sqrt(fx[i]^2+(x[i]-lower[i])^2)
+                F[i] += (x[i]-lower[i]) - sqrt(F[i]^2+(x[i]-lower[i])^2)
             end
         end
     end
 
-    function j!(gx, x)
-        fx = similar(x)
-        value_jacobian!(df, fx, gx, x)
+    function j!(J, x)
+        F = similar(x)
+        value_jacobian!(df, F, J, x)
 
         # Derivatives of phiplus
-        sqplus = sqrt.(fx.^2 .+ (x .- upper).^2)
+        sqplus = sqrt.(F.^2 .+ (x .- upper).^2)
 
-        dplus_du = 1 + fx./sqplus
+        dplus_du = 1 .+ F./sqplus
 
         dplus_dv = similar(x)
         for i = 1:length(x)
@@ -46,7 +46,7 @@ function mcp_smooth(df::OnceDifferentiable,
         end
 
         # Derivatives of phiminus
-        phiplus = copy(fx)
+        phiplus = copy(F)
         for i = 1:length(x)
             if isfinite(upper[i])
                 phiplus[i] += (x[i]-upper[i]) + sqplus[i]
@@ -55,7 +55,7 @@ function mcp_smooth(df::OnceDifferentiable,
 
         sqminus = sqrt.(phiplus.^2 .+ (x .- lower).^2)
 
-        dminus_du = 1-phiplus./sqminus
+        dminus_du = 1.-phiplus./sqminus
 
         dminus_dv = similar(x)
         for i = 1:length(x)
@@ -69,12 +69,12 @@ function mcp_smooth(df::OnceDifferentiable,
         # Final computations
         for i = 1:length(x)
             for j = 1:length(x)
-                gx[i,j] *= dminus_du[i]*dplus_du[i]
+                J[i,j] *= dminus_du[i]*dplus_du[i]
             end
-            gx[i,i] += dminus_dv[i] + dminus_du[i]*dplus_dv[i]
+            J[i,i] += dminus_dv[i] + dminus_du[i]*dplus_dv[i]
         end
     end
-    return OnceDifferentiable(f!, j!, similar(lower), jacobian(df), similar(lower))
+    return OnceDifferentiable(f!, j!, similar(df.F), similar(df.x_f))
 end
 
 # Generate a function whose roots are the solutions of the MCP.
@@ -86,28 +86,28 @@ end
 # hence the difference in the function.
 function mcp_minmax(df::OnceDifferentiable,
                     lower::Vector, upper::Vector)
-    function f!(fx, x)
-        value!(df, fx, x)
+    function f!(F, x)
+        value!(df, F, x)
         for i = 1:length(x)
-            if fx[i] < x[i]-upper[i]
-                fx[i] = x[i]-upper[i]
+            if F[i] < x[i]-upper[i]
+                F[i] = x[i]-upper[i]
             end
-            if fx[i] > x[i]-lower[i]
-                fx[i] = x[i]-lower[i]
+            if F[i] > x[i]-lower[i]
+                F[i] = x[i]-lower[i]
             end
         end
     end
 
-    function j!(gx, x)
-        fx = similar(x)
-        value_jacobian!(df, fx, gx, x)
+    function j!(J, x)
+        F = similar(x)
+        value_jacobian!(df, F, J, x)
         for i = 1:length(x)
-            if fx[i] < x[i]-upper[i] || fx[i] > x[i]-lower[i]
+            if F[i] < x[i]-upper[i] || F[i] > x[i]-lower[i]
                 for j = 1:length(x)
-                    gx[i,j] = (i == j ? 1.0 : 0.0)
+                    J[i,j] = (i == j ? 1.0 : 0.0)
                 end
             end
         end
     end
-    return OnceDifferentiable(f!, j!, similar(lower), similar(lower))
+    return OnceDifferentiable(f!, j!, similar(df.F), similar(df.x_f))
 end
