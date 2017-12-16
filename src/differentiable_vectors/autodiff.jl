@@ -1,4 +1,4 @@
-function OnceDifferentiable(f!, F::AbstractArray, x::AbstractArray, autodiff = :central)
+function OnceDifferentiable(f!, x::AbstractArray, F::AbstractArray, autodiff::Union{Symbol, Bool} = :central)
     if autodiff == :central
         function fj!(F, J, x)
             f!(F, x)
@@ -13,7 +13,7 @@ function OnceDifferentiable(f!, F::AbstractArray, x::AbstractArray, autodiff = :
             F = similar(x)
             fj!(F, J, x)
         end
-        return OnceDifferentiable(f!, j!, fj!, similar(x), similar(x))
+        return OnceDifferentiable(f!, j!, fj!, x, x)
     elseif autodiff == :forward || autodiff == true
         jac_cfg = ForwardDiff.JacobianConfig(f!, x, x)
         ForwardDiff.checktag(jac_cfg, f!, x)
@@ -28,7 +28,7 @@ function OnceDifferentiable(f!, F::AbstractArray, x::AbstractArray, autodiff = :
             DiffBase.value(jac_res)
         end
     
-        return OnceDifferentiable(f!, g!, fg!, similar(x), x)
+        return OnceDifferentiable(f!, g!, fg!, x, x)
     else
         error("The autodiff value $(autodiff) is not supported. Use :central or :forward.")
     end

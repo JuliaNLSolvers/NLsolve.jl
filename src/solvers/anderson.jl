@@ -28,7 +28,7 @@
 
     for n = 1:iterations
         # fixed-point iteration
-        value!(df, fx, xs[:,1])
+        value!!(df, fx, xs[:,1])
 
         gs[:,1] .= xs[:,1] .+ β.*fx
 

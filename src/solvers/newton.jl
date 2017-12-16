@@ -85,7 +85,7 @@ function newton_{T}(df::OnceDifferentiable,
         go!(storage, xlin)
         vecdot(value(df), value(df)) / 2
     end
-    dfo = OnceDifferentiable(fo, go!, fgo!, real(zero(T)), x)
+    dfo = OnceDifferentiable(fo, go!, fgo!, x, real(zero(T)))
 
     while !converged && it < iterations
 

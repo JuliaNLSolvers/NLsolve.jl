@@ -52,7 +52,7 @@ function mcpsolve{T}(f!,
                   linesearch! = LineSearches.BackTracking(),
                   factor::Real = one(T),
                   autoscale::Bool = true)
-    @reformulate OnceDifferentiable(f!, j!, similar(initial_x), initial_x)
+    @reformulate OnceDifferentiable(f!, j!, initial_x, initial_x)
     nlsolve(rf,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,

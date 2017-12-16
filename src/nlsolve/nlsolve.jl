@@ -49,7 +49,7 @@ function nlsolve(f!,
                  autoscale::Bool = true,
                  m::Integer = 0,
                  beta::Real = 1.0) where T
-    nlsolve(OnceDifferentiable(f!, j!, similar(initial_x), initial_x),
+    nlsolve(OnceDifferentiable(f!, j!, initial_x, initial_x),
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,

@@ -16,7 +16,7 @@ function g_sparse!(J, x)
     J[2, 2] = u
 end
 
-df = OnceDifferentiable(f_sparse!, g_sparse!, rand(2), spzeros(2, 2), rand(2))
+df = OnceDifferentiable(f_sparse!, g_sparse!, rand(2), rand(2), spzeros(2, 2))
 
 # Test trust region
 r = nlsolve(df, [ -0.5; 1.4], method = :trust_region, autoscale = true)
@@ -39,7 +39,7 @@ r = mcpsolve(df, [-Inf;-Inf], [Inf; Inf], [-0.5; 1.4], reformulation = :minmax)
 @test norm(r.zero - [ 0; 1]) < 1e-8
 
 # Test given sparse
-df = OnceDifferentiable(f_sparse!, g_sparse!, rand(2), spzeros(2, 2), rand(2))
+df = OnceDifferentiable(f_sparse!, g_sparse!, rand(2), rand(2), spzeros(2, 2))
 r = nlsolve(df, [ -0.5; 1.4], method = :trust_region, autoscale = true)
 @test converged(r)
 @test norm(r.zero - [ 0; 1]) < 1e-8
