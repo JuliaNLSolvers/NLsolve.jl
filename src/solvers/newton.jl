@@ -1,6 +1,6 @@
 struct Newton
 end
-function no_linesearch!(dfo, xold, p, x, lsr, alpha, mayterminate)
+function no_linesearch(dfo, xold, p, x, lsr, alpha, mayterminate)
     @simd for i in eachindex(x)
         @inbounds x[i] = xold[i] + p[i]
     end
@@ -36,7 +36,7 @@ function newton_{T}(df::OnceDifferentiable,
                     store_trace::Bool,
                     show_trace::Bool,
                     extended_trace::Bool,
-                    linesearch!)
+                    linesearch)
     # setup
     x = vec(copy(initial_x))
     n = length(x)
@@ -116,9 +116,9 @@ function newton_{T}(df::OnceDifferentiable,
         LineSearches.clear!(lsr)
         push!(lsr, zero(T), vecdot(value(df),value(df))/2, vecdot(g, p))
 
-        alpha = linesearch!(dfo, xold, p, x, lsr, one(T), mayterminate)
+        alpha = linesearch(dfo, xold, p, x, lsr, one(T), mayterminate)
 
-        # fvec is here also updated in the linesearch! so no need to call f again.
+        # fvec is here also updated in the linesearch so no need to call f again.
 
         x_converged, f_converged, converged = assess_convergence(x, xold, value(df), xtol, ftol)
 
@@ -139,6 +139,6 @@ function newton{T}(df::OnceDifferentiable,
                    store_trace::Bool,
                    show_trace::Bool,
                    extended_trace::Bool,
-                   linesearch!)
-    newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch!)
+                   linesearch)
+    newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch)
 end

@@ -8,9 +8,9 @@ NLsolve.jl is part of the [JuliaNLSolvers](https://github.com/JuliaNLSolvers) fa
 [![Build Status](https://travis-ci.org/JuliaNLSolvers/NLsolve.jl.svg?branch=master)](https://travis-ci.org/JuliaNLSolvers/NLsolve.jl)
 
 # Non-linear systems of equations
-The NLsolve package solves systems of nonlinear equations. Formally, if `f` is
+The NLsolve package solves systems of nonlinear equations. Formally, if `F` is
 a multivalued function, then this package looks for some vector `x` that
-satisfies `f(x)=0`.
+satisfies `F(x)=0` to some accuracy.
 
 The package is also able to solve mixed complementarity problems, which are
 similar to systems of nonlinear equations, except that the equality to zero is
@@ -71,9 +71,8 @@ Jacobian.
 This is the most efficient method, because it minimizes the memory allocations.
 
 In the following, it is assumed that you have defined a function
-`f!(x::AbstractVector, F::AbstractVector)` or, more generally,
-`f!(x::AbstractArray, F::AbstractArray)` computing the residual of the system
-at point `x` and putting it into the `F` argument.
+`f!(F::AbstractVector, x::AbstractVector)` or, more generally,
+`f!(F::AbstractArray, x::AbstractArray)` computing the residual of the system at point `x` and putting it into the `F` argument.
 
 In turn, there 3 ways of specifying how the Jacobian should be computed:
 
@@ -87,21 +86,19 @@ nlsolve(f!, initial_x)
 ```
 
 Alternatively, you can construct an object of type
-`DifferentiableVector` and pass it to `nlsolve`, as in:
+`OnceDifferentiable` and pass it to `nlsolve`, as in:
 
 ```jl
-df = DifferentiableVector(f!)
+
+initial_x = ...
+initial_F = similar(initial_x)
+df = OnceDifferentiable(f!, initial_x, initial_F)
 nlsolve(df, initial_x)
 ```
-
-If your function `f!` operates not on `AbstractVector` but on arbitrary
-`AbstractArray` you have to specify `initial_x` in the constructor of the
-`DifferentiableVector`:
-
-```jl
-df = DifferentiableVector(f!, initial_x)
-nlsolve(df, initial_x)
-```
+Notice, we passed `initial_x` and `initial_F` to the constructor for `df`. This
+does not need to be the actual initial `x` and the residual vector at `x`, but it is used to
+initialize cache variables in `df`, so the types and dimensions
+of them have to be as if they were.
 
 ### Automatic differentiation
 
@@ -110,39 +107,27 @@ automatic differentiation, thanks to the `ForwardDiff` package. The syntax is
 simply:
 
 ```jl
-nlsolve(f!, initial_x, autodiff = true)
+nlsolve(f!, initial_x, autodiff = :forward)
 ```
 
 ### Jacobian available
 
-If, in addition to `f!(x::AbstractVector, F::AbstractVector)`, you have a
-function `j!(x::AbstractVector, J::AbstractMatrix)` for computing the Jacobian
-of the system, then the syntax is, as in the example above:
+If, in addition to `f!(F::AbstractVector, x::AbstractVector)`, you have a function `j!(J::AbstractMatrix, x::AbstractVector)` for computing the Jacobian of the system, then the syntax is, as in the example above:
 
 ```jl
 nlsolve(f!, j!, initial_x)
 ```
 
-Again it is also possible to specify two functions `f!(x::AbstractArray,
-F::AbstractArray)` and `j!(x::AbstractArray, J::AbstractMatrix)` that work on
+Again it is also possible to specify two functions `f!(F::AbstractArray, x::AbstractArray)` and `j!(J::AbstractMatrix, x::AbstractArray)` that work on
 arbitrary arrays `x`.
 
-Note that you should not assume that the Jacobian `J` passed in argument is
-initialized to a zero matrix. You must set all the elements of the matrix in
-the function `j!`.
+Note that you should not assume that the Jacobian `J` passed into `j!` is initialized to a zero matrix. You must set all the elements of the matrix in the function `j!`.
 
 Alternatively, you can construct an object of type
-`DifferentiableVector` and pass it to `nlsolve`, as in:
+`OnceDifferentiable` and pass it to `nlsolve`, as in:
 
 ```jl
-df = DifferentiableVector(f!, j!)
-nlsolve(df, initial_x)
-```
-
-If `f!` and `j!` do not operate on vectors the syntax is:
-
-```jl
-df = DifferentiableVector(f!, j!, initial_x)
+df = OnceDifferentiable(f!, j!, initial_x, initial_F)
 nlsolve(df, initial_x)
 ```
 
@@ -151,21 +136,14 @@ nlsolve(df, initial_x)
 If, in addition to `f!` and `j!`, you have a function `fj!(x::AbstractVector,
 F::AbstractVector, J::AbstractMatrix)` or `fj!(x::AbstractArray,
 F::AbstractArray, J::AbstractMatrix)` that computes both the residual and the
-Jacobian at the same time, you can use the following syntax for vectors
+Jacobian at the same time, you can use the following syntax
 
 ```jl
-df = DifferentiableVector(f!, j!, fj!)
+df = OnceDifferentiable(f!, j!, fj!, initial_x, initial_F)
 nlsolve(df, initial_x)
 ```
 
-and similarly for arbitrary arrays
-
-```jl
-df = DifferentiableVector(f!, j!, fj!, initial_x)
-nlsolve(df, initial_x)
-```
-
-If the function `fj!` uses some optimization that make it costless than
+If the function `fj!` uses some optimization that make it cost less than
 calling `f!` and `j!` successively, then this syntax can possibly improve the
 performance.
 
@@ -175,31 +153,20 @@ There are other helpers for two other cases, described below. Note that these
 cases are not optimal in terms of memory management.
 
 If only `f!` and `fj!` are available, the helper function `only_f!_and_fj!` can be
-used to construct a `DifferentiableVector` object, that can be
+used to construct a `OnceDifferentiable` object, that can be
 used as first argument of `nlsolve`. The complete syntax is therefore
 
 ```jl
 nlsolve(only_f!_and_fj!(f!, fj!), initial_x)
 ```
 
-if `f!` and `fj!` operate on vectors, and otherwise
-
-```jl
-nlsolve(only_f!_and_fj!(f!, fj!, initial_x), initial_x)
-```
 
 If only `fj!` is available, the helper function `only_fj!` can be used to
-construct a `DifferentiableVector` object, that can be used as
+construct a `OnceDifferentiable` object, that can be used as
 first argument of `nlsolve`. The complete syntax is therefore
 
 ```jl
 nlsolve(only_fj!(fj!), initial_x)
-```
-
-if `f!` and `fj!` operate on vectors, and otherwise
-
-```jl
-nlsolve(only_fj!(f!, fj!, initial_x), initial_x)
 ```
 
 ## With functions returning residuals and Jacobian as output
@@ -213,35 +180,23 @@ argument of `nlsolve`. The complete syntax is therefore:
 nlsolve(not_in_place(f), initial_x)
 ```
 
-If `f` does not operate on vectors but on arbitrary arrays the syntax is
-
-```jl
-nlsolve(not_in_place(f, initial_x), initial_x)
-```
-
 Via the `autodiff` keyword both finite-differencing and autodifferentiation can
 be used to compute the Jacobian in that case.
 
 If, in addition to `f(x::AbstractVector)`, there is a function
-`g(x::AbstractVector)` returning a newly-allocated matrix containing the
+`j(x::AbstractVector)` returning a newly-allocated matrix containing the
 Jacobian, `not_in_place` can be used to construct an object of type
-`DifferentiableVector` that can be used as first argument of
+`OnceDifferentiable` that can be used as first argument of
 `nlsolve`:
 
 ```jl
 nlsolve(not_in_place(f, j), initial_x)
 ```
 
-For functions `f` and `j` that operate on arbitrary arrays the syntax is:
-
-```jl
-nlsolve(not_in_place(f, j, initial_x), initial_x)
-```
-
 If, in addition to `f` and `j`, there is a function `fj` returning a tuple of a
 newly-allocated vector of residuals and a newly-allocated matrix of the
 Jacobian, `not_in_place` can be used to construct an object of type
-`DifferentiableVector`:
+`OnceDifferentiable`:
 
 ```jl
 nlsolve(not_in_place(f, j, fj), initial_x)
@@ -270,27 +225,16 @@ Finite-differencing is used to compute the Jacobian.
 
 If the Jacobian of your function is sparse, it is possible to ask the routines
 to manipulate sparse matrices instead of full ones, in order to increase
-performance on large systems. This can be achieved by constructing an object of
-type `DifferentiableSparseMultivariateFunction`. The syntax is therefore
+performance on large systems. This means that we must necessarily provide an 
+appropriate Jacobian type so the solver knows what to feed `j!`.
 
 ```jl
-df = DifferentiableSparseMultivariateFunction(f!, j!)
-nlsolve(df, initial_x)
-```
-
-if `f!` and `j!` operate on vectors, and otherwise
-
-```jl
-df = DifferentiableSparseMultivariateFunction(f!, j!, initial_x)
+df = OnceDifferentiable(f!, j!, x0, F0, J0)
 nlsolve(df, initial_x)
 ```
 
 It is possible to give an optional third function `fj!` to the constructor, as
 for the full Jacobian case.
-
-The second argument of `j!` (and the third of `fj!`) is assumed to be of the
-same type as the one returned by the function `spzeros` (i.e.
-`SparseMatrixCSC`).
 
 Note that on the first call to `j!` or `fj!`, the sparse matrix passed in
 argument is empty, i.e. all its elements are zeros. But this matrix is not
@@ -305,25 +249,6 @@ fill!(J.colptr, 1)
 empty!(J.rowval)
 empty!(J.nzval)
 ```
-
-Another solution is to directly pass a Jacobian matrix with a given sparsity. To
-do so, construct an object of type
-`DifferentiableGivenSparseMultivariateFunction` by
-
-```jl
-df = DifferentiableGivenSparseMultivariateFunction(f!, j!, J)
-nlsolve(df, initial_x)
-```
-
-if `f!` and `j!` operate on vectors, and otherwise
-
-```jl
-df = DifferentiableGivenSparseMultivariateFunction(f!, j!, J, initial_x)
-nlsolve(df, initial_x)
-```
-
-If `j!` conserves the sparsity structure of `J`, `J` will always have the same
-sparsity as `J`. This sometimes allow to write a faster version of `j!`.
 
 # Fine tunings
 
@@ -353,7 +278,7 @@ This is the classical Newton algorithm with optional linesearch.
 
 This method is selected with `method = :newton`.
 
-This method accepts a custom parameter `linesearch!`, which must be equal to a
+This method accepts a custom parameter `linesearch`, which must be equal to a
 function computing the linesearch. Currently, available values are taken from
 the [`LineSearches`](https://github.com/JuliaNLSolvers/LineSearches.jl) package.
 By default, no linesearch is performed.
@@ -459,7 +384,7 @@ hand, the first and fourth components of the function are zero at the solution.
 ```jl
 julia> F = similar(r.zero)
 
-julia> f!(r.zero, F)
+julia> f!(F, r.zero)
 
 julia> F
 4-element Array{Float64,1}:

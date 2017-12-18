@@ -24,7 +24,7 @@ function mcpsolve(df::TDF,
                   store_trace::Bool = false,
                   show_trace::Bool = false,
                   extended_trace::Bool = false,
-                  linesearch! = LineSearches.BackTracking(),
+                  linesearch = LineSearches.BackTracking(),
                   factor::Real = one(T),
                   autoscale::Bool = true) where {TDF <: OnceDifferentiable, T}
 
@@ -33,7 +33,7 @@ function mcpsolve(df::TDF,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
-            linesearch! = linesearch!, factor = factor, autoscale = autoscale)
+            linesearch = linesearch, factor = factor, autoscale = autoscale)
 end
 
 function mcpsolve{T}(f!,
@@ -49,7 +49,7 @@ function mcpsolve{T}(f!,
                   store_trace::Bool = false,
                   show_trace::Bool = false,
                   extended_trace::Bool = false,
-                  linesearch! = LineSearches.BackTracking(),
+                  linesearch = LineSearches.BackTracking(),
                   factor::Real = one(T),
                   autoscale::Bool = true)
     @reformulate OnceDifferentiable(f!, j!, initial_x, initial_x)
@@ -57,7 +57,7 @@ function mcpsolve{T}(f!,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
-            linesearch! = linesearch!, factor = factor, autoscale = autoscale)
+            linesearch = linesearch, factor = factor, autoscale = autoscale)
 end
 
 function mcpsolve{T}(f!,
@@ -72,7 +72,7 @@ function mcpsolve{T}(f!,
                   store_trace::Bool = false,
                   show_trace::Bool = false,
                   extended_trace::Bool = false,
-                  linesearch! = LineSearches.BackTracking(),
+                  linesearch = LineSearches.BackTracking(),
                   factor::Real = one(T),
                   autoscale::Bool = true,
                   autodiff::Bool = false)
@@ -84,5 +84,5 @@ function mcpsolve{T}(f!,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
-            linesearch! = linesearch!, factor = factor, autoscale = autoscale)
+            linesearch = linesearch, factor = factor, autoscale = autoscale)
 end
