@@ -13,14 +13,9 @@ import Base.show,
        Base.setindex!
 
 import Calculus.finite_difference_jacobian!
-
-export DifferentiableMultivariateFunction,
-       only_f!_and_fg!,
-       only_fg!,
-       not_in_place,
+import NLSolversBase: OnceDifferentiable
+export OnceDifferentiable,
        n_ary,
-       DifferentiableSparseMultivariateFunction,
-       DifferentiableGivenSparseMultivariateFunction,
        nlsolve,
        mcpsolve,
        converged
@@ -32,15 +27,17 @@ show(io::IO, e::IsFiniteException) = print(io,
   "During the resolution of the non-linear system, the evaluation" *
   " of the following equation(s) resulted in a non-finite number: $(e.indices)")
 
-include("differentiable_functions.jl")
-include("solver_state_results.jl")
-include("nlsolve_func_defs.jl")
-include("mcp_func_defs.jl")
-include("utils.jl")
-include("newton.jl")
-include("trust_region.jl")
-include("anderson.jl")
-include("autodiff.jl")
-include("mcp.jl")
+include("differentiable_vectors/autodiff.jl")
+include("differentiable_vectors/helpers.jl")
+
+include("solvers/newton.jl")
+include("solvers/trust_region.jl")
+include("solvers/anderson.jl")
+include("solvers/mcp_func_defs.jl")
+include("solvers/mcp.jl")
+
+include("nlsolve/solver_state_results.jl")
+include("nlsolve/nlsolve.jl")
+include("nlsolve/utils.jl")
 
 end # module

@@ -1,6 +1,7 @@
 using NLsolve
 using DiffEqBase
 using Base.Test
+import Base.convert
 
 add_jl(x) = endswith(x, ".jl") ? x : x*".jl"
 
@@ -9,12 +10,12 @@ type WrappedArray{T,N} <: DEDataArray{T,N}
 end
 
 Base.reshape(A::WrappedArray, dims::Int...) = WrappedArray(reshape(A.x, dims...))
+Base.convert(A::Type{WrappedArray{T,N}}, B::Array{T,N}) where {T,N} = WrappedArray(copy(B))
 
 if length(ARGS) > 0
     tests = map(add_jl, ARGS)
 else
-    tests = ["api.jl",
-             "2by2.jl",
+    tests = ["2by2.jl",
              "singular.jl",
              "finite_difference.jl",
              "minpack.jl",

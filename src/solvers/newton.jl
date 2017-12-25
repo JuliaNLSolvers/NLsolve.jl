@@ -1,4 +1,6 @@
-function no_linesearch!(dfo, xold, p, x, lsr, alpha, mayterminate)
+struct Newton
+end
+function no_linesearch(dfo, xold, p, x, lsr, alpha, mayterminate)
     @simd for i in eachindex(x)
         @inbounds x[i] = xold[i] + p[i]
     end
@@ -12,12 +14,12 @@ macro newtontrace(stepnorm)
             dt = Dict()
             if extended_trace
                 dt["x"] = copy(x)
-                dt["f(x)"] = copy(fvec)
-                dt["g(x)"] = copy(fjac)
+                dt["f(x)"] = copy(value(df))
+                dt["g(x)"] = copy(jacobian(df))
             end
             update!(tr,
                     it,
-                    maximum(abs, fvec),
+                    maximum(abs, value(df)),
                     $stepnorm,
                     dt,
                     store_trace,
@@ -26,7 +28,7 @@ macro newtontrace(stepnorm)
     end)
 end
 
-function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
+function newton_{T}(df::OnceDifferentiable,
                     initial_x::AbstractArray{T},
                     xtol::T,
                     ftol::T,
@@ -34,29 +36,19 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
                     store_trace::Bool,
                     show_trace::Bool,
                     extended_trace::Bool,
-                    linesearch!)
-
+                    linesearch)
+    # setup
     x = vec(copy(initial_x))
-    nn = length(x)
-    xold = fill(convert(T, NaN), nn)
-    fvec = Array{T}(nn)
-    fjac = alloc_jacobian(df, T, nn)
+    n = length(x)
+    xold = similar(x)
+    p = Array{T}(n)
+    g = Array{T}(n)
+    value_jacobian!(df, x)
 
-    p = Array{T}(nn)
-    g = Array{T}(nn)
-    gr = Array{T}(nn)
-
-    # Count function calls
-    f_calls::Int, g_calls::Int = 0, 0
-
-    df.fg!(x, fvec, fjac)
-    f_calls += 1
-    g_calls += 1
-
-    check_isfinite(fvec)
+    check_isfinite(value(df))
 
     it = 0
-    x_converged, f_converged, converged = assess_convergence(x, xold, fvec, xtol, ftol)
+    x_converged, f_converged, converged = assess_convergence(value(df), ftol)
 
     # FIXME: How should this flag be set?
     mayterminate = false
@@ -73,10 +65,9 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     # has the gradient ∇fo(x) = ∇f(x) ⋅ f(x)
     function fo(xlin::AbstractVector)
         if xlin != xold
-            df.f!(xlin, fvec)
-            f_calls += 1
+            value!(df, xlin)
         end
-        dot(fvec, fvec) / 2
+        vecdot(value(df), value(df)) / 2
     end
 
     # The line search algorithm will want to first compute ∇fo(xₖ).
@@ -85,43 +76,36 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
     # We solve this using the already computed ∇f(xₖ)
     # in case of the line search asking us for the gradient at xₖ.
     function go!(storage::AbstractVector, xlin::AbstractVector)
-        if xlin == xold
-            At_mul_B!(storage, fjac, fvec)
-        # Else we need to recompute it.
-        else
-            df.fg!(xlin, fvec, fjac)
-            f_calls += 1
-            g_calls += 1
-            At_mul_B!(storage, fjac, fvec)
+        if xlin != xold
+            value_jacobian!(df, xlin)
         end
+        At_mul_B!(storage, jacobian(df), vec(value(df)))
     end
     function fgo!(storage::AbstractVector, xlin::AbstractVector)
         go!(storage, xlin)
-        dot(fvec, fvec) / 2
+        vecdot(value(df), value(df)) / 2
     end
-
-    dfo = OnceDifferentiable(fo, go!, fgo!, x)
+    dfo = OnceDifferentiable(fo, go!, fgo!, x, real(zero(T)))
 
     while !converged && it < iterations
 
         it += 1
 
         if it > 1
-            df.g!(x, fjac)
-            g_calls += 1
+            jacobian!(df, x)
         end
 
         try
-            At_mul_B!(g, fjac, fvec)
-            p = fjac\fvec
+            At_mul_B!(g, jacobian(df), vec(value(df)))
+            p = jacobian(df)\vec(value(df))
             scale!(p, -1)
         catch e
             if isa(e, Base.LinAlg.LAPACKException) || isa(e, Base.LinAlg.SingularException)
                 # Modify the search direction if the jacobian is singular
                 # FIXME: better selection for lambda, see Nocedal & Wright p. 289
-                fjac2 = fjac'*fjac
-                lambda = convert(T,1e6)*sqrt(nn*eps())*norm(fjac2, 1)
-                p = -(fjac2 + lambda*eye(nn))\g
+                fjac2 = jacobian(df)'*jacobian(df)
+                lambda = convert(T,1e6)*sqrt(n*eps())*norm(fjac2, 1)
+                p = -(fjac2 + lambda*eye(n))\vec(g)
             else
                 throw(e)
             end
@@ -130,24 +114,24 @@ function newton_{T}(df::AbstractDifferentiableMultivariateFunction,
         copy!(xold, x)
 
         LineSearches.clear!(lsr)
-        push!(lsr, zero(T), dot(fvec,fvec)/2, dot(g, p))
+        push!(lsr, zero(T), vecdot(value(df),value(df))/2, vecdot(g, p))
 
-        alpha = linesearch!(dfo, xold, p, x, lsr, one(T), mayterminate)
+        alpha = linesearch(dfo, xold, p, x, lsr, one(T), mayterminate)
 
-        # fvec is here also updated in the linesearch! so no need to call f again.
+        # fvec is here also updated in the linesearch so no need to call f again.
 
-        x_converged, f_converged, converged = assess_convergence(x, xold, fvec, xtol, ftol)
+        x_converged, f_converged, converged = assess_convergence(x, xold, value(df), xtol, ftol)
 
         @newtontrace sqeuclidean(x, xold)
     end
 
     return SolverResults("Newton with line-search",
-                         initial_x, reshape(x, size(initial_x)...), norm(fvec, Inf),
+                         initial_x, reshape(x, size(initial_x)...), vecnorm(value(df), Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
-                         f_calls, g_calls)
+                         first(df.f_calls), first(df.df_calls))
 end
 
-function newton{T}(df::AbstractDifferentiableMultivariateFunction,
+function newton{T}(df::OnceDifferentiable,
                    initial_x::AbstractArray{T},
                    xtol::Real,
                    ftol::Real,
@@ -155,6 +139,6 @@ function newton{T}(df::AbstractDifferentiableMultivariateFunction,
                    store_trace::Bool,
                    show_trace::Bool,
                    extended_trace::Bool,
-                   linesearch!)
-    newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch!)
+                   linesearch)
+    newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch)
 end

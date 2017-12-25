@@ -1,7 +1,7 @@
 # Notations from Walker & Ni, "Anderson acceleration for fixed-point iterations", SINUM 2011
 # Attempts to accelerate the iteration xn+1 = xn + β f(x)
 
-@views function anderson_{T}(df::AbstractDifferentiableMultivariateFunction,
+@views function anderson_{T}(df::OnceDifferentiable,
                              x0::AbstractArray{T},
                              xtol::T,
                              ftol::T,
@@ -12,7 +12,6 @@
                              m::Integer,
                              β::Real)
 
-    f_calls = 0
     N = length(x0)
     xs = zeros(T,N,m+1) #ring buffer storing the iterates, from newest to oldest
     gs = zeros(T,N,m+1) #ring buffer storing the g of the iterates, from newest to oldest
@@ -29,13 +28,11 @@
 
     for n = 1:iterations
         # fixed-point iteration
-        df.f!(xs[:,1], fx)
-        f_calls += 1
-        gs[:,1] .= xs[:,1] .+ β.*fx
-        x_converged, f_converged, converged = assess_convergence(gs[:,1], old_x, fx, xtol, ftol)
+        value!!(df, fx, xs[:,1])
 
-        # FIXME: How should this flag be set?
-        mayterminate = false
+        gs[:,1] .= xs[:,1] .+ β.*fx
+
+        x_converged, f_converged, converged = assess_convergence(gs[:,1], old_x, fx, xtol, ftol)
 
         if tracing
             dt = Dict()
@@ -81,10 +78,10 @@
     return SolverResults("Anderson m=$m β=$β",
                          x0, x, maximum(abs,fx),
                          n, x_converged, xtol, f_converged, ftol, tr,
-                         f_calls, 0)
+                         first(df.f_calls), 0)
 end
 
-function anderson{T}(df::AbstractDifferentiableMultivariateFunction,
+function anderson{T}(df::OnceDifferentiable,
                      initial_x::AbstractArray{T},
                      xtol::Real,
                      ftol::Real,

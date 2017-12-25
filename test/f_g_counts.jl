@@ -9,7 +9,7 @@
         fvec[1] = 1 - x[1]
         fvec[2] = 10(x[2]-x[1]^2)
     end
-    f_counts!(x, fvec) = f_counts_ref!(x, fvec, fcalls)
+    f_counts!(fvec, x) = f_counts_ref!(x, fvec, fcalls)
 
     function g_counts_ref!(x::Vector, fjac::Matrix, gcalls)
         gcalls[] += 1
@@ -18,11 +18,12 @@
         fjac[2,1] = -20x[1]
         fjac[2,2] = 10
     end
-    g_counts!(x, fjac) = g_counts_ref!(x, fjac, gcalls)
-
-    df = DifferentiableMultivariateFunction(f_counts!, g_counts!)
+    g_counts!(fjac, x) = g_counts_ref!(x, fjac, gcalls)
 
     x0 = [-1.2; 1.]
+
+    df = OnceDifferentiable(f_counts!, g_counts!, similar(x0), similar(x0))
+
 
     fcalls[] = 0
     gcalls[] = 0
@@ -30,6 +31,8 @@
     r = nlsolve(df, x0, method = :trust_region)
     @test r.f_calls == fcalls[]
     @test r.g_calls == gcalls[]
+
+    df = OnceDifferentiable(f_counts!, g_counts!, similar(x0), similar(x0))
 
     fcalls[] = 0
     gcalls[] = 0

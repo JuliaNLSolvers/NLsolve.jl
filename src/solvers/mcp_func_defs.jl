@@ -12,7 +12,7 @@ macro reformulate(df)
     end)
 end
 
-function mcpsolve{T}(df::AbstractDifferentiableMultivariateFunction,
+function mcpsolve(df::TDF,
                   lower::Vector,
                   upper::Vector,
                   initial_x::AbstractArray{T};
@@ -24,19 +24,20 @@ function mcpsolve{T}(df::AbstractDifferentiableMultivariateFunction,
                   store_trace::Bool = false,
                   show_trace::Bool = false,
                   extended_trace::Bool = false,
-                  linesearch! = LineSearches.BackTracking(),
+                  linesearch = LineSearches.BackTracking(),
                   factor::Real = one(T),
-                  autoscale::Bool = true)
+                  autoscale::Bool = true) where {TDF <: OnceDifferentiable, T}
+
     @reformulate df
     nlsolve(rf,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
-            linesearch! = linesearch!, factor = factor, autoscale = autoscale)
+            linesearch = linesearch, factor = factor, autoscale = autoscale)
 end
 
 function mcpsolve{T}(f!,
-                  g!,
+                  j!,
                   lower::Vector,
                   upper::Vector,
                   initial_x::AbstractArray{T};
@@ -48,15 +49,15 @@ function mcpsolve{T}(f!,
                   store_trace::Bool = false,
                   show_trace::Bool = false,
                   extended_trace::Bool = false,
-                  linesearch! = LineSearches.BackTracking(),
+                  linesearch = LineSearches.BackTracking(),
                   factor::Real = one(T),
                   autoscale::Bool = true)
-    @reformulate DifferentiableMultivariateFunction(f!, g!, initial_x)
+    @reformulate OnceDifferentiable(f!, j!, initial_x, initial_x)
     nlsolve(rf,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
-            linesearch! = linesearch!, factor = factor, autoscale = autoscale)
+            linesearch = linesearch, factor = factor, autoscale = autoscale)
 end
 
 function mcpsolve{T}(f!,
@@ -71,19 +72,17 @@ function mcpsolve{T}(f!,
                   store_trace::Bool = false,
                   show_trace::Bool = false,
                   extended_trace::Bool = false,
-                  linesearch! = LineSearches.BackTracking(),
+                  linesearch = LineSearches.BackTracking(),
                   factor::Real = one(T),
                   autoscale::Bool = true,
                   autodiff::Bool = false)
-    if !autodiff
-        df = DifferentiableMultivariateFunction(f!, initial_x)
-    else
-        df = NLsolve.autodiff(f!, initial_x)
-    end
+#    if !autodiff
+        df = OnceDifferentiable(f!, initial_x, initial_x)
+#    end
     @reformulate df
     nlsolve(rf,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
-            linesearch! = linesearch!, factor = factor, autoscale = autoscale)
+            linesearch = linesearch, factor = factor, autoscale = autoscale)
 end
