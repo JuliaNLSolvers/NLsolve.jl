@@ -61,6 +61,32 @@ for method in (:trust_region, :newton, :anderson)
     @test typeof(r_matrix_AD.zero) == typeof(initial_x_matrix)
     @test typeof(r_wrapped_AD.zero) == typeof(initial_x_wrapped)
 end
+
+for method in (NewtonTrustRegion(), Newton(), Anderson())
+    r = nlsolve(f!, j!, initial_x, method)
+    r_matrix = nlsolve(f!, j!, initial_x_matrix, method)
+    r_wrapped = nlsolve(f!, j!, initial_x_wrapped, method)
+
+    @test r.zero == vec(r_matrix.zero)
+    @test r_matrix.zero == r_wrapped.zero
+    @test r.residual_norm == r_matrix.residual_norm
+    @test r.residual_norm == r_wrapped.residual_norm
+    @test typeof(r.zero) == typeof(initial_x)
+    @test typeof(r_matrix.zero) == typeof(initial_x_matrix)
+    @test typeof(r_wrapped.zero) == typeof(initial_x_wrapped)
+
+    r_AD = nlsolve(f!, initial_x, method, autodiff = true)
+    r_matrix_AD = nlsolve(f!, initial_x_matrix, method, autodiff = true)
+    r_wrapped_AD = nlsolve(f!, initial_x_wrapped, method, autodiff = true)
+
+    @test r_AD.zero == vec(r_matrix_AD.zero)
+    @test r_matrix_AD.zero == r_wrapped_AD.zero
+    @test r_AD.residual_norm == r_matrix_AD.residual_norm
+    @test r_AD.residual_norm == r_wrapped_AD.residual_norm
+    @test typeof(r_AD.zero) == typeof(initial_x)
+    @test typeof(r_matrix_AD.zero) == typeof(initial_x_matrix)
+    @test typeof(r_wrapped_AD.zero) == typeof(initial_x_wrapped)
+end
 end
 #=
 when BandedMatrices are not super slow to precompile, we can add this test

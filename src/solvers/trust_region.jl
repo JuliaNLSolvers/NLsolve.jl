@@ -1,5 +1,8 @@
-struct NewtonTrustRegion
+struct NewtonTrustRegion{T} <: AbstractNLSolver
+    factor::T
+    autoscale::Bool
 end
+NewtonTrustRegion(;factor = 1, autoscale = true) = NewtonTrustRegion(factor, autoscale)
 macro trustregiontrace(stepnorm)
     esc(quote
         if tracing
