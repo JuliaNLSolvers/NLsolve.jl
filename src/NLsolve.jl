@@ -13,6 +13,7 @@ import Base.show,
        Base.setindex!
 
 import DiffEqDiffTools.finite_difference_jacobian!
+import NLSolversBase: OnceDifferentiable
 
 export OnceDifferentiable,
        n_ary,
