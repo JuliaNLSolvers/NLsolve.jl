@@ -6,13 +6,13 @@ using Distances
 using NLSolversBase
 using LineSearches
 using ForwardDiff
+using DiffEqDiffTools
 
 import Base.show,
        Base.push!,
        Base.getindex,
        Base.setindex!
 
-import DiffEqDiffTools.finite_difference_jacobian!
 import NLSolversBase: OnceDifferentiable
 
 export OnceDifferentiable,
