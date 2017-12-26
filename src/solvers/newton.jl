@@ -1,5 +1,7 @@
-struct Newton
+struct Newton{LS} <: AbstractNLSolver
+    linesearch!::LS
 end
+Newton(;linesearch = LineSearches.BackTracking()) = Newton(linesearch)
 function no_linesearch(dfo, xold, p, x, lsr, alpha, mayterminate)
     @simd for i in eachindex(x)
         @inbounds x[i] = xold[i] + p[i]

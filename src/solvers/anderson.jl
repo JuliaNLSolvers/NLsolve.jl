@@ -1,5 +1,10 @@
 # Notations from Walker & Ni, "Anderson acceleration for fixed-point iterations", SINUM 2011
 # Attempts to accelerate the iteration xn+1 = xn + β f(x)
+struct Anderson <: AbstractNLSolver
+    m
+    β
+end
+Anderson(; m = 0, beta = 1) = Anderson(m, beta)
 
 @views function anderson_{T}(df::OnceDifferentiable,
                              x0::AbstractArray{T},

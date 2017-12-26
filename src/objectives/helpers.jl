@@ -1,5 +1,3 @@
-
-
 # Helpers for functions that do not modify arguments in place but return
 function not_in_place(f)
     function f!(F, x)
@@ -19,7 +17,6 @@ function not_in_place(f, j, fj)
     end
     not_in_place(f, j)..., fj!
 end
-
 
 # Helper for functions that take several scalar arguments and return a tuple
 function n_ary(f)

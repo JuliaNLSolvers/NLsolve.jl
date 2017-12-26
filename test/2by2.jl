@@ -57,4 +57,46 @@ r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch = LineSearches.Strong
 r = nlsolve(df, [ 0.01; .99], method = :anderson, m = 10, beta=.01)
 @test converged(r)
 @test norm(r.zero - [ 0; 1]) < 1e-8
+
+# Test trust region
+r = nlsolve(df, [ -0.5; 1.4], NewtonTrustRegion())
+@test converged(r)
+@test norm(r.zero - [ 0; 1]) < 1e-7
+r = nlsolve(df, [ -0.5; 1.4], NewtonTrustRegion(autoscale = false))
+@test converged(r)
+@test norm(r.zero - [ 0; 1]) < 1e-7
+
+df32 = OnceDifferentiable(f_2by2!, g_2by2!, [ -0.5f0; 1.4f0], [ -0.5f0; 1.4f0])
+r = nlsolve(df32, [ -0.5f0; 1.4f0], NewtonTrustRegion())
+@test eltype(r.zero) == Float32
+@test converged(r)
+@test norm(r.zero - [ 0; 1]) < 1e-7
+r = nlsolve(df32, [ -0.5f0; 1.4f0], NewtonTrustRegion(autoscale = false))
+@test eltype(r.zero) == Float32
+@test converged(r)
+@test norm(r.zero - [ 0; 1]) < 1e-7
+
+
+# Test Newton
+r = nlsolve(df, [ -0.5; 1.4], Newton(linesearch = LineSearches.BackTracking()), NLsolve.Options(ftol = 1e-6))
+@test converged(r)
+@test norm(r.zero - [ 0; 1]) < 1e-6
+r = nlsolve(df32, [ -0.5f0; 1.4f0], Newton(linesearch = LineSearches.BackTracking()), NLsolve.Options(ftol = 1e-3))
+@test eltype(r.zero) == Float32
+@test converged(r)
+@test norm(r.zero - [ 0; 1]) < 1e-6
+r = nlsolve(df, [ -0.5; 1.4], Newton(linesearch = LineSearches.HagerZhang()), NLsolve.Options(ftol = 1e-6))
+@test converged(r)
+@test norm(r.zero - [ 0; 1]) < 1e-6
+r = nlsolve(df, [ -0.5; 1.4], Newton(linesearch = LineSearches.StrongWolfe()), NLsolve.Options(ftol = 1e-6))
+@test converged(r)
+@test norm(r.zero - [ 0; 1]) < 1e-6
+
+# test local convergence of Anderson: close to a fixed-point and with
+# a small beta, f should be almost affine, in which case Anderson is
+# equivalent to GMRES and should converge
+r = nlsolve(df, [ 0.01; .99], Anderson(m = 10, beta = 0.1))
+@test converged(r)
+@test norm(r.zero - [ 0; 1]) < 1e-8
+
 end
