@@ -1,5 +1,5 @@
 julia 0.6.0
-Calculus
+DiffEqDiffTools
 Distances
 ForwardDiff 0.7.0
 LineSearches 2.1.0

@@ -1,13 +1,10 @@
 function OnceDifferentiable(f!, x::AbstractArray, F::AbstractArray, autodiff::Union{Symbol, Bool} = :central)
     if autodiff == :central
+        central_cache = DiffEqDiffTools.JacobianCache(similar(x), similar(x), similar(x))
         function fj!(F, J, x)
             f!(F, x)
-            function f(x)
-                F = similar(x)
-                f!(F, x)
-                return F
-            end
-            finite_difference_jacobian!(f, x, F, J, autodiff)
+            DiffEqDiffTools.finite_difference_jacobian!(J, f!, x, central_cache)
+            F
         end
         function j!(J, x)
             F = similar(x)
