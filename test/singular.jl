@@ -24,12 +24,20 @@ df32 = OnceDifferentiable(f_sinj!, g_sinj!, [3.0f0, 0.0f0], [3.0f0, 0.0f0])
 #@assert norm(r.zero) < 1e-5
 
 r = nlsolve(df, [ 3.0; 0.0], method = :trust_region)
-@assert converged(r)
-@assert norm(r.zero) < 1e-6
+@test converged(r)
+@test norm(r.zero) < 1e-6
 
 r = nlsolve(df32, [3.0f0; 0.0f0], method = :trust_region)
-@assert converged(r)
-@assert norm(r.zero) < 1e-6
+@test converged(r)
+@test norm(r.zero) < 1e-6
+
+r = nlsolve(df, [ 3.0; 0.0], method = :broyden)
+@test converged(r)
+@test norm(r.residual_norm) < 1e-8
+
+r = nlsolve(df32, [3.0f0; 0.0f0], method = :broyden)
+@test converged(r)
+@test norm(r.residual_norm) < 1e-8
 
 let a = rand(10)
     const A = a*a'

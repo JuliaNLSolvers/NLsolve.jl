@@ -526,7 +526,7 @@ end
 
 
 for (df, initial, name) in alltests
-    for method in (:trust_region, :newton)
+    for method in (:trust_region, :newton, :broyden)
         if method == :newton && name in TESTS_FAIL_NEWTON
             continue
         end

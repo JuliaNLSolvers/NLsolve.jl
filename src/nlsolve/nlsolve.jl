@@ -29,6 +29,9 @@ function nlsolve(df::TDF,
     elseif method == :anderson
         anderson(df, initial_x, xtol, ftol, iterations,
                  store_trace, show_trace, extended_trace, m, beta)
+    elseif method == :broyden
+        broyden(df, initial_x, xtol, ftol, iterations,
+                store_trace, show_trace, extended_trace, linesearch)
     else
         throw(ArgumentError("Unknown method $method"))
     end
