@@ -48,9 +48,9 @@ nlsolve(f!, j!, [ 0.1; 1.2])
 ```
 
 First, note that the function `f!` computes the residuals of the nonlinear
-system, and stores them in a preallocated vector passed as second argument.
+system, and stores them in a preallocated vector passed as first argument.
 Similarly, the function `j!` computes the Jacobian of the system and stores it
-in a preallocated matrix passed as second argument. Residuals and Jacobian
+in a preallocated matrix passed as first argument. Residuals and Jacobian
 functions can take different shapes, see below.
 
 Second, when calling the `nlsolve` function, it is necessary to give a starting
