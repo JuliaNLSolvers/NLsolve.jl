@@ -7,9 +7,6 @@ NLsolve.jl is part of the [JuliaNLSolvers](https://github.com/JuliaNLSolvers) fa
 
 [![Build Status](https://travis-ci.org/JuliaNLSolvers/NLsolve.jl.svg?branch=master)](https://travis-ci.org/JuliaNLSolvers/NLsolve.jl)
 
-***This is the README for the development version of NLsolve.***
-To see the README.md for the most recently tagged version in METADATA.jl (v0.13.0), follow ![this link](https://github.com/JuliaNLSolvers/NLsolve.jl/blob/v0.13.0/README.md). 
-
 # Non-linear systems of equations
 The NLsolve package solves systems of nonlinear equations. Formally, if `F` is
 a multivalued function, then this package looks for some vector `x` that
@@ -115,16 +112,15 @@ nlsolve(f!, initial_x, autodiff = :forward)
 
 ### Jacobian available
 
-If, in addition to `f!(F::AbstractVector, x::AbstractVector)`, you have a function `j!(J::AbstractMatrix, x::AbstractVector)` for computing the Jacobian of the system, then the syntax is, as in the example above:
+If, in addition to `f!(F::AbstractArray, x::AbstractArray)`, you have a function `j!(J::AbstractArray, x::AbstractArray)` for computing the Jacobian of the system, then the syntax is, as in the example above:
 
 ```jl
 nlsolve(f!, j!, initial_x)
 ```
 
-Again it is also possible to specify two functions `f!(F::AbstractArray, x::AbstractArray)` and `j!(J::AbstractMatrix, x::AbstractArray)` that work on
-arbitrary arrays `x`.
+Again it is also possible to specify two functions `f!(F::AbstractArray, x::AbstractArray)` and `j!(J::AbstractArray, x::AbstractArray)` that work on arbitrary arrays `x`.
 
-Note that you should not assume that the Jacobian `J` passed into `j!` is initialized to a zero matrix. You must set all the elements of the matrix in the function `j!`.
+Note, that you should not assume that the Jacobian `J` passed into `j!` is initialized to a zero matrix. You must set all the elements of the matrix in the function `j!`.
 
 Alternatively, you can construct an object of type
 `OnceDifferentiable` and pass it to `nlsolve`, as in:
@@ -136,9 +132,9 @@ nlsolve(df, initial_x)
 
 ### Optimization of simultaneous residuals and Jacobian
 
-If, in addition to `f!` and `j!`, you have a function `fj!(x::AbstractVector,
-F::AbstractVector, J::AbstractMatrix)` or `fj!(x::AbstractArray,
-F::AbstractArray, J::AbstractMatrix)` that computes both the residual and the
+If, in addition to `f!` and `j!`, you have a function `fj!(x::AbstractArray,
+F::AbstractArray, J::AbstractArray)` or `fj!(x::AbstractArray,
+F::AbstractArray, J::AbstractArray)` that computes both the residual and the
 Jacobian at the same time, you can use the following syntax
 
 ```jl
@@ -150,65 +146,64 @@ If the function `fj!` uses some optimization that make it cost less than
 calling `f!` and `j!` successively, then this syntax can possibly improve the
 performance.
 
-### Other combinations
+### Providing only fj!
 
-There are other helpers for two other cases, described below. Note that these
-cases are not optimal in terms of memory management.
-
-If only `f!` and `fj!` are available, the helper function `only_f!_and_fj!` can be
-used to construct a `OnceDifferentiable` object, that can be
-used as first argument of `nlsolve`. The complete syntax is therefore
-
+If a function is available for calculating residuals and the Jacobian,
+there is a special syntax for an, arguably, simpler approach. First,
+define the function as
 ```jl
-nlsolve(only_f!_and_fj!(f!, fj!), initial_x)
+function myfun!(F, J, x)
+    # shared calculations begin
+    # ...
+    # shared calculation end
+    if !(F == nothing)
+        # mutating calculations specific to f! goes here
+    end
+    if !(J == nothing)
+        # mutating calculations specific to j! goes
+    end
+end
 ```
 
-
-If only `fj!` is available, the helper function `only_fj!` can be used to
-construct a `OnceDifferentiable` object, that can be used as
-first argument of `nlsolve`. The complete syntax is therefore
+and solve using
 
 ```jl
-nlsolve(only_fj!(fj!), initial_x)
+nlsolve(only_fj!(myfun), initial_x)
 ```
+
+This will make enable `nlsolve` to efficiently calculate `F(x)` and `J(x)`
+together, but still be efficient when calculating either `F(x)` or `J(x)`
+separately. 
 
 ## With functions returning residuals and Jacobian as output
 
-Here it is assumed that you have a function `f(x::AbstractVector)` that returns
-a newly-allocated vector containing the residuals. The helper function
-`not_in_place` can be used to construct a function, that can be used as first
-argument of `nlsolve`. The complete syntax is therefore:
+Here it is assumed that you have a function `f(x::AbstractArray)` that returns
+a newly-allocated vector containing the residuals. To use such a function directly,
+use the `inplace` keyword. The `inplace` keyword in `nlsolve` defaults to `true`,
+so we have to change it to `false` to let `nlsolve` know what we're passing it
+is not coded in a mutating way:
 
 ```jl
-nlsolve(not_in_place(f), initial_x)
+nlsolve(f, initial_x; inplace = false)
 ```
 
 Via the `autodiff` keyword both finite-differencing and autodifferentiation can
 be used to compute the Jacobian in that case.
 
-If, in addition to `f(x::AbstractVector)`, there is a function
-`j(x::AbstractVector)` returning a newly-allocated matrix containing the
-Jacobian, `not_in_place` can be used to construct an object of type
-`OnceDifferentiable` that can be used as first argument of
-`nlsolve`:
+If, in addition to `f(x::AbstractArray)`, there is a function
+`j(x::AbstractArray)` returning a newly-allocated matrix containing the
+Jacobian, we again use the `inplace` keyword:
 
 ```jl
-nlsolve(not_in_place(f, j), initial_x)
+nlsolve(f, j, initial_x; inplace = false)
 ```
 
 If, in addition to `f` and `j`, there is a function `fj` returning a tuple of a
 newly-allocated vector of residuals and a newly-allocated matrix of the
-Jacobian, `not_in_place` can be used to construct an object of type
-`OnceDifferentiable`:
+Jacobian, the approach is the same:
 
 ```jl
-nlsolve(not_in_place(f, j, fj), initial_x)
-```
-
-For functions `f`, `j`, and `fj` that operate on arbitrary arrays the syntax is:
-
-```jl
-nlsolve(not_in_place(f, j, fj, initial_x), initial_x)
+nlsolve(f, j, fj, initial_x; inplace = false)
 ```
 
 ## With functions taking several scalar arguments
@@ -239,9 +234,8 @@ nlsolve(df, initial_x)
 It is possible to give an optional third function `fj!` to the constructor, as
 for the full Jacobian case.
 
-Note that on the first call to `j!` or `fj!`, the sparse matrix passed in
-argument is empty, i.e. all its elements are zeros. But this matrix is not
-reset across function calls. So you need to be careful and ensure that you
+Note that the Jacobian matrix is not reset across function calls. As a result,
+you need to be careful and ensure that you
 don't forget to overwrite all nonzeros elements that could have been
 initialized by a previous function call. If in doubt, you can clear the sparse
 matrix at the beginning of the function. If `J` is the sparse Jacobian, this
