@@ -81,20 +81,17 @@ function fg(x)
 end
 
 
-#FIXME Need to use the new interface
-#=
-r = nlsolve(not_in_place(f), [ -0.5; 1.4])
+r = nlsolve(f, [ -0.5; 1.4]; inplace = false)
 @test converged(r)
 
-r = nlsolve(not_in_place(f), [ -0.5; 1.4], autodiff = true)
+r = nlsolve(f, [ -0.5; 1.4]; inplace = false, autodiff = true)
 @test converged(r)
 
-r = nlsolve(not_in_place(f, g), [ -0.5; 1.4])
+r = nlsolve(f, g, [ -0.5; 1.4]; inplace = false)
 @test converged(r)
 
-r = nlsolve(not_in_place(f, g, fg), [ -0.5; 1.4])
+r = nlsolve(f, g, fg, [ -0.5; 1.4]; inplace = false)
 @test converged(r)
-=#
 
 # Using functions taking scalar as inputs
 
