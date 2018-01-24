@@ -43,7 +43,7 @@ function newton_{T}(df::OnceDifferentiable,
     xold = similar(x)
     p = Array{T}(n)
     g = Array{T}(n)
-    value_jacobian!(df, x)
+    value_jacobian!!(df, x)
 
     check_isfinite(value(df))
 
