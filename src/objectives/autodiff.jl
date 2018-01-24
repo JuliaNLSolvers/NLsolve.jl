@@ -1,4 +1,4 @@
-function OnceDifferentiable(f!, x::AbstractArray, F::AbstractArray, autodiff::Union{Symbol, Bool} = :central)
+function OnceDifferentiable(f!, x::AbstractArray, F::AbstractArray, autodiff::Union{Symbol, Bool} = :central, chunk = ForwardDiff.Chunk(x))
     if autodiff == :central
         central_cache = DiffEqDiffTools.JacobianCache(similar(x), similar(x), similar(x))
         function fj!(F, J, x)
@@ -12,7 +12,7 @@ function OnceDifferentiable(f!, x::AbstractArray, F::AbstractArray, autodiff::Un
         end
         return OnceDifferentiable(f!, j!, fj!, x, x)
     elseif autodiff == :forward || autodiff == true
-        jac_cfg = ForwardDiff.JacobianConfig(f!, x, x)
+        jac_cfg = ForwardDiff.JacobianConfig(f!, x, x, chunk)
         ForwardDiff.checktag(jac_cfg, f!, x)
     
         F2 = copy(x)   

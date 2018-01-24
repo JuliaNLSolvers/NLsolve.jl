@@ -1,6 +1,5 @@
 
-function nlsolve(df::TDF,
-                 initial_x::AbstractArray{T},
+function nlsolve(df::TDF, initial_x::AbstractArray{T},
                  method::TM,
                  options = Options(T)) where {T, TDF <: AbstractObjective, TM <: AbstractNLSolver}
     if options.show_trace
@@ -22,12 +21,12 @@ function nlsolve(df::TDF,
     end
 end
 
-function nlsolve(f,
-                 j,
-                 initial_x::AbstractArray{T},
-                 method::TM,
-                 options = Options(T); inplace = true) where {T, TM<:AbstractNLSolver}
+function nlsolve(f, j, initial_x::AbstractArray{T},
+                 method::TM, options = Options(T); inplace = true) where {T, TM<:AbstractNLSolver}
 
+    # if inplace then f, j, and fj are provided as updating the first
+    # argument(s) in f(F, x), j(J, x), fj(F, J, x). Else it is assumed
+    # that f(x) returns F, j(x) returns J, and fj(x) returns F, J
     if inplace
         df = OnceDifferentiable(f, j, initial_x, initial_x)
     else
@@ -40,6 +39,9 @@ function nlsolve(f,
                  initial_x::AbstractArray{T},
                  method::TM,
                  options = Options(T); inplace = true, autodiff = :forward) where {T, TM<:AbstractNLSolver}
+    # if inplace then f, j, and fj are provided as updating the first
+    # argument(s) in f(F, x), j(J, x), fj(F, J, x). Else it is assumed
+    # that f(x) returns F, j(x) returns J, and fj(x) returns F, J
     if inplace
         df = OnceDifferentiable(f, initial_x, initial_x, autodiff)
     else
@@ -48,11 +50,12 @@ function nlsolve(f,
     nlsolve(df, initial_x, method, options)
 end
 
-function nlsolve(f, j, fj,
-    initial_x::AbstractArray{T},
-    method::TM,
-    options = Options(T); inplace = true) where {T, TM<:AbstractNLSolver}
+function nlsolve(f, j, fj, initial_x::AbstractArray{T},
+                 method::TM, options = Options(T); inplace = true) where {T, TM<:AbstractNLSolver}
 
+    # if inplace then f, j, and fj are provided as updating the first
+    # argument(s) in f(F, x), j(J, x), fj(F, J, x). Else it is assumed
+    # that f(x) returns F, j(x) returns J, and fj(x) returns F, J
     if inplace
         df = OnceDifferentiable(f, j, fj, initial_x, initial_x)
     else
