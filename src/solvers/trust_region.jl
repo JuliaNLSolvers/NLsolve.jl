@@ -102,7 +102,7 @@ function trust_region_{T}(df::OnceDifferentiable,
     p = similar(x)          # Step
     d = similar(x)          # Scaling vector
 
-    value_jacobian!(df, x)
+    value_jacobian!!(df, x)
     r .= value(df)
     check_isfinite(r)
 
