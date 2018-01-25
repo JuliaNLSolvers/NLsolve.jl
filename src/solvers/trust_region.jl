@@ -1,7 +1,7 @@
 struct NewtonTrustRegion
 end
 
-struct NewtonTrustRegionCache{Tx}
+struct NewtonTrustRegionCache{Tx} <: AbstractSolverCache
     x::Tx
     xold::Tx
     r::Tx
@@ -27,7 +27,7 @@ macro trustregiontrace(stepnorm)
         if tracing
             dt = Dict()
             if extended_trace
-                dt["x"] = copy(x)
+                dt["x"] = copy(cache.x)
                 dt["f(x)"] = copy(value(df))
                 dt["g(x)"] = copy(jacobian(df))
                 dt["delta"] = delta
@@ -209,7 +209,7 @@ function trust_region_{T}(df::OnceDifferentiable,
     end
     return SolverResults(name,
                          #initial_x, reshape(cache.x, size(initial_x)...), vecnorm(cache.r, Inf),
-                         initial_x, cache.x, vecnorm(cache.r, Inf),
+                         initial_x, copy(cache.x), vecnorm(cache.r, Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
                          first(df.f_calls), first(df.df_calls))
 end

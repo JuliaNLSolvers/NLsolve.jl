@@ -1,5 +1,18 @@
 struct Newton
 end
+struct NewtonCache{Tx} <: AbstractSolverCache
+    x::Tx
+    xold::Tx
+    p::Tx
+    g::Tx
+end
+function NewtonCache(df)
+    x = similar(df.x_f)
+    xold = similar(x)
+    p = similar(x)
+    g = similar(x)
+    NewtonCache(x, xold, p, g)
+end
 function no_linesearch(dfo, xold, p, x, lsr, alpha, mayterminate)
     @simd for i in eachindex(x)
         @inbounds x[i] = xold[i] + p[i]
@@ -13,7 +26,7 @@ macro newtontrace(stepnorm)
         if tracing
             dt = Dict()
             if extended_trace
-                dt["x"] = copy(x)
+                dt["x"] = copy(cache.x)
                 dt["f(x)"] = copy(value(df))
                 dt["g(x)"] = copy(jacobian(df))
             end
@@ -36,22 +49,15 @@ function newton_{T}(df::OnceDifferentiable,
                     store_trace::Bool,
                     show_trace::Bool,
                     extended_trace::Bool,
-                    linesearch)
-    # setup
-    x = vec(copy(initial_x))
-    n = length(x)
-    xold = similar(x)
-    p = Array{T}(n)
-    g = Array{T}(n)
-    value_jacobian!!(df, x)
-
+                    linesearch,
+                    cache = NewtonCache(df))
+    n = length(initial_x)
+    copy!(cache.x, initial_x)
+    value_jacobian!!(df, cache.x)
     check_isfinite(value(df))
-
+    vecvalue = vec(value(df))
     it = 0
     x_converged, f_converged, converged = assess_convergence(value(df), ftol)
-
-    # FIXME: How should this flag be set?
-    mayterminate = false
 
     # Maintain a cache for line search results
     lsr = LineSearches.LineSearchResults(T)
@@ -63,10 +69,8 @@ function newton_{T}(df::OnceDifferentiable,
     # Create objective function for the linesearch.
     # This function is defined as fo(x) = 0.5 * f(x) ⋅ f(x) and thus
     # has the gradient ∇fo(x) = ∇f(x) ⋅ f(x)
-    function fo(xlin::AbstractVector)
-        if xlin != xold
-            value!(df, xlin)
-        end
+    function fo(xlin)
+        value!(df, xlin)
         vecdot(value(df), value(df)) / 2
     end
 
@@ -75,58 +79,55 @@ function newton_{T}(df::OnceDifferentiable,
     # is expensive to recompute.
     # We solve this using the already computed ∇f(xₖ)
     # in case of the line search asking us for the gradient at xₖ.
-    function go!(storage::AbstractVector, xlin::AbstractVector)
-        if xlin != xold
-            value_jacobian!(df, xlin)
-        end
-        At_mul_B!(storage, jacobian(df), vec(value(df)))
+    function go!(storage, xlin)
+        value_jacobian!(df, xlin)
+        At_mul_B!(vec(storage), jacobian(df), vecvalue)
     end
-    function fgo!(storage::AbstractVector, xlin::AbstractVector)
-        go!(storage, xlin)
+    function fgo!(storage, xlin)
+        value_jacobian!(df, xlin)
+        At_mul_B!(vec(storage), jacobian(df), vecvalue)
         vecdot(value(df), value(df)) / 2
     end
-    dfo = OnceDifferentiable(fo, go!, fgo!, x, real(zero(T)))
+    dfo = OnceDifferentiable(fo, go!, fgo!, cache.x, real(zero(T)))
 
     while !converged && it < iterations
 
         it += 1
 
         if it > 1
-            jacobian!(df, x)
+            jacobian!(df, cache.x)
         end
 
         try
-            At_mul_B!(g, jacobian(df), vec(value(df)))
-            p = jacobian(df)\vec(value(df))
-            scale!(p, -1)
+            At_mul_B!(vec(cache.g), jacobian(df), vec(value(df)))
+            copy!(cache.p, jacobian(df)\vec(value(df)))
+            scale!(cache.p, -1)
         catch e
             if isa(e, Base.LinAlg.LAPACKException) || isa(e, Base.LinAlg.SingularException)
                 # Modify the search direction if the jacobian is singular
                 # FIXME: better selection for lambda, see Nocedal & Wright p. 289
                 fjac2 = jacobian(df)'*jacobian(df)
                 lambda = convert(T,1e6)*sqrt(n*eps())*norm(fjac2, 1)
-                p = -(fjac2 + lambda*eye(n))\vec(g)
+                cache.p .= -(fjac2 + lambda*eye(n))\vec(cache.g)
             else
                 throw(e)
             end
         end
 
-        copy!(xold, x)
-
+        copy!(cache.xold, cache.x)
         LineSearches.clear!(lsr)
-        push!(lsr, zero(T), vecdot(value(df),value(df))/2, vecdot(g, p))
-
-        alpha = linesearch(dfo, xold, p, x, lsr, one(T), mayterminate)
-
+        value_gradient!(dfo, cache.x)
+        push!(lsr, zero(T), value(dfo), vecdot(cache.g, cache.p))
+        alpha = linesearch(dfo, cache.xold, cache.p, cache.x, lsr, one(T), false)
         # fvec is here also updated in the linesearch so no need to call f again.
 
-        x_converged, f_converged, converged = assess_convergence(x, xold, value(df), xtol, ftol)
+        x_converged, f_converged, converged = assess_convergence(cache.x, cache.xold, value(df), xtol, ftol)
 
-        @newtontrace sqeuclidean(x, xold)
+        @newtontrace sqeuclidean(cache.x, cache.xold)
     end
 
     return SolverResults("Newton with line-search",
-                         initial_x, reshape(x, size(initial_x)...), vecnorm(value(df), Inf),
+                         initial_x, copy(cache.x), vecnorm(value(df), Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
                          first(df.f_calls), first(df.df_calls))
 end
@@ -139,6 +140,7 @@ function newton{T}(df::OnceDifferentiable,
                    store_trace::Bool,
                    show_trace::Bool,
                    extended_trace::Bool,
-                   linesearch)
+                   linesearch,
+                   cache = NewtonCache(df))
     newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch)
 end

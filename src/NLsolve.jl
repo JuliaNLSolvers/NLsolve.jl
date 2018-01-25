@@ -21,6 +21,8 @@ export OnceDifferentiable,
        mcpsolve,
        converged
 
+abstract type AbstractSolverCache end
+
 struct IsFiniteException <: Exception
   indices::Vector{Int}
 end
