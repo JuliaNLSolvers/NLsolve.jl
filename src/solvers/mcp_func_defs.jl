@@ -51,7 +51,7 @@ function mcpsolve{T}(f,
                   extended_trace::Bool = false,
                   linesearch = LineSearches.BackTracking(),
                   factor::Real = one(T),
-                  autoscale = :central,
+                  autoscale = true,
                   inplace = true)
     if inplace
         df = OnceDifferentiable(f, initial_x, initial_x)
