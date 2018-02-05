@@ -55,7 +55,7 @@ function dogleg!{T}(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i, r::Abstract
             k = sum(S .> eps())
             mrinv = V * diagm([1./S[1:k]; zeros(eltype(S), length(S)-k)]) * U' # Moore-Penrose generalized inverse of J
             vecpi = vec(p_i)
-            vecpi .= mrinv * vec(r)
+            A_mul_B!(vecpi,mrinv,vec(r))
         else
             throw(e)
         end
