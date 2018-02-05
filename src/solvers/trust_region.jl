@@ -54,7 +54,8 @@ function dogleg!{T}(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i, r::Abstract
             U, S, V = svd(full(J)) # Convert to full matrix because sparse SVD not implemented as of Julia 0.3
             k = sum(S .> eps())
             mrinv = V * diagm([1./S[1:k]; zeros(eltype(S), length(S)-k)]) * U' # Moore-Penrose generalized inverse of J
-            p_i .= mrinv * vec(r)
+            vecpi = vec(p_i)
+            vecpi .= mrinv * vec(r)
         else
             throw(e)
         end
