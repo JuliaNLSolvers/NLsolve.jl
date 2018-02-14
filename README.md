@@ -284,7 +284,9 @@ vector and evaluate the function at the new point.
 
 ## Anderson acceleration
 
-Also known as DIIS or Pulay mixing, this method is based on the
+This method is selected with `method = :anderson`.
+
+It is also known as DIIS or Pulay mixing, this method is based on the
 acceleration of the fixed-point iteration `xn+1 = xn + β f(xn)`, where
 by default `β=1`. It does not use Jacobian information or linesearch,
 but has a history whose size is controlled by the `m` parameter: `m=0`
