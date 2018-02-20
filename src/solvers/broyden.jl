@@ -40,7 +40,7 @@ function broyden_{T}(df::OnceDifferentiable,
     g = Array{T}(n)
     Jinv = eye(T, n, n)
     check_isfinite(value(df))
-
+    vecvalue = vec(value(df))
     it = 0
     x_converged, f_converged, converged = assess_convergence(value(df), ftol)
 
@@ -54,7 +54,7 @@ function broyden_{T}(df::OnceDifferentiable,
     tracing = store_trace || show_trace || extended_trace
     @broydentrace convert(T, NaN)
 
-    # Create objective function for the linesearch.
+    #Create objective function for the linesearch.
     # This function is defined as fo(x) = 0.5 * f(x) ⋅ f(x) and thus
     # has the gradient ∇fo(x) = ∇f(x) ⋅ f(x)
    # function fo(xlin::AbstractVector)
@@ -93,15 +93,35 @@ function broyden_{T}(df::OnceDifferentiable,
 
         copy!(xold, x)
         fold = copy(value(df))
-        x = xold - Jinv*fold
+        p = - Jinv*fold
+
+        function lsobj(α)
+            value!(df, x+α*p)
+            vecdot(value(df), value(df))/2
+        end
+        function lsgs(α)
+            value_jacobian!(df, x+α*p)
+            vecdot(At_mul_B(jacobian(df), vecvalue), p)
+        end
+
+        α = T(1.0)
+        lsa = lsobj(α)
+        ls1 = lsobj(1.0)
+        lsg1 = lsobj(1.0)
+        while lsobj(α) < ls1 + α* lsg1
+            α = α/2
+            lsa = lsobj(α)
+        end
+        println(α)
+        x = xold + α*p
         value!(df, x)
-     
 
         x_converged, f_converged, converged = assess_convergence(x, xold, value(df), xtol, ftol)
 
         @broydentrace sqeuclidean(x, xold)
     end
-
+@show initial_x
+@show reshape(x, size(initial_x)...)
     return SolverResults("broyden without line-search",
                          initial_x, reshape(x, size(initial_x)...), vecnorm(value(df), Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
