@@ -28,7 +28,8 @@ else
              "throws.jl",
              "f_g_counts.jl",
              "no_linesearch.jl",
-             "abstractarray.jl"]
+             "abstractarray.jl",
+             "fixed_points.jl"]
 end
 
 println("Running tests:")
