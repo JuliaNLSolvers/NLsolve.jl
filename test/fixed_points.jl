@@ -52,4 +52,5 @@ b = SVector(1.0, 2.0)
 f(x)= A * x + b
 @test fixedpoint(f,[1.0; 0.1])[1] ≈ [2.0;2.5]
 
+
 end
