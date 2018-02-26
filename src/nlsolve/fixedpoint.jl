@@ -20,7 +20,8 @@ function fixedpoint(df::TDF,
         @printf "------   --------------   --------------\n"
     end
     if method == :simple_iteration
-        simple_iteration(df, initial_x, xtol, ftol, iterations)
+        simple_iteration(df, initial_x, xtol, ftol, iterations,
+                        store_trace, show_trace, extended_trace)
 #    elseif method == :newton
 #newton(df, initial_x, xtol, ftol, iterations,
 #               store_trace, show_trace, extended_trace, linesearch)
