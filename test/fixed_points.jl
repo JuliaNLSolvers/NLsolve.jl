@@ -1,7 +1,6 @@
 # Test fixed points
 @testset "fixed_points" begin
 using NLsolve, Base.Test, StaticArrays
-
 #The inplace one is not implemented, so left in the old code.
 function fixedpointOLD!(f!, x0; residualnorm = (x -> norm(x,Inf)), tol = 1E-10, maxiter=100)
     residual = Inf
