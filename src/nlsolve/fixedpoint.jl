@@ -22,16 +22,6 @@ function fixedpoint(df::TDF,
     if method == :simple_iteration
         simple_iteration(df, initial_x, xtol, ftol, iterations,
                         store_trace, show_trace, extended_trace)
-#    elseif method == :newton
-#newton(df, initial_x, xtol, ftol, iterations,
-#               store_trace, show_trace, extended_trace, linesearch)
-#    elseif method == :trust_region
-#        trust_region(df, initial_x, xtol, ftol, iterations,
-#                     store_trace, show_trace, extended_trace, factor,
-#                     autoscale)
-#    elseif method == :anderson
-#        anderson(df, initial_x, xtol, ftol, iterations,
-#                 store_trace, show_trace, extended_trace, m, beta)
     else
         throw(ArgumentError("Method $method unknown or not implemented"))
     end
