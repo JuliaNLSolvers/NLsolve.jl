@@ -23,9 +23,9 @@ function fixedpoint(df::TDF,
         simple_iteration(df, initial_x, xtol, ftol, iterations,
                         store_trace, show_trace, extended_trace)
     elseif method == :anderson
-        g(x) = df(x) - x
+        g(x) = f(x) - x 
         function g!(x, gx)
-                gx[:] = df(x) - x #inplace
+                gx[:] = f(x) - x #in-place
         end
         anderson(g, initial_x, xtol, ftol, iterations,
                  store_trace, show_trace, extended_trace, m, beta)
