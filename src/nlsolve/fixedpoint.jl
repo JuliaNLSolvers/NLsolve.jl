@@ -23,13 +23,13 @@ function fixedpoint(df::TDF,
         simple_iteration(df, initial_x, xtol, ftol, iterations,
                         store_trace, show_trace, extended_trace)
     elseif method == :anderson
-        g(x) = f(x) - x 
-        function g!(x, gx)
-                gx[:] = f(x) - x #in-place
-        end
-        anderson(g, initial_x, xtol, ftol, iterations,
+        f(x) = df
+        g(x) = f(x) - x
+        g(G,  x) = copy(G, g(x))
+        anderson(g(x), initial_x, xtol, ftol, iterations,
                  store_trace, show_trace, extended_trace, m, beta)
-
+        anderson(g(G,  x), initial_x, xtol, ftol, iterations,
+                 store_trace, show_trace, extended_trace, m, beta)
     else
         throw(ArgumentError("Method $method unknown or not implemented"))
     end
