@@ -26,9 +26,7 @@ function fixedpoint(df::TDF,
         f(x) = df
         g(x) = f(x) - x
         g(G,  x) = copy(G, g(x))
-        anderson(g(x), initial_x, xtol, ftol, iterations,
-                 store_trace, show_trace, extended_trace, m, beta)
-        anderson(g(G,  x), initial_x, xtol, ftol, iterations,
+        anderson(g, initial_x, xtol, ftol, iterations,
                  store_trace, show_trace, extended_trace, m, beta)
     else
         throw(ArgumentError("Method $method unknown or not implemented"))
