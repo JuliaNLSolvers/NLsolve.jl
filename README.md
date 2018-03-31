@@ -242,9 +242,8 @@ matrix at the beginning of the function. If `J` is the sparse Jacobian, this
 can be achieved with:
 
 ```jl
-fill!(J.colptr, 1)
-empty!(J.rowval)
-empty!(J.nzval)
+fill!(a, 0)
+dropzeros(a) # if you also want to remove the sparsity pattern
 ```
 
 # Fine tunings
