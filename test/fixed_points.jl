@@ -7,8 +7,7 @@ using NLsolve, Base.Test, StaticArrays
 A = [0.5 0; 0 0.2]
 b = [1.0; 2.0]
 f(x) = A * x + b
-g(x)=f(x) - x
-@test fixedpoint(g,[1.0; 0.1], method == :anderson)
+fixedpoint(f,[1.0; 0.1], :anderson)
 
 #inplace matrix valued function
 A = [0.5 0; 0 0.2]
@@ -16,17 +15,14 @@ b = [1.0; 2.0]
 function f!(x, fx)
         fx[:] = A * x + b
 end
-g(x) = f! - x
-g(G,  x) = copy(G, g(x))
-@test fixedpoint(g,[1.0; 0.2], method == :anderson)
+fixedpoint(f!,[1.0; 0.2],:anderson)
 
 
 # Variation using static arrays
 A= SMatrix{2,2}(0.5,0,0,0.2)
 b = SVector(1.0, 2.0)
 f(x)= A * x + b
-g(x)=f(x) - x
-@test fixedpoint(g,[1.0; 0.2],method =:anderson) # how to call new interface
+fixedpoint(g,[1.0; 0.2],:anderson) # how to call new interface
 
 
 
