@@ -12,9 +12,6 @@ function nlsolve(df::TDF,
                  autoscale::Bool = true,
                  m::Integer = 0,
                  beta::Real = 1.0) where {T, TDF <: OnceDifferentiable}
-    if extended_trace
-        show_trace = true
-    end
     if show_trace
         @printf "Iter     f(x) inf-norm    Step 2-norm \n"
         @printf "------   --------------   --------------\n"
