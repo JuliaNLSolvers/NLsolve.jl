@@ -2,6 +2,6 @@ julia 0.6.0
 DiffEqDiffTools
 Distances
 ForwardDiff 0.7.0
-LineSearches 2.1.0
+LineSearches 4.0.0
 DiffBase
 NLSolversBase 4.0.0

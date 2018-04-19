@@ -58,10 +58,7 @@ function newton_{T}(df::OnceDifferentiable,
     vecvalue = vec(value(df))
     it = 0
     x_converged, f_converged, converged = assess_convergence(value(df), ftol)
-
-    # Maintain a cache for line search results
-    lsr = LineSearches.LineSearchResults(T)
-
+    x_ls = copy(cache.x)
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
     @newtontrace convert(T, NaN)
@@ -115,12 +112,12 @@ function newton_{T}(df::OnceDifferentiable,
         end
 
         copy!(cache.xold, cache.x)
-        LineSearches.clear!(lsr)
-        value_gradient!(dfo, cache.x)
-        push!(lsr, zero(T), value(dfo), vecdot(cache.g, cache.p))
-        alpha = linesearch(dfo, cache.xold, cache.p, cache.x, lsr, one(T), false)
-        # fvec is here also updated in the linesearch so no need to call f again.
 
+        value_gradient!(dfo, cache.x)
+
+        alpha, ϕalpha = linesearch(dfo, cache.x, cache.p, one(T), x_ls, value(dfo), vecdot(cache.g, cache.p))
+        # fvec is here also updated in the linesearch so no need to call f again.
+        copy!(cache.x, x_ls)
         x_converged, f_converged, converged = assess_convergence(cache.x, cache.xold, value(df), xtol, ftol)
 
         @newtontrace sqeuclidean(cache.x, cache.xold)
