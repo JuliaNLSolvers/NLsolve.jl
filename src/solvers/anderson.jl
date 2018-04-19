@@ -24,7 +24,7 @@ function AndersonCache(df, method::Anderson)
     residuals = zeros(T, N, m) #matrix of residuals used for the least-squares problem
     alphas = zeros(T, m) #coefficients obtained by least-squares
     fx = similar(df.x_f, N) # temp variable to store f!
-    
+
     AndersonCache(xs, gs, old_x, residuals, alphas, fx)
 end
 
@@ -65,7 +65,7 @@ end
             end
             update!(tr,
                     n,
-                    maximum(abs,fx),
+                    maximum(abs,cache.fx),
                     n > 1 ? sqeuclidean(cache.xs[:,1],cache.old_x) : convert(T,NaN),
                     dt,
                     store_trace,
