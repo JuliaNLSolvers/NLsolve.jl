@@ -106,4 +106,7 @@ r = nlsolve(n_ary(f), [ -0.5; 1.4])
 r = nlsolve(n_ary(f), [ -0.5; 1.4], autodiff = true)
 @test converged(r)
 
+@testset "andersont trace issue #160" begin
+    r = nlsolve(df, [ 0.01; .99], method = :anderson, m = 10, beta=.01, show_trace=true)
+end
 end
