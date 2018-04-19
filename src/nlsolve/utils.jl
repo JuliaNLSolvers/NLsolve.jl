@@ -1,5 +1,5 @@
-function wdot{T}(wx::AbstractArray{T}, x::AbstractArray{T},
-                 wy::AbstractArray{T}, y::AbstractArray{T})
+function wdot(wx::AbstractArray{T}, x::AbstractArray{T},
+                 wy::AbstractArray{T}, y::AbstractArray{T}) where T
     out = zero(T)
     @inbounds @simd for i in 1:length(x)
         out += wx[i]*x[i] * wy[i]*y[i]
@@ -7,7 +7,7 @@ function wdot{T}(wx::AbstractArray{T}, x::AbstractArray{T},
     return out
 end
 
-wnorm{T}(w::AbstractArray{T}, x::AbstractArray{T}) = sqrt(wdot(w, x, w, x))
+wnorm(w::AbstractArray{T}, x::AbstractArray{T}) where T = sqrt(wdot(w, x, w, x))
 assess_convergence(f, ftol) = assess_convergence(NaN, NaN, f, NaN, ftol)
 function assess_convergence(x,
                             x_previous,

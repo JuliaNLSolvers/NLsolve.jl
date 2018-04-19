@@ -1,11 +1,12 @@
 using NLsolve
 using DiffEqBase
-using Base.Test
+import LinearAlgebra: norm, spzeros
+using Compat, Compat.Test
 import Base.convert
 
 add_jl(x) = endswith(x, ".jl") ? x : x*".jl"
 
-type WrappedArray{T,N} <: DEDataArray{T,N}
+mutable struct WrappedArray{T,N} <: DEDataArray{T,N}
     x::Array{T,N}
 end
 

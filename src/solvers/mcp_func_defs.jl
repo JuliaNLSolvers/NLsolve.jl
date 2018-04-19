@@ -36,7 +36,7 @@ function mcpsolve(df::TDF,
             linesearch = linesearch, factor = factor, autoscale = autoscale)
 end
 
-function mcpsolve{T}(f,
+function mcpsolve(f,
                   j,
                   lower::Vector,
                   upper::Vector,
@@ -52,7 +52,7 @@ function mcpsolve{T}(f,
                   linesearch = LineSearches.BackTracking(),
                   factor::Real = one(T),
                   autoscale = true,
-                  inplace = true)
+                  inplace = true) where T
     if inplace
         df = OnceDifferentiable(f, initial_x, initial_x)
     else
@@ -66,7 +66,7 @@ function mcpsolve{T}(f,
             linesearch = linesearch, factor = factor, autoscale = autoscale)
 end
 
-function mcpsolve{T}(f,
+function mcpsolve(f,
                   lower::Vector,
                   upper::Vector,
                   initial_x::AbstractArray{T};
@@ -82,7 +82,7 @@ function mcpsolve{T}(f,
                   factor::Real = one(T),
                   autoscale::Bool = true,
                   autodiff = :central,
-                  inplace = true)
+                  inplace = true) where T
     if inplace
         df = OnceDifferentiable(f, initial_x, initial_x, autodiff)
     else
