@@ -98,7 +98,7 @@ function newton_(df::OnceDifferentiable,
         try
             mul!(vec(cache.g), transpose(jacobian(df)), vec(value(df)))
             copyto!(cache.p, jacobian(df)\vec(value(df)))
-            scale!(cache.p, -1)
+            Compat.@dotcompat cache.p = -1*cache.p
         catch e
             if isa(e, Base.LinAlg.LAPACKException) || isa(e, Base.LinAlg.SingularException)
                 # Modify the search direction if the jacobian is singular
