@@ -1,7 +1,7 @@
 using NLsolve
 using DiffEqBase
-import LinearAlgebra: norm, spzeros
 using Compat, Compat.Test
+import Compat.LinearAlgebra: norm, spzeros
 import Base.convert
 
 add_jl(x) = endswith(x, ".jl") ? x : x*".jl"
