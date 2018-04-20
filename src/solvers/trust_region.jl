@@ -60,7 +60,7 @@ function dogleg!(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i, r::AbstractArr
             throw(e)
         end
     end
-    rmul!(p_i, -one(T))
+    Compat.@dotcompat p_i = -1*p_i
 
     # Test if Gauss-Newton step is within the region
     if wnorm(d, p_i) <= delta
@@ -82,7 +82,7 @@ function dogleg!(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i, r::AbstractArr
         if wnorm(d, p_c) >= delta
             # Cauchy point is out of the region, take the largest step along
             # gradient direction
-            rmul!(g, -delta/wnorm(d, g))
+            Compat.@dotcompat g = -delta/wnorm(d, g)*g
 
             # now we want to set p = g, but that is already true, so we're done
 
