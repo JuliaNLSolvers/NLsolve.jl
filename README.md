@@ -132,9 +132,7 @@ nlsolve(df, initial_x)
 
 ### Optimization of simultaneous residuals and Jacobian
 
-If, in addition to `f!` and `j!`, you have a function `fj!(x::AbstractArray,
-F::AbstractArray, J::AbstractArray)` or `fj!(x::AbstractArray,
-F::AbstractArray, J::AbstractArray)` that computes both the residual and the
+If, in addition to `f!` and `j!`, you have a function `fj!(F::AbstractArray, J::AbstractArray, x::AbstractArray)` that computes both the residual and the
 Jacobian at the same time, you can use the following syntax
 
 ```jl
