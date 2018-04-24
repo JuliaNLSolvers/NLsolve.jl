@@ -9,7 +9,7 @@ function SolverState(i::Integer, fnorm::Real)
     SolverState(Int(i), fnorm, oftype(fnorm, NaN), Dict())
 end
 
-function SolverState{T<:Real}(i::Integer, fnorm::T, stepnorm::T)
+function SolverState(i::Integer, fnorm::T, stepnorm::T) where {T<:Real}
     SolverState(Int(i), fnorm, stepnorm, Dict())
 end
 

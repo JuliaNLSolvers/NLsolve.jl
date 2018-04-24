@@ -31,7 +31,7 @@ function nlsolve(df::TDF,
     end
 end
 
-function nlsolve{T}(f,
+function nlsolve(f,
                  initial_x::AbstractArray{T};
                  method::Symbol = :trust_region,
                  xtol::Real = zero(T),
@@ -46,13 +46,13 @@ function nlsolve{T}(f,
                  m::Integer = 0,
                  beta::Real = 1.0,
                  autodiff = :central,
-                 inplace = true)
+                 inplace = true) where T
     if inplace
         df = OnceDifferentiable(f, initial_x, initial_x, autodiff)
     else
         df = OnceDifferentiable(not_in_place(f), initial_x, initial_x, autodiff)
     end
-    
+
     nlsolve(df,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,

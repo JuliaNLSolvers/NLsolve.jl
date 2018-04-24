@@ -18,7 +18,7 @@ function NewtonTrustRegionCache(df)
     r_predict = similar(x)  # predicted residual
     p = similar(x)          # Step
     p_c = similar(x)          # Cauchy point
-    pi = similar(x)          
+    pi = similar(x)
     d = similar(x)          # Scaling vector
     NewtonTrustRegionCache(x, xold, r, r_predict, p, p_c, pi, d)
 end
@@ -44,10 +44,10 @@ macro trustregiontrace(stepnorm)
     end)
 end
 
-function dogleg!{T}(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i, r::AbstractArray{T}, d::AbstractArray{T},
-                    J::AbstractMatrix{T}, delta::Real)
+function dogleg!(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i, r::AbstractArray{T}, d::AbstractArray{T},
+                    J::AbstractMatrix{T}, delta::Real) where T
     try
-        copy!(p_i, J \ vec(r)) # Gauss-Newton step
+        copyto!(p_i, J \ vec(r)) # Gauss-Newton step
     catch e
         if isa(e, Base.LinAlg.LAPACKException) || isa(e, Base.LinAlg.SingularException)
             # If Jacobian is singular, compute a least-squares solution to J*x+r=0
@@ -55,16 +55,16 @@ function dogleg!{T}(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i, r::Abstract
             k = sum(S .> eps())
             mrinv = V * diagm([1./S[1:k]; zeros(eltype(S), length(S)-k)]) * U' # Moore-Penrose generalized inverse of J
             vecpi = vec(p_i)
-            A_mul_B!(vecpi,mrinv,vec(r))
+            mul!(vecpi,mrinv,vec(r))
         else
             throw(e)
         end
     end
-    scale!(p_i, -one(T))
+    Compat.@dotcompat p_i = -1*p_i
 
     # Test if Gauss-Newton step is within the region
     if wnorm(d, p_i) <= delta
-        copy!(p, p_i)   # accepts equation 4.13 from N&W for this step
+        copyto!(p, p_i)   # accepts equation 4.13 from N&W for this step
     else
         # For intermediate we will use the output array `p` as a buffer to hold
         # the gradient. To make it easy to remember which variable that array
@@ -73,7 +73,7 @@ function dogleg!{T}(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i, r::Abstract
 
         # compute g = J'r ./ (d .^ 2)
         g = p
-        At_mul_B!(vec(g), J, vec(r))
+        mul!(vec(g), transpose(J), vec(r))
         g .= g ./ d.^2
 
         # compute Cauchy point
@@ -82,7 +82,7 @@ function dogleg!{T}(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i, r::Abstract
         if wnorm(d, p_c) >= delta
             # Cauchy point is out of the region, take the largest step along
             # gradient direction
-            scale!(g, -delta/wnorm(d, g))
+            Compat.@dotcompat g = -delta/wnorm(d, g)*g
 
             # now we want to set p = g, but that is already true, so we're done
 
@@ -98,7 +98,7 @@ function dogleg!{T}(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i, r::Abstract
             a = wnorm(d, p_diff)^2
             tau = (-b + sqrt(b^2 - 4a*(wnorm(d, p_c)^2 - delta^2)))/(2a)
             p_c .+= tau .* p_diff
-            copy!(p, p_c)
+            copyto!(p, p_c)
         end
     end
 end
@@ -114,11 +114,11 @@ function trust_region_{T}(df::OnceDifferentiable,
                           factor::T,
                           autoscale::Bool,
                           cache = NewtonTrustRegionCache(df))
-    copy!(cache.x, initial_x)
+    copyto!(cache.x, initial_x)
     value_jacobian!!(df, cache.x)
     cache.r .= value(df)
     check_isfinite(cache.r)
-    
+
     it = 0
     x_converged, f_converged, converged = assess_convergence(value(df), ftol)
     delta = convert(T, NaN)
@@ -129,14 +129,14 @@ function trust_region_{T}(df::OnceDifferentiable,
         if autoscale
             name *= " and autoscaling"
         end
-     
+
         return SolverResults(name,
         #initial_x, reshape(cache.x, size(initial_x)...), vecnorm(cache.r, Inf),
         initial_x, copy(cache.x), vecnorm(cache.r, Inf),
         it, x_converged, xtol, f_converged, ftol, tr,
         first(df.f_calls), first(df.df_calls))
     end
-    
+
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
     @trustregiontrace convert(T, NaN)
@@ -151,12 +151,12 @@ function trust_region_{T}(df::OnceDifferentiable,
     else
         fill!(cache.d, one(T))
     end
-    
+
     delta = factor * wnorm(cache.d, cache.x)
     if delta == zero(T)
         delta = factor
     end
-    
+
     eta = convert(T, 1e-4)
 
     while !converged && it < iterations
@@ -165,12 +165,12 @@ function trust_region_{T}(df::OnceDifferentiable,
         # Compute proposed iteration step
         dogleg!(cache.p, cache.p_c, cache.pi, cache.r, cache.d, jacobian(df), delta)
 
-        copy!(cache.xold, cache.x)
+        copyto!(cache.xold, cache.x)
         cache.x .+= cache.p
         value!(df, cache.x)
 
         # Ratio of actual to predicted reduction (equation 11.47 in N&W)
-        A_mul_B!(vec(cache.r_predict), jacobian(df), vec(cache.p))
+        mul!(vec(cache.r_predict), jacobian(df), vec(cache.p))
         cache.r_predict .+= cache.r
         rho = (sum(abs2, cache.r) - sum(abs2, value(df))) / (sum(abs2, cache.r) - sum(abs2, cache.r_predict))
 
@@ -214,7 +214,7 @@ function trust_region_{T}(df::OnceDifferentiable,
                          first(df.f_calls), first(df.df_calls))
 end
 
-function trust_region{T}(df::OnceDifferentiable,
+function trust_region(df::OnceDifferentiable,
                          initial_x::AbstractArray{T},
                          xtol::Real,
                          ftol::Real,
@@ -224,6 +224,6 @@ function trust_region{T}(df::OnceDifferentiable,
                          extended_trace::Bool,
                          factor::Real,
                          autoscale::Bool,
-                         cache = NewtonTrustRegionCache(df))
+                         cache = NewtonTrustRegionCache(df)) where T
     trust_region_(df, initial_x, convert(T,xtol), convert(T,ftol), iterations, store_trace, show_trace, extended_trace, convert(T,factor), autoscale)
 end

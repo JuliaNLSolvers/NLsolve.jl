@@ -2,11 +2,13 @@ __precompile__()
 
 module NLsolve
 
+using Reexport
 using Distances
 using NLSolversBase
-using LineSearches
+@reexport using LineSearches
 using ForwardDiff
 using DiffEqDiffTools
+using Compat, Compat.Test, Compat.LinearAlgebra
 
 import Base.show,
        Base.push!,

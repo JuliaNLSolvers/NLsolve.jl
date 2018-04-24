@@ -35,11 +35,11 @@ let a = rand(10)
     const A = a*a'
     global f_let!, g_let!
     function f_let!(fvec, x)
-        copy!(fvec, A*x)
+        copyto!(fvec, A*x)
     end
 
     function g_let!(fjac, x)
-        copy!(fjac, A)
+        copyto!(fjac, A)
     end
 end
 

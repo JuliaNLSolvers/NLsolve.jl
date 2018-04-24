@@ -1,16 +1,17 @@
 using NLsolve
 using DiffEqBase
-using Base.Test
+using Compat, Compat.Test
+import Compat.LinearAlgebra: norm, spzeros
 import Base.convert
 
-add_jl(x) = endswith(x, ".jl") ? x : x*".jl"
-
-type WrappedArray{T,N} <: DEDataArray{T,N}
+mutable struct WrappedArray{T,N} <: DEDataArray{T,N}
     x::Array{T,N}
 end
 
 Base.reshape(A::WrappedArray, dims::Int...) = WrappedArray(reshape(A.x, dims...))
 Base.convert(A::Type{WrappedArray{T,N}}, B::Array{T,N}) where {T,N} = WrappedArray(copy(B))
+
+add_jl(x) = endswith(x, ".jl") ? x : x*".jl"
 
 if length(ARGS) > 0
     tests = map(add_jl, ARGS)

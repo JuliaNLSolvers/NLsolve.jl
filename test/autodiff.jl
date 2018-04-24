@@ -8,5 +8,4 @@ end
 r = nlsolve(f!, [ -0.5; 1.4], autodiff = true)
 @test converged(r)
 @test norm(r.zero - [ 0; 1]) < 1e-8
-
 end
