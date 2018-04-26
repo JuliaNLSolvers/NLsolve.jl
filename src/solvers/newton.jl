@@ -1,5 +1,10 @@
-struct Newton
+struct Newton{LS, LSOL} <: AbstractSolver
+    linesearch!::LS
+    linsolve!::LSOL
 end
+Newton(; linesearch = LineSearches.Static(), linsolve = (x, A, b) -> copy!(x, A\b)) =
+    Newton(linesearch, linsolve)
+
 struct NewtonCache{Tx} <: AbstractSolverCache
     x::Tx
     xold::Tx
@@ -12,13 +17,6 @@ function NewtonCache(df)
     p = similar(x)
     g = similar(x)
     NewtonCache(x, xold, p, g)
-end
-function no_linesearch(dfo, xold, p, x, lsr, alpha, mayterminate)
-    @simd for i in eachindex(x)
-        @inbounds x[i] = xold[i] + p[i]
-    end
-    dfo.f(x)
-    return 0.0, 0, 0
 end
 
 macro newtontrace(stepnorm)
@@ -42,22 +40,34 @@ macro newtontrace(stepnorm)
 end
 
 function newton_{T}(df::OnceDifferentiable,
-                    initial_x::AbstractArray{T},
-                    xtol::T,
-                    ftol::T,
+                    x0::AbstractArray{T},
+                    x_tol::T,
+                    f_tol::T,
                     iterations::Integer,
                     store_trace::Bool,
                     show_trace::Bool,
                     extended_trace::Bool,
-                    linesearch,
-                    cache = NewtonCache(df))
-    n = length(initial_x)
-    copy!(cache.x, initial_x)
+                    linesearch!,
+                    cache = NewtonCache(df),
+                    linsolve! = (x, A, b) -> copy!(x, A\b))
+    nlsolve(df, x0,
+            Newton(linesearch!, linsolve!),
+            Options(x_tol, f_tol, iterations, store_trace, show_trace, extended_trace))
+end
+function nlsolve{T}(df, x0::AbstractArray{T}, method::Newton,
+                 options::Options = Options(),
+                 cache = NewtonCache(df))
+    @unpack x_tol, f_tol, store_trace, show_trace, extended_trace,
+            iterations = options
+    x_tol, f_tol = T(x_tol), T(f_tol)
+    @unpack linsolve!, linesearch! = method
+    n = length(x0)
+    copy!(cache.x, x0)
     value_jacobian!!(df, cache.x)
     check_isfinite(value(df))
     vecvalue = vec(value(df))
     it = 0
-    x_converged, f_converged, converged = assess_convergence(value(df), ftol)
+    x_converged, f_converged, converged = assess_convergence(value(df), f_tol)
     x_ls = copy(cache.x)
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
@@ -82,7 +92,7 @@ function newton_{T}(df::OnceDifferentiable,
     end
     function fgo!(storage, xlin)
         value_jacobian!(df, xlin)
-        At_mul_B!(vec(storage), jacobian(df), vecvalue)
+        linsolve!(vec(storage), jacobian(df), vecvalue)
         vecdot(value(df), value(df)) / 2
     end
     dfo = OnceDifferentiable(fo, go!, fgo!, cache.x, real(zero(T)))
@@ -97,7 +107,7 @@ function newton_{T}(df::OnceDifferentiable,
 
         try
             At_mul_B!(vec(cache.g), jacobian(df), vec(value(df)))
-            copy!(cache.p, jacobian(df)\vec(value(df)))
+            linsolve!(cache.p, jacobian(df), vec(value(df)))
             scale!(cache.p, -1)
         catch e
             if isa(e, Base.LinAlg.LAPACKException) || isa(e, Base.LinAlg.SingularException)
@@ -105,7 +115,7 @@ function newton_{T}(df::OnceDifferentiable,
                 # FIXME: better selection for lambda, see Nocedal & Wright p. 289
                 fjac2 = jacobian(df)'*jacobian(df)
                 lambda = convert(T,1e6)*sqrt(n*eps())*norm(fjac2, 1)
-                cache.p .= -(fjac2 + lambda*eye(n))\vec(cache.g)
+                linsolve!(cache.p, -(fjac2 + lambda*eye(n)), vec(cache.g))
             else
                 throw(e)
             end
@@ -115,29 +125,29 @@ function newton_{T}(df::OnceDifferentiable,
 
         value_gradient!(dfo, cache.x)
 
-        alpha, ϕalpha = linesearch(dfo, cache.x, cache.p, one(T), x_ls, value(dfo), vecdot(cache.g, cache.p))
+        alpha, ϕalpha = linesearch!(dfo, cache.x, cache.p, one(T), x_ls, value(dfo), vecdot(cache.g, cache.p))
         # fvec is here also updated in the linesearch so no need to call f again.
         copy!(cache.x, x_ls)
-        x_converged, f_converged, converged = assess_convergence(cache.x, cache.xold, value(df), xtol, ftol)
+        x_converged, f_converged, converged = assess_convergence(cache.x, cache.xold, value(df), x_tol, f_tol)
 
         @newtontrace sqeuclidean(cache.x, cache.xold)
     end
 
     return SolverResults("Newton with line-search",
-                         initial_x, copy(cache.x), vecnorm(value(df), Inf),
-                         it, x_converged, xtol, f_converged, ftol, tr,
+                         x0, copy(cache.x), vecnorm(value(df), Inf),
+                         it, x_converged, x_tol, f_converged, f_tol, tr,
                          first(df.f_calls), first(df.df_calls))
 end
 
 function newton{T}(df::OnceDifferentiable,
-                   initial_x::AbstractArray{T},
-                   xtol::Real,
-                   ftol::Real,
+                   x0::AbstractArray{T},
+                   x_tol::Real,
+                   f_tol::Real,
                    iterations::Integer,
                    store_trace::Bool,
                    show_trace::Bool,
                    extended_trace::Bool,
                    linesearch,
                    cache = NewtonCache(df))
-    newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch)
+    newton_(df, x0, convert(T, x_tol), convert(T, f_tol), iterations, store_trace, show_trace, extended_trace, linesearch)
 end

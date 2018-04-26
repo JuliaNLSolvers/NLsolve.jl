@@ -28,10 +28,10 @@ function AndersonCache(df, method::Anderson)
     AndersonCache(xs, gs, old_x, residuals, alphas, fx)
 end
 
-@views function anderson_{T}(df::OnceDifferentiable,
+function anderson_{T}(df::OnceDifferentiable,
                              x0::AbstractArray{T},
-                             xtol::T,
-                             ftol::T,
+                             x_tol::T,
+                             f_tol::T,
                              iterations::Integer,
                              store_trace::Bool,
                              show_trace::Bool,
@@ -39,7 +39,17 @@ end
                              m::Integer,
                              β::Real,
                              cache = AndersonCache(df, Anderson(m, β)))
-
+    nlsolve(df, x0,
+            Anderson(m, β),
+            Options(x_tol, f_tol, iterations, store_trace, show_trace, extended_trace))
+end
+@views function anderson_{T}(df::OnceDifferentiable,
+                             x0::AbstractArray{T},
+                             method::Anderson,
+                             options = Options(),
+                             cache = AndersonCache(df, Anderson(m, β)))
+    @unpack x_tol, f_tol, store_trace, show_trace, extended_trace,
+            iterations = options
 
     copy!(cache.xs[:,1], x0)
     n = 1
@@ -55,7 +65,7 @@ end
 
         cache.gs[:,1] .= cache.xs[:,1] .+ β.*cache.fx
 
-        x_converged, f_converged, converged = assess_convergence(cache.gs[:,1], cache.old_x, cache.fx, xtol, ftol)
+        x_converged, f_converged, converged = assess_convergence(cache.gs[:,1], cache.old_x, cache.fx, x_tol, f_tol)
 
         if tracing
             dt = Dict()
@@ -104,14 +114,14 @@ end
     copy!(x, cache.xs[:,1])
     return SolverResults("Anderson m=$m β=$β",
                          x0, x, maximum(abs,cache.fx),
-                         n, x_converged, xtol, f_converged, ftol, tr,
+                         n, x_converged, x_tol, f_converged, f_tol, tr,
                          first(df.f_calls), 0)
 end
 
 function anderson{T}(df::OnceDifferentiable,
                      initial_x::AbstractArray{T},
-                     xtol::Real,
-                     ftol::Real,
+                     x_tol::Real,
+                     f_tol::Real,
                      iterations::Integer,
                      store_trace::Bool,
                      show_trace::Bool,
@@ -119,5 +129,5 @@ function anderson{T}(df::OnceDifferentiable,
                      m::Integer,
                      beta::Real,
                      cache = AndersonCache(df, Anderson(m, beta)))
-    anderson_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, m, beta)
+    anderson_(df, initial_x, convert(T, x_tol), convert(T, f_tol), iterations, store_trace, show_trace, extended_trace, m, beta)
 end

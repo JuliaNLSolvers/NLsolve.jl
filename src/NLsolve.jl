@@ -8,6 +8,7 @@ using LineSearches
 using ForwardDiff
 using DiffEqDiffTools
 
+import Parameters: @with_kw, @unpack
 import Base.show,
        Base.push!,
        Base.getindex,
@@ -22,6 +23,16 @@ export OnceDifferentiable,
        converged
 
 abstract type AbstractSolverCache end
+abstract type AbstractSolver end
+
+@with_kw struct Options{T}
+    x_tol::T = 0.0
+    f_tol::T = 0.0
+    iterations::Int = 10^3
+    store_trace::Bool = false
+    show_trace::Bool = false
+    extended_trace::Bool = false
+end
 
 struct IsFiniteException <: Exception
   indices::Vector{Int}
@@ -30,7 +41,6 @@ show(io::IO, e::IsFiniteException) = print(io,
   "During the resolution of the non-linear system, the evaluation" *
   " of the following equation(s) resulted in a non-finite number: $(e.indices)")
 
-include("objectives/autodiff.jl")
 include("objectives/helpers.jl")
 
 include("solvers/newton.jl")
