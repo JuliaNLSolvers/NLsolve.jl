@@ -20,6 +20,7 @@ else
              "finite_difference.jl",
              "minpack.jl",
              "iface.jl",
+             "incomplete.jl",
              "already_converged.jl",
              "autodiff.jl",
              "josephy.jl",
