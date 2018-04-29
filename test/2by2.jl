@@ -54,7 +54,7 @@ r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch = LineSearches.Strong
 # test local convergence of Anderson: close to a fixed-point and with
 # a small beta, f should be almost affine, in which case Anderson is
 # equivalent to GMRES and should converge
-r = nlsolve(df, [ 0.01; .99], method = :anderson, m = 10, beta=.01)
+r = nlsolve(df, [ 0.01; .99]; method = :anderson, m = 10, beta=.01)
 @test converged(r)
 @test norm(r.zero - [ 0; 1]) < 1e-8
 end

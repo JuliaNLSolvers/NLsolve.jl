@@ -41,16 +41,17 @@ function anderson_{T}(df::OnceDifferentiable,
                              cache = AndersonCache(df, Anderson(m, β)))
     nlsolve(df, x0,
             Anderson(m, β),
-            Options(x_tol, f_tol, iterations, store_trace, show_trace, extended_trace))
+            Options(x_tol, f_tol, iterations, store_trace, show_trace, extended_trace),
+            cache)
 end
-@views function anderson_{T}(df::OnceDifferentiable,
+@views function nlsolve{T}(df::OnceDifferentiable,
                              x0::AbstractArray{T},
                              method::Anderson,
                              options = Options(),
-                             cache = AndersonCache(df, Anderson(m, β)))
+                             cache = AndersonCache(df, method))
     @unpack x_tol, f_tol, store_trace, show_trace, extended_trace,
             iterations = options
-
+    @unpack m, β = method
     copy!(cache.xs[:,1], x0)
     n = 1
     tr = SolverTrace()
@@ -129,5 +130,6 @@ function anderson{T}(df::OnceDifferentiable,
                      m::Integer,
                      beta::Real,
                      cache = AndersonCache(df, Anderson(m, beta)))
+
     anderson_(df, initial_x, convert(T, x_tol), convert(T, f_tol), iterations, store_trace, show_trace, extended_trace, m, beta)
 end
