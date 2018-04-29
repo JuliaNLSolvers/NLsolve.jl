@@ -14,13 +14,16 @@ import Base.show,
        Base.getindex,
        Base.setindex!
 
-import NLSolversBase: OnceDifferentiable
+import NLSolversBase: OnceDifferentiable, InplaceObjective, NotInplaceObjective,
+       only_fj, only_fj!
 
 export OnceDifferentiable,
        n_ary,
        nlsolve,
        mcpsolve,
-       converged
+       converged,
+       only_fj,
+       only_fj!
 
 abstract type AbstractSolverCache end
 abstract type AbstractSolver end

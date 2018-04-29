@@ -47,12 +47,16 @@ function nlsolve{T}(f,
                  beta::Real = 1.0,
                  autodiff = :central,
                  inplace = true)
-    if inplace
-        df = OnceDifferentiable(f, initial_x, initial_x, autodiff)
+    if typeof(f) <: Union{InplaceObjective, NotInplaceObjective}
+        df = OnceDifferentiable(f, initial_x, initial_x)
     else
-        df = OnceDifferentiable(not_in_place(f), initial_x, initial_x, autodiff)
+        if inplace
+            df = OnceDifferentiable(f, initial_x, initial_x, autodiff)
+        else
+            df = OnceDifferentiable(not_in_place(f), initial_x, initial_x, autodiff)
+        end
     end
-    
+
     nlsolve(df,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,
