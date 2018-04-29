@@ -1,6 +1,4 @@
-using NLsolve
-using DiffEqBase
-using Base.Test
+using NLsolve, DiffEqBase, Base.Test, IterativeSolvers
 import Base.convert
 
 add_jl(x) = endswith(x, ".jl") ? x : x*".jl"
@@ -21,6 +19,7 @@ else
              "minpack.jl",
              "iface.jl",
              "incomplete.jl",
+             "linsolve.jl",
              "already_converged.jl",
              "autodiff.jl",
              "josephy.jl",
