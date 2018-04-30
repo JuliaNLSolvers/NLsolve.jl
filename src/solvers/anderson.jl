@@ -1,9 +1,9 @@
 # Notations from Walker & Ni, "Anderson acceleration for fixed-point iterations", SINUM 2011
 # Attempts to accelerate the iteration xn+1 = xn + β f(x)
 
-struct Anderson{Tm, Tb}
-    m::Tm
-    β::Tb
+@with_kw struct Anderson{Tm, Tb}
+    m::Tm = 0
+    β::Tb = 1.0
 end
 struct AndersonCache{Txs, Tx, Ta, Tf} <: AbstractSolverCache
     xs::Txs
@@ -30,8 +30,8 @@ end
 
 function anderson_{T}(df::OnceDifferentiable,
                              x0::AbstractArray{T},
-                             x_tol::T,
-                             f_tol::T,
+                             x_abstol::T,
+                             f_abstol::T,
                              iterations::Integer,
                              store_trace::Bool,
                              show_trace::Bool,
@@ -41,7 +41,7 @@ function anderson_{T}(df::OnceDifferentiable,
                              cache = AndersonCache(df, Anderson(m, β)))
     nlsolve(df, x0,
             Anderson(m, β),
-            Options(x_tol, f_tol, iterations, store_trace, show_trace, extended_trace),
+            Options(x_abstol, f_abstol, iterations, store_trace, show_trace, extended_trace),
             cache)
 end
 @views function nlsolve{T}(df::OnceDifferentiable,
@@ -49,9 +49,17 @@ end
                              method::Anderson,
                              options = Options(),
                              cache = AndersonCache(df, method))
-    @unpack x_tol, f_tol, store_trace, show_trace, extended_trace,
-            iterations = options
+
+    @unpack x_abstol, f_abstol, store_trace, show_trace, extended_trace,
+            iterations, autoscale = options
+
+    if show_trace
+        @printf "Iter     f(x) inf-norm    Step 2-norm \n"
+        @printf "------   --------------   --------------\n"
+    end
+
     @unpack m, β = method
+
     copy!(cache.xs[:,1], x0)
     n = 1
     tr = SolverTrace()
@@ -66,7 +74,7 @@ end
 
         cache.gs[:,1] .= cache.xs[:,1] .+ β.*cache.fx
 
-        x_converged, f_converged, converged = assess_convergence(cache.gs[:,1], cache.old_x, cache.fx, x_tol, f_tol)
+        x_converged, f_converged, converged = assess_convergence(cache.gs[:,1], cache.old_x, cache.fx, x_abstol, f_abstol)
 
         if tracing
             dt = Dict()
@@ -77,7 +85,7 @@ end
             update!(tr,
                     n,
                     maximum(abs,cache.fx),
-                    n > 1 ? sqeuclidean(cache.xs[:,1],cache.old_x) : convert(T,NaN),
+                    n > 1 ? sqrt(norm(cache.xs[:,1]-cache.old_x, 2)) : convert(T,NaN),
                     dt,
                     store_trace,
                     show_trace)
@@ -115,14 +123,14 @@ end
     copy!(x, cache.xs[:,1])
     return SolverResults("Anderson m=$m β=$β",
                          x0, x, maximum(abs,cache.fx),
-                         n, x_converged, x_tol, f_converged, f_tol, tr,
+                         n, x_converged, x_abstol, f_converged, f_abstol, tr,
                          first(df.f_calls), 0)
 end
 
 function anderson{T}(df::OnceDifferentiable,
                      initial_x::AbstractArray{T},
-                     x_tol::Real,
-                     f_tol::Real,
+                     x_abstol::Real,
+                     f_abstol::Real,
                      iterations::Integer,
                      store_trace::Bool,
                      show_trace::Bool,
@@ -131,5 +139,5 @@ function anderson{T}(df::OnceDifferentiable,
                      beta::Real,
                      cache = AndersonCache(df, Anderson(m, beta)))
 
-    anderson_(df, initial_x, convert(T, x_tol), convert(T, f_tol), iterations, store_trace, show_trace, extended_trace, m, beta)
+    anderson_(df, initial_x, convert(T, x_abstol), convert(T, f_abstol), iterations, store_trace, show_trace, extended_trace, m, beta)
 end

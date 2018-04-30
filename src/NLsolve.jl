@@ -2,7 +2,6 @@ __precompile__()
 
 module NLsolve
 
-#using Distances
 using NLSolversBase
 using LineSearches
 using ForwardDiff
@@ -48,7 +47,7 @@ specific algorithm.
 """
 @with_kw struct Options{T}
     x_abstol::T = 0.0
-    f_tol::T = 0.0
+    f_abstol::T = 0.0
     iterations::Int = 10^3
     store_trace::Bool = false
     show_trace::Bool = false

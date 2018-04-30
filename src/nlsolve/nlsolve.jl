@@ -8,27 +8,29 @@ function nlsolve(df::TDF,
                  show_trace::Bool = false,
                  extended_trace::Bool = false,
                  linesearch = LineSearches.Static(),
+                 linsolve = (x, A, b) -> copy!(x, A\b),
                  factor::Real = one(T),
                  autoscale::Bool = true,
                  m::Integer = 0,
                  beta::Real = 1.0) where {T, TDF <: OnceDifferentiable}
-    if show_trace
-        @printf "Iter     f(x) inf-norm    Step 2-norm \n"
-        @printf "------   --------------   --------------\n"
-    end
+
     if method == :newton
-        newton(df, initial_x, xtol, ftol, iterations,
-               store_trace, show_trace, extended_trace, linesearch)
+        method = Newton(linesearch = linesearch, linsolve = linsolve)
     elseif method == :trust_region
-        trust_region(df, initial_x, xtol, ftol, iterations,
-                     store_trace, show_trace, extended_trace, factor,
-                     autoscale)
+        method = NewtonTrustRegion(factor = factor)
     elseif method == :anderson
-        anderson(df, initial_x, xtol, ftol, iterations,
-                 store_trace, show_trace, extended_trace, m, beta)
+        method = Anderson(m = m, β = beta)
     else
         throw(ArgumentError("Unknown method $method"))
     end
+
+    options = Options(x_abstol = T(xtol), f_abstol = T(ftol),
+                      iterations = iterations,
+                      store_trace = store_trace, show_trace = show_trace,
+                      extended_trace = extended_trace,
+                      autoscale = autoscale)
+
+    nlsolve(df, initial_x, method, options)
 end
 
 function nlsolve{T}(f,

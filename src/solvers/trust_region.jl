@@ -117,18 +117,24 @@ function trust_region_{T}(df::OnceDifferentiable,
                           cache = NewtonTrustRegionCache(df))
     nlsolve(df, initial_x,
             NewtonTrustRegion(factor),
-            Options(x_abstol, f_tol, iterations, store_trace, show_trace, extended_trace),
+            Options(x_abstol, f_abstol, iterations, store_trace, show_trace, extended_trace),
             cache)
 end
+
 function nlsolve{T}(df::OnceDifferentiable,
                           initial_x::AbstractArray{T},
                           method::NewtonTrustRegion,
                           options = Options(),
                           cache = NewtonTrustRegionCache(df))
 
-    @unpack x_tol, f_tol, store_trace, show_trace, extended_trace,
-            iterations = options
-    x_tol, f_tol = T(x_tol), T(f_tol)
+    @unpack x_abstol, f_abstol, store_trace, show_trace, extended_trace,
+            iterations, autoscale = options
+    x_abstol, f_abstol = T(x_abstol), T(f_abstol)
+
+    if show_trace
+        @printf "Iter     f(x) inf-norm    Step 2-norm \n"
+        @printf "------   --------------   --------------\n"
+    end
 
     @unpack factor = method
     factor = T(factor)

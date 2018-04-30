@@ -1,8 +1,7 @@
 julia 0.6.0
-DiffEqDiffTools
-Distances
-ForwardDiff 0.7.0
-LineSearches 5.0.0
-DiffBase
 Parameters
+LineSearches 5.0.0
 NLSolversBase 5.0.1
+DiffBase
+DiffEqDiffTools
+ForwardDiff 0.7.0

@@ -71,8 +71,8 @@ end
 
 function newton_{T}(df::OnceDifferentiable,
                     x0::AbstractArray{T},
-                    x_tol::T,
-                    f_tol::T,
+                    x_abstol::T,
+                    f_abstol::T,
                     iterations::Integer,
                     store_trace::Bool,
                     show_trace::Bool,
@@ -82,16 +82,21 @@ function newton_{T}(df::OnceDifferentiable,
                     linsolve! = (x, A, b) -> copy!(x, A\b))
     nlsolve(df, x0,
             Newton(linesearch!, linsolve!),
-            Options(x_tol, f_tol, iterations, store_trace, show_trace, extended_trace),
+            Options(x_abstol, f_abstol, iterations, store_trace, show_trace, extended_trace),
             cache)
 end
 function nlsolve{T}(df, x0::AbstractArray{T}, method::Newton,
                  options::Options = Options(),
                  cache = NewtonCache(df))
 
-    @unpack x_tol, f_tol, store_trace, show_trace, extended_trace,
-            iterations = options
-    x_tol, f_tol = T(x_tol), T(f_tol)
+    @unpack x_abstol, f_abstol, store_trace, show_trace, extended_trace,
+            iterations, autoscale = options
+    x_abstol, f_abstol = T(x_abstol), T(f_abstol)
+
+    if show_trace
+        @printf "Iter     f(x) inf-norm    Step 2-norm \n"
+        @printf "------   --------------   --------------\n"
+    end
 
     @unpack linsolve!, linesearch! = method
 
@@ -101,7 +106,7 @@ function nlsolve{T}(df, x0::AbstractArray{T}, method::Newton,
     check_isfinite(value(df))
     vecvalue = vec(value(df))
     it = 0
-    x_converged, f_converged, converged = assess_convergence(value(df), f_tol)
+    x_converged, f_converged, converged = assess_convergence(value(df), f_abstol)
     x_ls = copy(cache.x)
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
@@ -162,26 +167,26 @@ function nlsolve{T}(df, x0::AbstractArray{T}, method::Newton,
         alpha, ϕalpha = linesearch!(dfo, cache.x, cache.p, one(T), x_ls, value(dfo), vecdot(cache.g, cache.p))
         # fvec is here also updated in the linesearch so no need to call f again.
         copy!(cache.x, x_ls)
-        x_converged, f_converged, converged = assess_convergence(cache.x, cache.xold, value(df), x_tol, f_tol)
+        x_converged, f_converged, converged = assess_convergence(cache.x, cache.xold, value(df), x_abstol, f_abstol)
 
         @newtontrace sqeuclidean(cache.x, cache.xold)
     end
 
     return SolverResults("Newton with line-search",
                          x0, copy(cache.x), vecnorm(value(df), Inf),
-                         it, x_converged, x_tol, f_converged, f_tol, tr,
+                         it, x_converged, x_abstol, f_converged, f_abstol, tr,
                          first(df.f_calls), first(df.df_calls))
 end
 
 function newton{T}(df::OnceDifferentiable,
                    x0::AbstractArray{T},
-                   x_tol::Real,
-                   f_tol::Real,
+                   x_abstol::Real,
+                   f_abstol::Real,
                    iterations::Integer,
                    store_trace::Bool,
                    show_trace::Bool,
                    extended_trace::Bool,
                    linesearch,
                    cache = NewtonCache(df))
-    newton_(df, x0, convert(T, x_tol), convert(T, f_tol), iterations, store_trace, show_trace, extended_trace, linesearch)
+    newton_(df, x0, convert(T, x_abstol), convert(T, f_abstol), iterations, store_trace, show_trace, extended_trace, linesearch)
 end
