@@ -16,7 +16,7 @@ function assess_convergence(x,
                             ftol)
     x_converged, f_converged = false, false
 
-    if !any(isnan, x_previous) && chebyshev(x, x_previous) <= xtol
+    if !any(isnan, x_previous) && norm(x - x_previous, Inf) <= xtol
         x_converged = true
     end
 

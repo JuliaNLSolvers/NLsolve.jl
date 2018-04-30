@@ -2,6 +2,36 @@ struct Newton{LS, LSOL} <: AbstractSolver
     linesearch!::LS
     linsolve!::LSOL
 end
+"""
+# Newton
+## Constructor
+```julia
+Newton(; linesearch = LineSearches.Static(),
+linsolve = (x, A, b) -> copy!(x, A\b))
+```
+## Description
+The `Newton` method implements Newton's method for solving nonlinear systems of
+equations. See Nocedal and Wright for a discussion of Newton's method in practice.
+
+## Example
+```julia
+# Pkg.add("IterativeSolvers")
+
+julia> using IterativeSolvers
+
+julia> Newton(linesearch = LineSearches.BackTracking(), linsolve = gmres!)
+Newton{LineSearches.BackTracking{Float64,Int64},IterativeSolvers.#gmres!}(LineSearches.BackTracking{Float64,Int64}
+  c_1: Float64 0.0001
+  ρ_hi: Float64 0.5
+  ρ_lo: Float64 0.1
+  iterations: Int64 1000
+  order: Int64 3
+  maxstep: Float64 Inf
+, IterativeSolvers.gmres!)
+```
+## References
+- Nocedal, J. and S. J. Wright (1999), Numerical optimization. Springer Science 35.67-68: 7.
+"""
 Newton(; linesearch = LineSearches.Static(), linsolve = (x, A, b) -> copy!(x, A\b)) =
     Newton(linesearch, linsolve)
 
@@ -52,15 +82,19 @@ function newton_{T}(df::OnceDifferentiable,
                     linsolve! = (x, A, b) -> copy!(x, A\b))
     nlsolve(df, x0,
             Newton(linesearch!, linsolve!),
-            Options(x_tol, f_tol, iterations, store_trace, show_trace, extended_trace))
+            Options(x_tol, f_tol, iterations, store_trace, show_trace, extended_trace),
+            cache)
 end
 function nlsolve{T}(df, x0::AbstractArray{T}, method::Newton,
                  options::Options = Options(),
                  cache = NewtonCache(df))
+
     @unpack x_tol, f_tol, store_trace, show_trace, extended_trace,
             iterations = options
     x_tol, f_tol = T(x_tol), T(f_tol)
+
     @unpack linsolve!, linesearch! = method
+
     n = length(x0)
     copy!(cache.x, x0)
     value_jacobian!!(df, cache.x)

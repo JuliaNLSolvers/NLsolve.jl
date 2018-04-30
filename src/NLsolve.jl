@@ -2,7 +2,7 @@ __precompile__()
 
 module NLsolve
 
-using Distances
+#using Distances
 using NLSolversBase
 using LineSearches
 using ForwardDiff
@@ -25,21 +25,47 @@ export OnceDifferentiable,
        only_fj,
        only_fj!
 
+export Newton, NewtonTrustRegion, Anderson
+
 abstract type AbstractSolverCache end
 abstract type AbstractSolver end
 
+"""
+    Options(; kwargs...)
+
+Construct an Options instance that holds options that are not specific to any
+specific algorithm.
+
+# Keyword arguments
+
+- `x_abstol`: tolerance for largest absolute value of Δxₖ
+- `f_abstol`: tolerance for largest absolute value of ΔFₖ
+- `iterations`:  maximum number of iterations
+- `store_trace`: store a trace of ΔFₖ, Δxₖ, and iteration number
+- `show_trace`:  print the traced values after each iteration
+- `extended_trace`: store algorithm specific values
+- `autoscale`: automatically scale each step by the per-column-norm of ∇F
+"""
 @with_kw struct Options{T}
-    x_tol::T = 0.0
+    x_abstol::T = 0.0
     f_tol::T = 0.0
     iterations::Int = 10^3
     store_trace::Bool = false
     show_trace::Bool = false
     extended_trace::Bool = false
+    autoscale::Bool = true
 end
 
+"""
+    IsFiniteException(indices)
+
+Construct an instance of an exception type used to indicate that some elements
+of a vector was not finite.
+"""
 struct IsFiniteException <: Exception
   indices::Vector{Int}
 end
+
 show(io::IO, e::IsFiniteException) = print(io,
   "During the resolution of the non-linear system, the evaluation" *
   " of the following equation(s) resulted in a non-finite number: $(e.indices)")
