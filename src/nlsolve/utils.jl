@@ -20,7 +20,7 @@ function assess_convergence(x,
         x_converged = true
     end
 
-    if norm(f, Inf) < ftol
+    if maximum(abs, f) < ftol
         f_converged = true
     end
 
