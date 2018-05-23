@@ -1,7 +1,10 @@
 using NLsolve
 using DiffEqBase
 using Base.Test
+using NLSolversBase
+using LinearAlgebra
 import Base.convert
+
 
 add_jl(x) = endswith(x, ".jl") ? x : x*".jl"
 

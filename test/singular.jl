@@ -1,3 +1,4 @@
+@testset "singular case" begin
 # From Nocedal & Wright, p. 288-289
 
 # Jacobian is singular at the starting point.
@@ -45,3 +46,4 @@ end
 
 df = OnceDifferentiable(f_let!, g_let!, rand(10), rand(10))
 r = nlsolve(df, rand(10), method = :trust_region)
+end

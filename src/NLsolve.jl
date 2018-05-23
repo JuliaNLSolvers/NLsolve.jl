@@ -7,7 +7,7 @@ using NLSolversBase
 using LineSearches
 using ForwardDiff
 using DiffEqDiffTools
-using Compat
+using LinearAlgebra
 
 import Base.show,
        Base.push!,
@@ -16,6 +16,10 @@ import Base.show,
 
 import NLSolversBase: OnceDifferentiable, InplaceObjective, NotInplaceObjective,
        only_fj, only_fj!
+
+using Reexport
+@reexport using LineSearches
+using LinearAlgebra
 
 export OnceDifferentiable,
        n_ary,

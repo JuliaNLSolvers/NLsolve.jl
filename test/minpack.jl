@@ -287,7 +287,7 @@ function brown_almost_linear(n::Integer)
 end
 
 function discrete_boundary_value(n::Integer)
-    const h = 1/(n+1)
+    h = 1/(n+1)
 
     function f!(fvec, x)
         for k = 1:n
@@ -328,7 +328,7 @@ function discrete_boundary_value(n::Integer)
 end
 
 function discrete_integral_equation(n::Integer)
-    const h = 1/(n+1)
+    h = 1/(n+1)
 
     function f!(fvec, x)
         for k = 1:n
@@ -453,8 +453,8 @@ function broyden_tridiagonal(n::Integer)
 end
 
 function broyden_banded(n::Integer)
-    const ml = 5
-    const mu = 1
+    ml = 5
+    mu = 1
 
     function f!(fvec, x)
         for k = 1:n

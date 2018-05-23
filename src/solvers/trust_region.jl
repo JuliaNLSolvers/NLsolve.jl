@@ -56,7 +56,7 @@ function dogleg!(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i,
             k = sum(S .> eps())
             mrinv = V * diagm([1./S[1:k]; zeros(eltype(S), length(S)-k)]) * U' # Moore-Penrose generalized inverse of J
             vecpi = vec(p_i)
-            A_mul_B!(vecpi,mrinv,vec(r))
+            mul!(vecpi,mrinv,vec(r))
         else
             throw(e)
         end
@@ -171,7 +171,7 @@ function trust_region_(df::OnceDifferentiable,
         value!(df, cache.x)
 
         # Ratio of actual to predicted reduction (equation 11.47 in N&W)
-        A_mul_B!(vec(cache.r_predict), jacobian(df), vec(cache.p))
+        mul!(vec(cache.r_predict), jacobian(df), vec(cache.p))
         cache.r_predict .+= cache.r
         rho = (sum(abs2, cache.r) - sum(abs2, value(df))) / (sum(abs2, cache.r) - sum(abs2, cache.r_predict))
 
