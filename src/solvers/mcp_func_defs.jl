@@ -12,10 +12,10 @@ macro reformulate(df)
     end)
 end
 
-function mcpsolve(df::TDF,
-                  lower::Vector,
-                  upper::Vector,
-                  initial_x::AbstractArray{T};
+function mcpsolve(df::OnceDifferentiable,
+                  lower::AbstractArray,
+                  upper::AbstractArray,
+                  initial_x::AbstractArray;
                   method::Symbol = :trust_region,
                   reformulation::Symbol = :smooth,
                   xtol::Real = zero(T),
@@ -26,7 +26,7 @@ function mcpsolve(df::TDF,
                   extended_trace::Bool = false,
                   linesearch = LineSearches.BackTracking(),
                   factor::Real = one(T),
-                  autoscale::Bool = true) where {TDF <: OnceDifferentiable, T}
+                  autoscale::Bool = true)
 
     @reformulate df
     nlsolve(rf,
@@ -36,11 +36,11 @@ function mcpsolve(df::TDF,
             linesearch = linesearch, factor = factor, autoscale = autoscale)
 end
 
-function mcpsolve{T}(f,
+function mcpsolve(f,
                   j,
-                  lower::Vector,
-                  upper::Vector,
-                  initial_x::AbstractArray{T};
+                  lower::AbstractArray,
+                  upper::AbstractArray,
+                  initial_x::AbstractArray;
                   method::Symbol = :trust_region,
                   reformulation::Symbol = :smooth,
                   xtol::Real = zero(T),

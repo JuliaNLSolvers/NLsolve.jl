@@ -41,7 +41,7 @@ macro newtontrace(stepnorm)
     end)
 end
 
-function newton_{T}(df::OnceDifferentiable,
+function newton_(df::OnceDifferentiable,
                     initial_x::AbstractArray{T},
                     xtol::T,
                     ftol::T,
@@ -50,7 +50,7 @@ function newton_{T}(df::OnceDifferentiable,
                     show_trace::Bool,
                     extended_trace::Bool,
                     linesearch,
-                    cache = NewtonCache(df))
+                    cache = NewtonCache(df)) where T
     n = length(initial_x)
     copy!(cache.x, initial_x)
     value_jacobian!!(df, cache.x)
@@ -129,7 +129,7 @@ function newton_{T}(df::OnceDifferentiable,
                          first(df.f_calls), first(df.df_calls))
 end
 
-function newton{T}(df::OnceDifferentiable,
+function newton(df::OnceDifferentiable,
                    initial_x::AbstractArray{T},
                    xtol::Real,
                    ftol::Real,
@@ -138,6 +138,6 @@ function newton{T}(df::OnceDifferentiable,
                    show_trace::Bool,
                    extended_trace::Bool,
                    linesearch,
-                   cache = NewtonCache(df))
+                   cache = NewtonCache(df)) where T
     newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch)
 end

@@ -7,6 +7,7 @@ using NLSolversBase
 using LineSearches
 using ForwardDiff
 using DiffEqDiffTools
+using Compat
 
 import Base.show,
        Base.push!,

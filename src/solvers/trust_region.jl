@@ -18,7 +18,7 @@ function NewtonTrustRegionCache(df)
     r_predict = similar(x)  # predicted residual
     p = similar(x)          # Step
     p_c = similar(x)          # Cauchy point
-    pi = similar(x)          
+    pi = similar(x)
     d = similar(x)          # Scaling vector
     NewtonTrustRegionCache(x, xold, r, r_predict, p, p_c, pi, d)
 end
@@ -44,8 +44,9 @@ macro trustregiontrace(stepnorm)
     end)
 end
 
-function dogleg!{T}(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i, r::AbstractArray{T}, d::AbstractArray{T},
-                    J::AbstractMatrix{T}, delta::Real)
+function dogleg!(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i,
+                 r::AbstractArray{T}, d::AbstractArray{T}, J::AbstractMatrix{T},
+                 delta::Real) where T
     try
         copy!(p_i, J \ vec(r)) # Gauss-Newton step
     catch e
@@ -103,7 +104,7 @@ function dogleg!{T}(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i, r::Abstract
     end
 end
 
-function trust_region_{T}(df::OnceDifferentiable,
+function trust_region_(df::OnceDifferentiable,
                           initial_x::AbstractArray{T},
                           xtol::T,
                           ftol::T,
@@ -113,12 +114,12 @@ function trust_region_{T}(df::OnceDifferentiable,
                           extended_trace::Bool,
                           factor::T,
                           autoscale::Bool,
-                          cache = NewtonTrustRegionCache(df))
+                          cache = NewtonTrustRegionCache(df)) where T
     copy!(cache.x, initial_x)
     value_jacobian!!(df, cache.x)
     cache.r .= value(df)
     check_isfinite(cache.r)
-    
+
     it = 0
     x_converged, f_converged, converged = assess_convergence(value(df), ftol)
     delta = convert(T, NaN)
@@ -129,14 +130,14 @@ function trust_region_{T}(df::OnceDifferentiable,
         if autoscale
             name *= " and autoscaling"
         end
-     
+
         return SolverResults(name,
         #initial_x, reshape(cache.x, size(initial_x)...), vecnorm(cache.r, Inf),
         initial_x, copy(cache.x), vecnorm(cache.r, Inf),
         it, x_converged, xtol, f_converged, ftol, tr,
         first(df.f_calls), first(df.df_calls))
     end
-    
+
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
     @trustregiontrace convert(T, NaN)
@@ -151,12 +152,12 @@ function trust_region_{T}(df::OnceDifferentiable,
     else
         fill!(cache.d, one(T))
     end
-    
+
     delta = factor * wnorm(cache.d, cache.x)
     if delta == zero(T)
         delta = factor
     end
-    
+
     eta = convert(T, 1e-4)
 
     while !converged && it < iterations
@@ -214,7 +215,7 @@ function trust_region_{T}(df::OnceDifferentiable,
                          first(df.f_calls), first(df.df_calls))
 end
 
-function trust_region{T}(df::OnceDifferentiable,
+function trust_region(df::OnceDifferentiable,
                          initial_x::AbstractArray{T},
                          xtol::Real,
                          ftol::Real,
@@ -224,6 +225,6 @@ function trust_region{T}(df::OnceDifferentiable,
                          extended_trace::Bool,
                          factor::Real,
                          autoscale::Bool,
-                         cache = NewtonTrustRegionCache(df))
+                         cache = NewtonTrustRegionCache(df)) where T
     trust_region_(df, initial_x, convert(T,xtol), convert(T,ftol), iterations, store_trace, show_trace, extended_trace, convert(T,factor), autoscale)
 end

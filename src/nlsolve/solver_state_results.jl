@@ -5,11 +5,11 @@ struct SolverState{T}
     metadata::Dict
 end
 
-function SolverState(i::Integer, fnorm::Real)
+function SolverState(i, fnorm)
     SolverState(Int(i), fnorm, oftype(fnorm, NaN), Dict())
 end
 
-function SolverState{T<:Real}(i::Integer, fnorm::T, stepnorm::T)
+function SolverState(i, fnorm, stepnorm)
     SolverState(Int(i), fnorm, stepnorm, Dict())
 end
 
