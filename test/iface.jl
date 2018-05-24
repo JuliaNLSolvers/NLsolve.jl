@@ -68,8 +68,8 @@ function g(x)
 end
 
 function fg(x)
-    F = Array{eltype(x)}(2)
-    J = Array{eltype(x)}(2, 2)
+    F = Array{eltype(x)}(undef, 2)
+    J = Array{eltype(x)}(undef, 2, 2)
     F[1] = (x[1]+3)*(x[2]^3-7)+18
     F[2] = sin(x[2]*exp(x[1])-1)
     J[1, 1] = x[2]^3-7

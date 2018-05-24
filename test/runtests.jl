@@ -9,7 +9,7 @@ using Printf
 
 add_jl(x) = endswith(x, ".jl") ? x : x*".jl"
 
-type WrappedArray{T,N} <: DEDataArray{T,N}
+mutable struct WrappedArray{T,N} <: DEDataArray{T,N}
     x::Array{T,N}
 end
 

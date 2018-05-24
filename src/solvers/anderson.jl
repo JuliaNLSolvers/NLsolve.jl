@@ -41,7 +41,7 @@ end
                              cache = AndersonCache(df, Anderson(m, β))) where T
 
     copyto!(cache.xs[:,1], x0)
-    n = 1
+    iters = 0
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
     x_converged, f_converged, converged = false, false, false
@@ -49,6 +49,7 @@ end
     errs = zeros(iterations)
 
     for n = 1:iterations
+        iters += 1
         # fixed-point iteration
         value!!(df, cache.fx, cache.xs[:,1])
 
@@ -103,7 +104,7 @@ end
     copyto!(x, cache.xs[:,1])
     return SolverResults("Anderson m=$m β=$β",
                          x0, x, maximum(abs,cache.fx),
-                         n, x_converged, xtol, f_converged, ftol, tr,
+                         iters, x_converged, xtol, f_converged, ftol, tr,
                          first(df.f_calls), 0)
 end
 
