@@ -74,7 +74,7 @@ function dogleg!(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i,
 
         # compute g = J'r ./ (d .^ 2)
         g = p
-        At_mul_B!(vec(g), J, vec(r))
+        mul!(vec(g), transpose(J), vec(r))
         g .= g ./ d.^2
 
         # compute Cauchy point
