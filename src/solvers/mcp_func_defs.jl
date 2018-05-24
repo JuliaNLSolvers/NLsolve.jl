@@ -13,9 +13,9 @@ macro reformulate(df)
 end
 
 function mcpsolve(df::OnceDifferentiable,
-                  lower::AbstractArray,
-                  upper::AbstractArray,
-                  initial_x::AbstractArray;
+                  lower::AbstractArray{T},
+                  upper::AbstractArray{T},
+                  initial_x::AbstractArray{T};
                   method::Symbol = :trust_region,
                   reformulation::Symbol = :smooth,
                   xtol::Real = zero(T),
@@ -26,7 +26,7 @@ function mcpsolve(df::OnceDifferentiable,
                   extended_trace::Bool = false,
                   linesearch = LineSearches.BackTracking(),
                   factor::Real = one(T),
-                  autoscale::Bool = true)
+                  autoscale::Bool = true) where T
 
     @reformulate df
     nlsolve(rf,
@@ -38,9 +38,9 @@ end
 
 function mcpsolve(f,
                   j,
-                  lower::AbstractArray,
-                  upper::AbstractArray,
-                  initial_x::AbstractArray;
+                  lower::AbstractArray{T},
+                  upper::AbstractArray{T},
+                  initial_x::AbstractArray{T};
                   method::Symbol = :trust_region,
                   reformulation::Symbol = :smooth,
                   xtol::Real = zero(T),
@@ -52,7 +52,7 @@ function mcpsolve(f,
                   linesearch = LineSearches.BackTracking(),
                   factor::Real = one(T),
                   autoscale = true,
-                  inplace = true)
+                  inplace = true) where T
     if inplace
         df = OnceDifferentiable(f, initial_x, initial_x)
     else
@@ -66,9 +66,9 @@ function mcpsolve(f,
             linesearch = linesearch, factor = factor, autoscale = autoscale)
 end
 
-function mcpsolve{T}(f,
-                  lower::Vector,
-                  upper::Vector,
+function mcpsolve(f,
+                  lower::AbstractArray{T},
+                  upper::AbstractArray{T},
                   initial_x::AbstractArray{T};
                   method::Symbol = :trust_region,
                   reformulation::Symbol = :smooth,
@@ -82,7 +82,7 @@ function mcpsolve{T}(f,
                   factor::Real = one(T),
                   autoscale::Bool = true,
                   autodiff = :central,
-                  inplace = true)
+                  inplace = true) where T
     if inplace
         df = OnceDifferentiable(f, initial_x, initial_x, autodiff)
     else

@@ -51,14 +51,14 @@ r = nlsolve(f!, j!, [ -0.5; 1.4])
 
 # Use not-in-place forms
 function f(x)
-    F = Array{eltype(x)}(2)
+    F = Array{eltype(x)}(undef, 2)
     F[1] = (x[1]+3)*(x[2]^3-7)+18
     F[2] = sin(x[2]*exp(x[1])-1)
     return F
 end
 
 function g(x)
-    J = Array{eltype(x)}(2, 2)
+    J = Array{eltype(x)}(undef, 2, 2)
     J[1, 1] = x[2]^3-7
     J[1, 2] = 3*x[2]^2*(x[1]+3)
     u = exp(x[1])*cos(x[2]*exp(x[1])-1)

@@ -268,7 +268,7 @@ function brown_almost_linear(n::Integer)
 
     function j!(fjac, x)
         fill!(fjac, 1)
-        fjac[diagind(fjac)] = 2
+        fjac[diagind(fjac)] .= 2
         prd = prod(x)
         for j = 1:n
             if x[j] == 0.0
