@@ -28,7 +28,7 @@ function AndersonCache(df, method::Anderson)
     AndersonCache(xs, gs, old_x, residuals, alphas, fx)
 end
 
-@views function anderson_{T}(df::OnceDifferentiable,
+@views function anderson_(df::OnceDifferentiable,
                              x0::AbstractArray{T},
                              xtol::T,
                              ftol::T,
@@ -38,8 +38,7 @@ end
                              extended_trace::Bool,
                              m::Integer,
                              β::Real,
-                             cache = AndersonCache(df, Anderson(m, β)))
-
+                             cache = AndersonCache(df, Anderson(m, β))) where T
 
     copyto!(cache.xs[:,1], x0)
     n = 1
@@ -108,7 +107,7 @@ end
                          first(df.f_calls), 0)
 end
 
-function anderson{T}(df::OnceDifferentiable,
+function anderson(df::OnceDifferentiable,
                      initial_x::AbstractArray{T},
                      xtol::Real,
                      ftol::Real,
@@ -118,6 +117,6 @@ function anderson{T}(df::OnceDifferentiable,
                      extended_trace::Bool,
                      m::Integer,
                      beta::Real,
-                     cache = AndersonCache(df, Anderson(m, beta)))
+                     cache = AndersonCache(df, Anderson(m, beta))) where T
     anderson_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, m, beta)
 end

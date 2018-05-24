@@ -31,7 +31,7 @@ end
 
 function check_isfinite(x::AbstractArray)
     if any((y)->!isfinite(y),x)
-        i = find((!).(isfinite.(x)))
+        i = findall((!).(isfinite.(x)))
         throw(IsFiniteException(i))
     end
 end

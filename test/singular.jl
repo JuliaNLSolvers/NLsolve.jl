@@ -33,7 +33,7 @@ r = nlsolve(df32, [3.0f0; 0.0f0], method = :trust_region)
 @assert norm(r.zero) < 1e-6
 
 let a = rand(10)
-    const A = a*a'
+    A = a*a'
     global f_let!, g_let!
     function f_let!(fvec, x)
         copyto!(fvec, A*x)
