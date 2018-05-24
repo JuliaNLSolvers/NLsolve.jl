@@ -11,7 +11,7 @@
 
 
 # If the results should be printed to a
-const PRINT_FILE = false
+PRINT_FILE = false
 
 @testset "minpack" begin
 
@@ -51,8 +51,8 @@ function powell_singular()
 end
 
 function powell_badly_scaled()
-    const c1 = 1e4
-    const c2 = 1.0001
+    c1 = 1e4
+    c2 = 1.0001
     function f!(fvec, x)
         fvec[1] = c1*x[1]*x[2] - 1
         fvec[2] = exp(-x[1]) + exp(-x[2]) - c2
@@ -67,10 +67,10 @@ function powell_badly_scaled()
 end
 
 function wood()
-    const c3 = 2e2
-    const c4 = 2.02e1
-    const c5 = 1.98e1
-    const c6 = 1.8e2
+    c3 = 2e2
+    c4 = 2.02e1
+    c5 = 1.98e1
+    c6 = 1.8e2
 
     function f!(fvec, x)
         temp1 = x[2] - x[1]^2
@@ -100,9 +100,9 @@ function wood()
 end
 
 function helical_valley()
-    const tpi = 8*atan(1)
-    const c7 = 2.5e-1
-    const c8 = 5e-1
+    tpi = 8*atan(1)
+    c7 = 2.5e-1
+    c8 = 5e-1
 
     function f!(fvec, x)
         if x[1] > 0
@@ -136,7 +136,7 @@ function helical_valley()
 end
 
 function watson(n::Integer)
-    const c9 = 2.9e1
+    c9 = 2.9e1
 
     function f!(fvec, x)
         fill!(fvec, 0)
@@ -211,7 +211,7 @@ function watson(n::Integer)
 end
 
 function chebyquad(n::Integer)
-    const tk = 1/n
+    tk = 1/n
 
     function f!(fvec, x)
         fill!(fvec, 0)
