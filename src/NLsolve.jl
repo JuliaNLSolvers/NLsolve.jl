@@ -39,7 +39,6 @@ show(io::IO, e::IsFiniteException) = print(io,
   "During the resolution of the non-linear system, the evaluation" *
   " of the following equation(s) resulted in a non-finite number: $(e.indices)")
 
-include("objectives/autodiff.jl")
 include("objectives/helpers.jl")
 
 include("solvers/newton.jl")
