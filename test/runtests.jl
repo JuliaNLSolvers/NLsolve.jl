@@ -1,6 +1,6 @@
 using NLsolve
 using DiffEqBase
-using Base.Test
+using Test
 using NLSolversBase
 using LinearAlgebra
 import Base.convert
