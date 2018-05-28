@@ -5,3 +5,4 @@ ForwardDiff 0.7.0
 LineSearches 5.0.0
 DiffBase
 NLSolversBase 6.0.0
+Reexport
