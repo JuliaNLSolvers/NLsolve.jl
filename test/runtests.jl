@@ -1,11 +1,15 @@
 using NLsolve
 using DiffEqBase
-using Base.Test
+using Test
+using NLSolversBase
+using LinearAlgebra
 import Base.convert
+using SparseArrays
+using Printf
 
 add_jl(x) = endswith(x, ".jl") ? x : x*".jl"
 
-type WrappedArray{T,N} <: DEDataArray{T,N}
+mutable struct WrappedArray{T,N} <: DEDataArray{T,N}
     x::Array{T,N}
 end
 

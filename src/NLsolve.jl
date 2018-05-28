@@ -7,6 +7,8 @@ using NLSolversBase
 using LineSearches
 using ForwardDiff
 using DiffEqDiffTools
+using LinearAlgebra
+using Printf
 
 import Base.show,
        Base.push!,
@@ -15,6 +17,10 @@ import Base.show,
 
 import NLSolversBase: OnceDifferentiable, InplaceObjective, NotInplaceObjective,
        only_fj, only_fj!
+
+using Reexport
+@reexport using LineSearches
+using LinearAlgebra
 
 export OnceDifferentiable,
        n_ary,
@@ -33,7 +39,6 @@ show(io::IO, e::IsFiniteException) = print(io,
   "During the resolution of the non-linear system, the evaluation" *
   " of the following equation(s) resulted in a non-finite number: $(e.indices)")
 
-include("objectives/autodiff.jl")
 include("objectives/helpers.jl")
 
 include("solvers/newton.jl")

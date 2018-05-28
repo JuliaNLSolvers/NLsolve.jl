@@ -1,3 +1,4 @@
+@testset "singular case" begin
 # From Nocedal & Wright, p. 288-289
 
 # Jacobian is singular at the starting point.
@@ -32,16 +33,17 @@ r = nlsolve(df32, [3.0f0; 0.0f0], method = :trust_region)
 @assert norm(r.zero) < 1e-6
 
 let a = rand(10)
-    const A = a*a'
+    A = a*a'
     global f_let!, g_let!
     function f_let!(fvec, x)
-        copy!(fvec, A*x)
+        copyto!(fvec, A*x)
     end
 
     function g_let!(fjac, x)
-        copy!(fjac, A)
+        copyto!(fjac, A)
     end
 end
 
 df = OnceDifferentiable(f_let!, g_let!, rand(10), rand(10))
 r = nlsolve(df, rand(10), method = :trust_region)
+end

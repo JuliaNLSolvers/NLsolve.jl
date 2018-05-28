@@ -5,11 +5,11 @@ struct SolverState{T}
     metadata::Dict
 end
 
-function SolverState(i::Integer, fnorm::Real)
+function SolverState(i, fnorm)
     SolverState(Int(i), fnorm, oftype(fnorm, NaN), Dict())
 end
 
-function SolverState{T<:Real}(i::Integer, fnorm::T, stepnorm::T)
+function SolverState(i, fnorm, stepnorm)
     SolverState(Int(i), fnorm, stepnorm, Dict())
 end
 
@@ -17,7 +17,7 @@ struct SolverTrace
     states::Vector{SolverState}
 end
 
-SolverTrace() = SolverTrace(Array{SolverState}(0))
+SolverTrace() = SolverTrace(Array{SolverState}(undef, 0))
 
 function Base.show(io::IO, t::SolverState)
     @printf io "%6d   %14e   %14e\n" t.iteration t.fnorm t.stepnorm
