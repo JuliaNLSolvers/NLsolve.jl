@@ -1,9 +1,9 @@
 # Notations from Walker & Ni, "Anderson acceleration for fixed-point iterations", SINUM 2011
-# Attempts to accelerate the iteration xn+1 = xn + β f(x)
+# Attempts to accelerate the iteration xₙ₊₁ = xₙ + beta*f(xₙ)
 
 struct Anderson{Tm, Tb}
     m::Tm
-    β::Tb
+    beta::Tb
 end
 struct AndersonCache{Txs, Tx, Ta, Tf} <: AbstractSolverCache
     xs::Txs
@@ -37,8 +37,8 @@ end
                              show_trace::Bool,
                              extended_trace::Bool,
                              m::Integer,
-                             β::Real,
-                             cache = AndersonCache(df, Anderson(m, β))) where T
+                             beta::Real,
+                             cache = AndersonCache(df, Anderson(m, beta))) where T
 
     copyto!(cache.xs[:,1], x0)
     iters = 0
@@ -53,7 +53,7 @@ end
         # fixed-point iteration
         value!!(df, cache.fx, cache.xs[:,1])
 
-        cache.gs[:,1] .= cache.xs[:,1] .+ β.*cache.fx
+        cache.gs[:,1] .= cache.xs[:,1] .+ beta.*cache.fx
 
         x_converged, f_converged, converged = assess_convergence(cache.gs[:,1], cache.old_x, cache.fx, xtol, ftol)
 
@@ -98,11 +98,11 @@ end
     end
 
     # returning gs[:,1] rather than xs[:,1] would be better here if
-    # xn+1 = xn+beta*f(xn) is convergent, but the convergence
+    # xₙ₊₁ = xₙ + beta*f(xₙ) is convergent, but the convergence
     # criterion is not guaranteed
     x = similar(x0)
     copyto!(x, cache.xs[:,1])
-    return SolverResults("Anderson m=$m β=$β",
+    return SolverResults("Anderson m=$m beta=$beta",
                          x0, x, maximum(abs,cache.fx),
                          iters, x_converged, xtol, f_converged, ftol, tr,
                          first(df.f_calls), 0)
