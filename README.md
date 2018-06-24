@@ -284,15 +284,15 @@ vector and evaluate the function at the new point.
 This method is selected with `method = :anderson`.
 
 It is also known as DIIS or Pulay mixing, this method is based on the
-acceleration of the fixed-point iteration `xn+1 = xn + β f(xn)`, where
-by default `β=1`. It does not use Jacobian information or linesearch,
+acceleration of the fixed-point iteration `xₙ₊₁ = xₙ + beta*f(xₙ)`, where
+by default `beta=1`. It does not use Jacobian information or linesearch,
 but has a history whose size is controlled by the `m` parameter: `m=0`
 (the default) corresponds to the simple fixed-point iteration above,
 and higher values use a larger history size to accelerate the
 iterations. Higher values of `m` usually increase the speed of
 convergence, but increase the storage and computation requirements and
 might lead to instabilities. This method is useful to accelerate a
-fixed-point iteration `xn+1 = g(xn)` (in which case use this solver
+fixed-point iteration `xₙ₊₁ = g(xₙ)` (in which case use this solver
 with `f(x) = g(x) - x`).
 
 Reference: H. Walker, P. Ni, Anderson acceleration for fixed-point
