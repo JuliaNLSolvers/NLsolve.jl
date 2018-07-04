@@ -10,7 +10,7 @@
         function f!(out, x)
             out .= f(x)
         end
-        @test fixedpoint(f!, [3.4, 4.3]).zero ≈ 4.571428571428571; 
+        @test fixedpoint(f!, [3.4, 4.3]).zero ≈ [5.0, 4.571428571428571];; 
         #=
         Needed:
             - StaticArray tests
