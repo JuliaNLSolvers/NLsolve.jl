@@ -19,7 +19,8 @@ export OnceDifferentiable,
        n_ary,
        nlsolve,
        mcpsolve,
-       converged
+       converged, 
+       fixedpoint
 
 abstract type AbstractSolverCache end
 
@@ -42,5 +43,6 @@ include("solvers/mcp.jl")
 include("nlsolve/solver_state_results.jl")
 include("nlsolve/nlsolve.jl")
 include("nlsolve/utils.jl")
+include("nlsolve/fixedpoint.jl")
 
 end # module
