@@ -1,5 +1,36 @@
 @testset "fixed points" begin
 
+    # Basic container tests *******
+    for T in (Float64, Int64, BitFloat, BigInt)
+        # Write an @test for out of place vector 
+        # Write an @test for in place vector 
+        # Write an @test for out of place matrix 
+        # Write an @test for in place matrix 
+        # Write an @test for out of place n_ary scalar
+        # Write an @test for in place n_ary scalar 
+    end 
+
+    # StaticArray tests. ************
+    for T in (Float64, Int64, BitFloat, BigInt)
+    end 
+
+    # Error tests **********
+    # @test_throws for DimensionMismatch on the f(x) - x 
+    # @test for DimensionMismatch on the out .-= x 
+    
+    # Type inference tests ************
+    # Can just do @code_warntype for different function calls here 
+
+    # Precision tests ************
+    # Test some of the floating point math (if necessary).
+
+    # Benchmarking **********
+    # Should do one for different kinds of types, in place vs. out of place, big vs small matrices, etc. 
+    
+    # M Values tests **********
+    # Should probably play around with different m values and see that nothing dramatically breaks. 
+
+    # Actual tests for now ***********
     # Out of place, no Jacobian, Vector{Float64}. 
     A = [0.7 0.0; 0.0 0.3];
     b = [1.5; 3.2];
@@ -10,17 +41,9 @@
         out .= f(x)
     end
     @test fixedpoint(f!, [3.4, 4.3]).zero ≈ [5.0, 4.571428571428571];
-    #=
-    Needed:
-        - StaticArray tests
-        - Tests for different container types (Int, etc.)
-        - Tests for type stability 
-        - Tests for graceful error handling (mismatching dims, types, args, etc.)
-        - Tests that the autodifferentiation is working as expected. 
-    =#
-    # Benchmark simple iteration *******
-    # New functions. 
-    # In place iterator from the tests. 
+
+
+    # Simple iteration stuff ****************
     function iterate!(f!, x0; residualnorm = (x -> norm(x,Inf)), tol = 1E-10, maxiter=100)
         residual = Inf
         iter = 1
