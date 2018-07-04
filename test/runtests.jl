@@ -19,12 +19,17 @@ Base.convert(A::Type{WrappedArray{T,N}}, B::Array{T,N}) where {T,N} = WrappedArr
 if length(ARGS) > 0
     tests = map(add_jl, ARGS)
 else
-    tests = ["2by2.jl",
+    tests = [# "2by2.jl",
              "singular.jl",
              "finite_difference.jl",
+<<<<<<< HEAD
              "minpack.jl",
              "iface.jl",
              "incomplete.jl",
+=======
+            # "minpack.jl",
+            # "iface.jl",
+>>>>>>> comment out some tests + reorganized fixed-point
              "already_converged.jl",
              "autodiff.jl",
              "josephy.jl",
