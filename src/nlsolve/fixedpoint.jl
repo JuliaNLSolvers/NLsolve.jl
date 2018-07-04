@@ -22,7 +22,7 @@ function fixedpoint(f,
     if inplace
         function g!(out, x)
             f(out, x); 
-            out -= x;
+            out .-= x;
         end 
         dg = OnceDifferentiable(g!, initial_x, initial_x, autodiff) 
     else 
