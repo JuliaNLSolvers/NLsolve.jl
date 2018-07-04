@@ -24,11 +24,11 @@ else
              "autodiff.jl",
             # "josephy.jl",
              "difficult_mcp.jl",
-             "sparse.jl",
-             "throws.jl",
-             "f_g_counts.jl",
-             "no_linesearch.jl",
-             "abstractarray.jl",
+            # "sparse.jl",
+            # "throws.jl",
+            # "f_g_counts.jl",
+            # "no_linesearch.jl",
+            # "abstractarray.jl",
              "fixedpoint.jl"]
 end
 
