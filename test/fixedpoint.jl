@@ -16,7 +16,7 @@
 
     # Error tests **********
     # @test_throws for DimensionMismatch on the f(x) - x 
-    # @test for DimensionMismatch on the out .-= x 
+    # @test_throws for DimensionMismatch on the out .-= x 
     
     # Type inference tests ************
     # Can just do @code_warntype for different function calls here 
