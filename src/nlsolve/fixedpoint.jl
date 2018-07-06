@@ -8,14 +8,14 @@ function fixedpoint(f,
     iterations::Integer = 1_000,
     store_trace::Bool = false,
     show_trace::Bool = false,
-    extended_trace::Bool = false,
-    linesearch = LineSearches.Static(),
+    extended_trace::Bool = false, 
+    linesearch = LineSearches.NewStatic(),
     factor::Real = one(T),
     autoscale::Bool = true,
     m::Integer = 0,
     beta::Real = 1.0,
-    autodiff = :central,
-    inplace = true) where T
+    autodiff::Symbol = :central,
+    inplace::Bool = true) where T
     # Check for weird case. (Causes to hang for now)
     # typeof(f) <: Union{InplaceObjective, NotInplaceObjective} ? error("Union{InplaceObjective, NotInplaceObjective} Case") : true; 
     # Wrapping 

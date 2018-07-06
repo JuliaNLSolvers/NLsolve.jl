@@ -45,10 +45,17 @@ function nlsolve(f,
                  autoscale::Bool = true,
                  m::Integer = 0,
                  beta::Real = 1.0,
+<<<<<<< HEAD
                  autodiff = :central,
                  inplace = true) where T
     if typeof(f) <: Union{InplaceObjective, NotInplaceObjective}
         df = OnceDifferentiable(f, initial_x, initial_x)
+=======
+                 autodiff::Symbol = :central,
+                 inplace::Bool = true)
+    if inplace
+        df = OnceDifferentiable(f, initial_x, initial_x, autodiff)
+>>>>>>> new benchmarks v2
     else
         if inplace
             df = OnceDifferentiable(f, initial_x, initial_x, autodiff)
