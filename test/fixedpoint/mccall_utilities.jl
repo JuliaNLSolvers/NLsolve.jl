@@ -1,7 +1,8 @@
 # Benchmarking the NLsolve.fixedpoint() function in the use case of: https://lectures.quantecon.org/jl/mccall_model_with_separation.html
 
 # Dependencies. 
-using Distributions, NLsolve
+using Suppressor
+@suppress using Distributions, NLsolve # So that some method overwritten error from NLsolve doesn't intermingle with the benchmarks. 
 
 # Wages (global since used in constructor)
 const n = 60                                   # n possible outcomes for wage
@@ -149,10 +150,10 @@ function stacked_quantecon()
     solve_mccall_model(mcm)
 end
 
-# Implementation of stacked_quantecon(), but using the NLsolve fixed point method.
-function nlsolve_quantecon()
-     # Utility function. 
-     function u(c::Real, σ::Real)
+# Implementation of stacked_quantecon(), but using the NLsolve fixed point method. m = 0. 
+function nlsolve_iteration()
+    # Utility function. 
+    function u(c::Real, σ::Real)
         if c > 0
             return (c^(1 - σ) - 1) / (1 - σ)
         else
@@ -180,5 +181,40 @@ function nlsolve_quantecon()
     end
     # Solve 
     init = ones(length(mcm.w_vec)+1)
-    nlsolve(bellman_operator!, init)
+    nlsolve(bellman_operator!, init; xtol = 1e-5, ftol = 1e-5, iterations = 2000)
 end 
+
+# Using nlsolve() for variable m. 
+function nlsolve_anderson_m(m)
+    # Utility function. 
+    function u(c::Real, σ::Real)
+        if c > 0
+            return (c^(1 - σ) - 1) / (1 - σ)
+        else
+            return -10e6
+        end
+    end
+    # Instantiate model object. 
+    mcm = McCallModel()
+    # Function for each loop of the iteration. 
+    """
+    An (in-place) state-space implementation of the Bellman operator for the McCall model with separation. By convention, U is at the top of the state vector. 
+
+    bellman_operator!(newVec::AbstractVector, oldVec::AbstractVector, model::McCallModel = mcm)
+    """
+    function bellman_operator!(newVec, oldVec, model = mcm) 
+        # Unpack parameters. 
+        α, β, σ, c, γ = mcm.α, mcm.β, mcm.σ, mcm.c, mcm.γ
+        # Add new V(w) values to newVec.
+        for (w_idx, w) in enumerate(mcm.w_vec)
+            # w_idx indexes the vector of possible wages
+            newVec[w_idx + 1] = u(w, σ) + β * ((1 - α) * oldVec[1 + w_idx] + α * oldVec[1])
+        end
+        # Add new U value to newVec. 
+        newVec[1] = u(c, σ) + β * (1 - γ) * oldVec[1] + β * γ * dot(max.(oldVec[1], oldVec[2:end]), mcm.p_vec)
+    end
+    # Solve 
+    init = ones(length(mcm.w_vec)+1)
+    nlsolve(bellman_operator!, init; m = m, xtol = 1e-5, ftol = 1e-5, iterations = 2000)
+end 
+
