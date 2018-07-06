@@ -93,7 +93,7 @@ function default_quantecon()
         return V, U
     end
     # Get results. 
-    @show solve_mccall_model(mcm)
+     solve_mccall_model(mcm)
 end 
 
 # Implementation of the above, but with one vector that holds the state of the calculation [U V]
@@ -147,7 +147,7 @@ function stacked_quantecon()
         return newVec
     end
     # Get results. 
-    @show solve_mccall_model(mcm)
+     solve_mccall_model(mcm)
 end
 
 # Implementation of stacked_quantecon(), but using the NLsolve fixed point method. m = 0. 
@@ -181,7 +181,7 @@ function nlsolve_iteration()
     end
     # Solve 
     init = ones(length(mcm.w_vec)+1)
-    @show fixedpoint(bellman_operator!, init; xtol = 1e-5, ftol = 1e-5, iterations = 2000)
+     fixedpoint(bellman_operator!, init; xtol = 1e-5, ftol = 1e-5, iterations = 2000)
 end 
 
 # Using fixedpoint() for variable m. 
@@ -215,6 +215,6 @@ function nlsolve_anderson_m(m)
     end
     # Solve 
     init = ones(length(mcm.w_vec)+1)
-    @show fixedpoint(bellman_operator!, init; m = m, xtol = 1e-5, ftol = 1e-5, iterations = 2000, linesearch = LineSearches.Static())
+     fixedpoint(bellman_operator!, init; m = m, xtol = 1e-5, ftol = 1e-5, iterations = 2000)
 end 
 
