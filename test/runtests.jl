@@ -29,7 +29,8 @@ else
             # "f_g_counts.jl",
             # "no_linesearch.jl",
             # "abstractarray.jl",
-             "fixedpoint.jl"]
+             "fixedpoint/fixedpoint.jl",
+             "fixedpoint/mccall_tests.jl"]
 end
 
 println("Running tests:")
