@@ -93,7 +93,7 @@ function default_quantecon()
         return V, U
     end
     # Get results. 
-    solve_mccall_model(mcm)
+    @show solve_mccall_model(mcm)
 end 
 
 # Implementation of the above, but with one vector that holds the state of the calculation [U V]
@@ -147,7 +147,7 @@ function stacked_quantecon()
         return newVec
     end
     # Get results. 
-    solve_mccall_model(mcm)
+    @show solve_mccall_model(mcm)
 end
 
 # Implementation of stacked_quantecon(), but using the NLsolve fixed point method. m = 0. 
@@ -181,10 +181,10 @@ function nlsolve_iteration()
     end
     # Solve 
     init = ones(length(mcm.w_vec)+1)
-    nlsolve(bellman_operator!, init; xtol = 1e-5, ftol = 1e-5, iterations = 2000)
+    @show fixedpoint(bellman_operator!, init; xtol = 1e-5, ftol = 1e-5, iterations = 2000)
 end 
 
-# Using nlsolve() for variable m. 
+# Using fixedpoint() for variable m. 
 function nlsolve_anderson_m(m)
     # Utility function. 
     function u(c::Real, σ::Real)
@@ -202,7 +202,7 @@ function nlsolve_anderson_m(m)
 
     bellman_operator!(newVec::AbstractVector, oldVec::AbstractVector, model::McCallModel = mcm)
     """
-    function bellman_operator!(newVec, oldVec, model = mcm) 
+    function bellman_operator!(newVec, oldVec, model = mcm)
         # Unpack parameters. 
         α, β, σ, c, γ = mcm.α, mcm.β, mcm.σ, mcm.c, mcm.γ
         # Add new V(w) values to newVec.
@@ -215,6 +215,6 @@ function nlsolve_anderson_m(m)
     end
     # Solve 
     init = ones(length(mcm.w_vec)+1)
-    nlsolve(bellman_operator!, init; m = m, xtol = 1e-5, ftol = 1e-5, iterations = 2000)
+    @show fixedpoint(bellman_operator!, init; m = m, xtol = 1e-5, ftol = 1e-5, iterations = 2000, linesearch = LineSearches.Static())
 end 
 
