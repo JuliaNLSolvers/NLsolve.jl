@@ -1,7 +1,7 @@
 @testset "fixed points" begin
 
     # Basic container tests *******
-    for T in (Float64, Int64, BitFloat, BigInt)
+    for T in (Float64, Int64, BigFloat, BigInt)
         # Write an @test for out of place vector 
         # Write an @test for in place vector 
         # Write an @test for out of place matrix 
@@ -11,7 +11,7 @@
     end 
 
     # StaticArray tests. ************
-    for T in (Float64, Int64, BitFloat, BigInt)
+    for T in (Float64, Int64, BigFloat, BigInt)
     end 
 
     # Error tests **********
