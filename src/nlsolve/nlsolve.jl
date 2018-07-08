@@ -48,8 +48,8 @@ function nlsolve{T}(f,
                  autoscale::Bool = true,
                  m::Integer = 0,
                  beta::Real = 1.0,
-                 autodiff = :central,
-                 inplace = true)
+                 autodiff::Symbol = :central,
+                 inplace::Bool = true)
     if inplace
         df = OnceDifferentiable(f, initial_x, initial_x, autodiff)
     else
