@@ -535,7 +535,7 @@ for (df, initial, name) in alltests
                 r.f_calls, r.g_calls, r.residual_norm, tot_time)
         @test converged(r)
         # with autodiff
-        tot_time2 = @elapsed r_AD = nlsolve(df.f, initial, method = method, autodiff = true)
+        tot_time2 = @elapsed r_AD = nlsolve(df.f, initial, method = method, autodiff = :forward)
         @printf("%-45s   %5d   %5d   %5d   %14e   %10e\n", name*"-"*string(method)*"-AD",
                 length(initial), r_AD.f_calls, r_AD.g_calls, r_AD.residual_norm, tot_time)
         if PRINT_FILE
