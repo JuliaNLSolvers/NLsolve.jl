@@ -52,7 +52,7 @@ function dogleg!(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i,
     catch e
         if isa(e, LAPACKException) || isa(e, SingularException)
             # If Jacobian is singular, compute a least-squares solution to J*x+r=0
-            U, S, V = svd(full(J)) # Convert to full matrix because sparse SVD not implemented as of Julia 0.3
+            U, S, V = svd(convert(Matrix{T}, J)) # Convert to full matrix because sparse SVD not implemented as of Julia 0.3
             k = sum(S .> eps())
             mrinv = V * Matrix(Diagonal([1 ./ S[1:k]; zeros(eltype(S), length(S)-k)])) * U' # Moore-Penrose generalized inverse of J
             vecpi = vec(p_i)
@@ -132,8 +132,8 @@ function trust_region_(df::OnceDifferentiable,
         end
 
         return SolverResults(name,
-        #initial_x, reshape(cache.x, size(initial_x)...), vecnorm(cache.r, Inf),
-        initial_x, copy(cache.x), vecnorm(cache.r, Inf),
+        #initial_x, reshape(cache.x, size(initial_x)...), norm(cache.r, Inf),
+        initial_x, copy(cache.x), norm(cache.r, Inf),
         it, x_converged, xtol, f_converged, ftol, tr,
         first(df.f_calls), first(df.df_calls))
     end
@@ -210,7 +210,7 @@ function trust_region_(df::OnceDifferentiable,
         name *= " and autoscaling"
     end
     return SolverResults(name,
-                         initial_x, copy(cache.x), vecnorm(cache.r, Inf),
+                         initial_x, copy(cache.x), norm(cache.r, Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
                          first(df.f_calls), first(df.df_calls))
 end
