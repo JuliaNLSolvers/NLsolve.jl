@@ -109,7 +109,7 @@ function stacked_quantecon()
     mcm = McCallModel()
     # Function for each loop of the iteration. 
     """
-    An (in-place) state-space implementation of the Bellman operator for the McCall model with separation. By convention, U is at the top of the state vector. 
+    An (in-place) stacked implementation of the Bellman operator for the McCall model with separation. By convention, U is at the top of the vector. 
 
     bellman_operator!(newVec::AbstractVector, oldVec::AbstractVector, model::McCallModel = mcm)
     """
@@ -163,7 +163,7 @@ function fixedpoint_iteration()
     mcm = McCallModel()
     # Function for each loop of the iteration. 
     """
-    An (in-place) state-space implementation of the Bellman operator for the McCall model with separation. By convention, U is at the top of the state vector. 
+    An (in-place) stacked implementation of the Bellman operator for the McCall model with separation. By convention, U is at the top of the state vector. 
 
     bellman_operator!(newVec::AbstractVector, oldVec::AbstractVector, model::McCallModel = mcm)
     """
@@ -197,7 +197,7 @@ function fixedpoint_anderson_m(m)
     mcm = McCallModel()
     # Function for each loop of the iteration. 
     """
-    An (in-place) state-space implementation of the Bellman operator for the McCall model with separation. By convention, U is at the top of the state vector. 
+    An (in-place) stacked implementation of the Bellman operator for the McCall model with separation. By convention, U is at the top of the state vector. 
 
     bellman_operator!(newVec::AbstractVector, oldVec::AbstractVector, model::McCallModel = mcm)
     """
