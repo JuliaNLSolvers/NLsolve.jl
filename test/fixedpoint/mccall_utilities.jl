@@ -1,8 +1,7 @@
 # Benchmarking the NLsolve.fixedpoint() function in the use case of: https://lectures.quantecon.org/jl/mccall_model_with_separation.html
 
 # Dependencies. 
-using Suppressor
-@suppress using Distributions, NLsolve # So that some method overwritten error from NLsolve doesn't intermingle with the benchmarks. 
+using Distributions, NLsolve # So that some method overwritten error from NLsolve doesn't intermingle with the benchmarks. 
 
 # Wages (global since used in constructor)
 const n = 60                                   # n possible outcomes for wage
