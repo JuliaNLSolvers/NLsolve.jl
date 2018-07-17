@@ -1,4 +1,7 @@
+#using NLsolve
+#using DiffEqBase
 using Base.Test
+#import Base.convert
 @testset "fixed points" begin
 
     # Basic container tests *******
@@ -80,5 +83,14 @@ using Base.Test
     @test fixedpoint(f!, [3.4, 4.3];m=2).zero ≈ [5.0, 4.571428571428571];
      #In place, no Jacobian, Vector{Float64}., autoscale is different
      @test fixedpoint(f!, [3.4, 4.3];autoscale= false).zero ≈ [5.0, 4.571428571428571];
+     
+     #In place, no Jacobian, Vector{Float64}, nonlinear functions
+     f(x) = sin.(x);
+     @test fixedpoint(f!, [3.4]).zero ≈ [-0.0535333];
+     f(x)=x.^2;
+     @test fixedpoint(f!, [.4]).zero ≈ [0.0];
+     f(x)=exp.(-x);
+     @test fixedpoint(f!, [.4]).zero ≈ [0.56714];
+
 
 end 
