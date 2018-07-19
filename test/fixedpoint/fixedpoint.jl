@@ -36,15 +36,15 @@ using Base.Test
 
     # Actual tests for now ***********
     # Out of place, no Jacobian, Vector{Float64}. 
-    A = [0.7 0.0; 0.0 0.3];
-    b = [1.5; 3.2];
-    f(x) = A * x + b;
-    @test fixedpoint(f, [3.4, 4.3]; inplace = false).zero ≈ [5.0, 4.571428571428571];
+    A = [0.7 0.0; 0.0 0.3]
+    b = [1.5; 3.2]
+    f(x) = A * x + b
+    @test fixedpoint(f, [3.4, 4.3]; inplace = false).zero ≈ [5.0, 4.571428571428571]
     # In place, no Jacobian, Vector{Float64}. 
     function f!(out, x)
         out .= f(x)
     end
-    @test fixedpoint(f!, [3.4, 4.3]).zero ≈ [5.0, 4.571428571428571];
+    @test fixedpoint(f!, [3.4, 4.3]).zero ≈ [5.0, 4.571428571428571]
 
 
     # Simple iteration stuff ****************
@@ -78,19 +78,20 @@ using Base.Test
     @test iterate!(f!, [3.4, 4.3])[1] == iterate(f, [3.4, 4.3])[1] ≈ [5.0, 4.571428571428571]
 
     #In place, no Jacobian, Vector{Float64}., beta is different
-    @test fixedpoint(f!, [3.4, 4.3];beta=2.0).zero ≈ [5.0, 4.571428571428571];
+    @test fixedpoint(f!, [3.4, 4.3];beta=2.0).zero ≈ [5.0, 4.571428571428571]
     #In place, no Jacobian, Vector{Float64}., m is different
-    @test fixedpoint(f!, [3.4, 4.3];m=2).zero ≈ [5.0, 4.571428571428571];
+    @test fixedpoint(f!, [3.4, 4.3];m=2).zero ≈ [5.0, 4.571428571428571]
      #In place, no Jacobian, Vector{Float64}., autoscale is different
-     @test fixedpoint(f!, [3.4, 4.3];autoscale= false).zero ≈ [5.0, 4.571428571428571];
+     @test fixedpoint(f!, [3.4, 4.3];autoscale= false).zero ≈ [5.0, 4.571428571428571]
      
      #In place, no Jacobian, Vector{Float64}, nonlinear functions
-     f(x) = sin.(x);
-     @test fixedpoint(f!, [3.4]).zero ≈ [-0.0535333];
-     f(x)=x.^2;
-     @test fixedpoint(f!, [.4]).zero ≈ [0.0];
-     f(x)=exp.(-x);
-     @test fixedpoint(f!, [.4]).zero ≈ [0.56714];
-
-
-end 
+     g(x) = sin.(x);
+     function g!(out, x)
+        out .= g(x)
+     end 
+     @test fixedpoint(g!, [Float64(π)]).zero[1] ≈ 0.0 atol = 1e-10
+     g(x)=x.^2;
+     @test fixedpoint(g!, [.4]).zero[1] ≈ 0.0 atol = 1e-10
+     @test fixedpoint(g!, [-0.4]).zero ≈ 0.0 atol = 1e-10
+     # exp test. 
+    end 
