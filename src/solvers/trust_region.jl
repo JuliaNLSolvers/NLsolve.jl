@@ -48,7 +48,7 @@ function dogleg!(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i,
                  r::AbstractArray{T}, d::AbstractArray{T}, J::AbstractMatrix{T},
                  delta::Real) where T
     try
-        copyto!(p_i, J \ vec(r)) # Gauss-Newton step
+        @compat copyto!(p_i, J \ vec(r)) # Gauss-Newton step
     catch e
         if isa(e, LAPACKException) || isa(e, SingularException)
             # If Jacobian is singular, compute a least-squares solution to J*x+r=0
@@ -65,7 +65,7 @@ function dogleg!(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i,
 
     # Test if Gauss-Newton step is within the region
     if wnorm(d, p_i) <= delta
-        copyto!(p, p_i)   # accepts equation 4.13 from N&W for this step
+        @compat copyto!(p, p_i)   # accepts equation 4.13 from N&W for this step
     else
         # For intermediate we will use the output array `p` as a buffer to hold
         # the gradient. To make it easy to remember which variable that array
@@ -99,7 +99,7 @@ function dogleg!(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i,
             a = wnorm(d, p_diff)^2
             tau = (-b + sqrt(b^2 - 4a*(wnorm(d, p_c)^2 - delta^2)))/(2a)
             p_c .+= tau .* p_diff
-            copyto!(p, p_c)
+            @compat copyto!(p, p_c)
         end
     end
 end
@@ -115,7 +115,7 @@ function trust_region_(df::OnceDifferentiable,
                           factor::T,
                           autoscale::Bool,
                           cache = NewtonTrustRegionCache(df)) where T
-    copyto!(cache.x, initial_x)
+    @compat copyto!(cache.x, initial_x)
     value_jacobian!!(df, cache.x)
     cache.r .= value(df)
     check_isfinite(cache.r)
@@ -166,7 +166,7 @@ function trust_region_(df::OnceDifferentiable,
         # Compute proposed iteration step
         dogleg!(cache.p, cache.p_c, cache.pi, cache.r, cache.d, jacobian(df), delta)
 
-        copyto!(cache.xold, cache.x)
+        @compat copyto!(cache.xold, cache.x)
         cache.x .+= cache.p
         value!(df, cache.x)
 

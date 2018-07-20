@@ -3,7 +3,7 @@
 # Helpers for functions that do not modify arguments in place but return
 function not_in_place(f)
     function f!(F, x)
-        copyto!(F, f(x))
+        @compat copyto!(F, f(x))
     end
 end
 
@@ -14,8 +14,8 @@ end
 function not_in_place(f, j, fj)
     function fj!(F, J, x)
         f, j = fj(x)
-        copyto!(F, f)
-        copyto!(J, j)
+        @compat copyto!(F, f)
+        @compat copyto!(J, j)
     end
     not_in_place(f, j)..., fj!
 end
@@ -23,5 +23,5 @@ end
 
 # Helper for functions that take several scalar arguments and return a tuple
 function n_ary(f)
-    f!(fx, x) = copyto!(fx, [f(x...)... ])
+    f!(fx, x) = @compat copyto!(fx, [f(x...)... ])
 end

@@ -81,8 +81,8 @@ using Base.Test
     @test fixedpoint(f!, [3.4, 4.3];beta=2.0).zero ≈ [5.0, 4.571428571428571]
     #In place, no Jacobian, Vector{Float64}., m is different
     @test fixedpoint(f!, [3.4, 4.3];m=2).zero ≈ [5.0, 4.571428571428571]
-     #In place, no Jacobian, Vector{Float64}., autoscale is different
-     @test fixedpoint(f!, [3.4, 4.3];autoscale= false).zero ≈ [5.0, 4.571428571428571]
+    #In place, no Jacobian, Vector{Float64}., autoscale is different
+    @test fixedpoint(f!, [3.4, 4.3];autoscale= false).zero ≈ [5.0, 4.571428571428571]
      
      #In place, no Jacobian, Vector{Float64}, nonlinear functions
      g(x) = sin.(x);

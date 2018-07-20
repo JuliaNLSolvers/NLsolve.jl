@@ -3,13 +3,13 @@ import NLsolve: IsFiniteException
 @testset "throws" begin
 
 function f_inf!(F, x)
-    copyto!(F, x)
+    @compat copyto!(F, x)
     F[1] = Inf
     return F
 end
 
 function f_nan!(F, x)
-    copyto!(F, x)
+    @compat copyto!(F, x)
     F[1] = NaN
     return F
 end

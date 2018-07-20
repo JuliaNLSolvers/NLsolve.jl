@@ -7,8 +7,9 @@ using NLSolversBase
 using LineSearches
 using ForwardDiff
 using DiffEqDiffTools
-using LinearAlgebra
-using Printf
+using Compat.LinearAlgebra
+using Compat.Printf
+using Compat 
 
 import Base.show,
        Base.push!,
@@ -20,7 +21,7 @@ import NLSolversBase: OnceDifferentiable, InplaceObjective, NotInplaceObjective,
 
 using Reexport
 @reexport using LineSearches
-using LinearAlgebra
+using Compat.LinearAlgebra
 
 export OnceDifferentiable,
        n_ary,
@@ -28,7 +29,8 @@ export OnceDifferentiable,
        mcpsolve,
        converged,
        only_fj,
-       only_fj!
+       only_fj!,
+       fixedpoint
 
 abstract type AbstractSolverCache end
 
@@ -50,5 +52,6 @@ include("solvers/mcp.jl")
 include("nlsolve/solver_state_results.jl")
 include("nlsolve/nlsolve.jl")
 include("nlsolve/utils.jl")
+include("nlsolve/fixedpoint.jl")
 
 end # module

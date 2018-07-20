@@ -52,7 +52,7 @@ function newton_(df::OnceDifferentiable,
                     linesearch,
                     cache = NewtonCache(df)) where T
     n = length(initial_x)
-    copyto!(cache.x, initial_x)
+    @compat copyto!(cache.x, initial_x)
     value_jacobian!!(df, cache.x)
     check_isfinite(value(df))
     vecvalue = vec(value(df))
@@ -97,7 +97,7 @@ function newton_(df::OnceDifferentiable,
 
         try
             mul!(vec(cache.g), transpose(jacobian(df)), vec(value(df)))
-            copyto!(cache.p, jacobian(df)\vec(value(df)))
+            @compat copyto!(cache.p, jacobian(df)\vec(value(df)))
             rmul!(cache.p, -1)
         catch e
             if isa(e, LAPACKException) || isa(e, SingularException)
@@ -111,13 +111,13 @@ function newton_(df::OnceDifferentiable,
             end
         end
 
-        copyto!(cache.xold, cache.x)
+        @compat copyto!(cache.xold, cache.x)
 
         value_gradient!(dfo, cache.x)
 
         alpha, ϕalpha = linesearch(dfo, cache.x, cache.p, one(T), x_ls, value(dfo), vecdot(cache.g, cache.p))
         # fvec is here also updated in the linesearch so no need to call f again.
-        copyto!(cache.x, x_ls)
+        @compat copyto!(cache.x, x_ls)
         x_converged, f_converged, converged = assess_convergence(cache.x, cache.xold, value(df), xtol, ftol)
 
         @newtontrace sqeuclidean(cache.x, cache.xold)

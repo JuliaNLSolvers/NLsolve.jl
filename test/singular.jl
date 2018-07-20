@@ -36,11 +36,11 @@ let a = rand(10)
     A = a*a'
     global f_let!, g_let!
     function f_let!(fvec, x)
-        copyto!(fvec, A*x)
+        @compat copyto!(fvec, A*x)
     end
 
     function g_let!(fjac, x)
-        copyto!(fjac, A)
+        @compat copyto!(fjac, A)
     end
 end
 

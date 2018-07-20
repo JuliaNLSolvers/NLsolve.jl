@@ -40,7 +40,7 @@ end
                              beta::Real,
                              cache = AndersonCache(df, Anderson(m, beta))) where T
 
-    copyto!(cache.xs[:,1], x0)
+    @compat copyto!(cache.xs[:,1], x0)
     iters = 0
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
@@ -90,18 +90,18 @@ end
         cache.xs .= circshift(cache.xs,(0,1)) # no in-place circshift, unfortunately...
         cache.gs .= circshift(cache.gs,(0,1))
         if m > 1
-            copyto!(cache.old_x, cache.xs[:,2])
+            @compat copyto!(cache.old_x, cache.xs[:,2])
         else
-            copyto!(cache.old_x, cache.xs[:,1])
+            @compat copyto!(cache.old_x, cache.xs[:,1])
         end
-        copyto!(cache.xs[:,1], new_x)
+        @compat copyto!(cache.xs[:,1], new_x)
     end
 
     # returning gs[:,1] rather than xs[:,1] would be better here if
     # xₙ₊₁ = xₙ + beta*f(xₙ) is convergent, but the convergence
     # criterion is not guaranteed
     x = similar(x0)
-    copyto!(x, cache.xs[:,1])
+    @compat copyto!(x, cache.xs[:,1])
     return SolverResults("Anderson m=$m beta=$beta",
                          x0, x, maximum(abs,cache.fx),
                          iters, x_converged, xtol, f_converged, ftol, tr,
