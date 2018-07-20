@@ -92,6 +92,6 @@ using Base.Test
      @test fixedpoint(g!, [Float64(π)]).zero[1] ≈ 0.0 atol = 1e-10
      g(x)=x.^2;
      @test fixedpoint(g!, [.4]).zero[1] ≈ 0.0 atol = 1e-10
-     @test fixedpoint(g!, [-0.4]).zero ≈ 0.0 atol = 1e-10
+     @test fixedpoint(g!, [-0.4]).zero[1] ≈ 0.0 atol = 1e-10
      # exp test. 
     end 
