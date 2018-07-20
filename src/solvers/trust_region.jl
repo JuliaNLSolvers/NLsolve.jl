@@ -132,8 +132,8 @@ function trust_region_(df::OnceDifferentiable,
         end
 
         return SolverResults(name,
-        #initial_x, reshape(cache.x, size(initial_x)...), vecnorm(cache.r, Inf),
-        initial_x, copy(cache.x), vecnorm(cache.r, Inf),
+        #initial_x, reshape(cache.x, size(initial_x)...), norm(cache.r, Inf),
+        initial_x, copy(cache.x), norm(cache.r, Inf),
         it, x_converged, xtol, f_converged, ftol, tr,
         first(df.f_calls), first(df.df_calls))
     end
@@ -210,7 +210,7 @@ function trust_region_(df::OnceDifferentiable,
         name *= " and autoscaling"
     end
     return SolverResults(name,
-                         initial_x, copy(cache.x), vecnorm(cache.r, Inf),
+                         initial_x, copy(cache.x), norm(cache.r, Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
                          first(df.f_calls), first(df.df_calls))
 end

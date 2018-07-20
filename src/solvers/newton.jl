@@ -124,7 +124,7 @@ function newton_(df::OnceDifferentiable,
     end
 
     return SolverResults("Newton with line-search",
-                         initial_x, copy(cache.x), vecnorm(value(df), Inf),
+                         initial_x, copy(cache.x), norm(value(df), Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
                          first(df.f_calls), first(df.df_calls))
 end
