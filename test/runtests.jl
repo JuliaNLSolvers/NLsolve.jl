@@ -7,6 +7,7 @@ import Base.convert
 using Compat.SparseArrays
 using Compat.Printf
 using Compat 
+using BenchmarkTools
 
 add_jl(x) = endswith(x, ".jl") ? x : x*".jl"
 
