@@ -13,9 +13,23 @@ import Base.convert
         # Write an @test for out of place n_ary scalar
         # Write an @test for in place n_ary scalar 
     end 
+   #Testing different types of number, in place and out of place
+
+    #adding BigFloat ot rand function
+    Base.rand(::Type{BigFloat}) =  get(tryparse(BigFloat, "0." .* join(rand(['0','1'], precision(BigFloat))), 2))
 
     # StaticArray tests. ************
-    for T in (Float64, Int64, BigFloat, BigInt)
+    for T in (Float64, Int64, big.(1:6),BigFloat) 
+        
+        # In place
+        g(x) = sin.(x)-x
+        init_x = rand(T)
+        @test fixedpoint(g, init_x).zero≈ 0.05454863537945502*ones(T)
+        # there is a problem with Int64  also, there is a fixed point at 0.545
+
+        # Out of place
+        h(x)= sin.(x)
+        @test fixedpoint(h, init_x; inplace = false).zero≈ 0.05454863537945502*ones(T)
     end 
 
     # Error tests **********
@@ -29,8 +43,7 @@ import Base.convert
     # Test some of the floating point math (if necessary).
 
     # Benchmarking **********
-    # Should do one for different kinds of types, in place vs. out of place, big vs small matrices, etc. 
-    
+    # Should do one for different kinds of types, in place vs. out of place, big vs small matrices, etc.
     # M Values tests **********
     # Should probably play around with different m values and see that nothing dramatically breaks. 
 
