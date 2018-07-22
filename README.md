@@ -359,7 +359,7 @@ function f!(F, x)
 end
 
 r = mcpsolve(f!, [0., 0., 0., 0.], [Inf, Inf, Inf, Inf],
-             [1.25, 0., 0., 0.5], reformulation = :smooth, autodiff = true)
+             [1.25, 0., 0., 0.5], reformulation = :smooth, autodiff = :forward)
 ```
 
 The solution is:

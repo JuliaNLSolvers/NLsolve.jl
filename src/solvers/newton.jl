@@ -68,7 +68,7 @@ function newton_(df::OnceDifferentiable,
     # has the gradient ∇fo(x) = ∇f(x) ⋅ f(x)
     function fo(xlin)
         value!(df, xlin)
-        vecdot(value(df), value(df)) / 2
+        dot(value(df), value(df)) / 2
     end
 
     # The line search algorithm will want to first compute ∇fo(xₖ).
@@ -83,7 +83,7 @@ function newton_(df::OnceDifferentiable,
     function fgo!(storage, xlin)
         value_jacobian!(df, xlin)
         mul!(vec(storage), transpose(jacobian(df)), vecvalue)
-        vecdot(value(df), value(df)) / 2
+        dot(value(df), value(df)) / 2
     end
     dfo = OnceDifferentiable(fo, go!, fgo!, cache.x, real(zero(T)))
 
@@ -115,7 +115,7 @@ function newton_(df::OnceDifferentiable,
 
         value_gradient!(dfo, cache.x)
 
-        alpha, ϕalpha = linesearch(dfo, cache.x, cache.p, one(T), x_ls, value(dfo), vecdot(cache.g, cache.p))
+        alpha, ϕalpha = linesearch(dfo, cache.x, cache.p, one(T), x_ls, value(dfo), dot(cache.g, cache.p))
         # fvec is here also updated in the linesearch so no need to call f again.
         copyto!(cache.x, x_ls)
         x_converged, f_converged, converged = assess_convergence(cache.x, cache.xold, value(df), xtol, ftol)
