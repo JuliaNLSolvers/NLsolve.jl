@@ -33,9 +33,8 @@ else
              "throws.jl",
              "f_g_counts.jl",
              "no_linesearch.jl",
-             "abstractarray.jl",
-             "fixedpoint/fixedpoint.jl",
-             "fixedpoint/mccall_tests.jl"]
+             #"abstractarray.jl",
+             "fixedpoint/fixedpoint.jl"]
 end
 
 println("Running tests:")

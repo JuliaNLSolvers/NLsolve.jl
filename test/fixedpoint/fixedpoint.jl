@@ -1,62 +1,19 @@
 @testset "fixed points" begin
 
-#     # Basic container tests *******
-#     for T in (Float64, Int64, BigFloat, BigInt)
-#         # Write an @test for out of place vector 
-#         # Write an @test for in place vector 
-#         # Write an @test for out of place matrix 
-#         # Write an @test for in place matrix 
-#         # Write an @test for out of place n_ary scalar
-#         # Write an @test for in place n_ary scalar 
-#     end 
-#    #Testing different types of number, in place and out of place
+#= 
+    Global objects.  
+=#
 
-#     #adding BigFloat ot rand function
-#     Base.rand(::Type{BigFloat}) =  get(tryparse(BigFloat, "0." .* join(rand(['0','1'], precision(BigFloat))), 2))
-
-#     # StaticArray tests. ************
-#     for T in (Float64, Int64, big.(1:6),BigFloat) 
-        
-#         # In place
-#         g(x) = sin.(x)-x
-#         init_x = rand(T)
-#         @test fixedpoint(g, init_x).zero≈ 0.05454863537945502*ones(T)
-#         # there is a problem with Int64  also, there is a fixed point at 0.545
-
-#         # Out of place
-#         h(x)= sin.(x)
-#         @test fixedpoint(h, init_x; inplace = false).zero≈ 0.05454863537945502*ones(T)
-#     end 
-
-    # Error tests **********
-    # @test_throws for DimensionMismatch on the f(x) - x 
-    # @test_throws for DimensionMismatch on the out .-= x 
-    
-    # Type inference tests ************
-    # Can just do @code_warntype for different function calls here 
-
-    # Precision tests ************
-    # Test some of the floating point math (if necessary).
-
-    # Benchmarking **********
-    # Should do one for different kinds of types, in place vs. out of place, big vs small matrices, etc.
-    # M Values tests **********
-    # Should probably play around with different m values and see that nothing dramatically breaks. 
-
-    # Actual tests for now ***********
-    # Out of place, no Jacobian, Vector{Float64}. 
-    A = [0.7 0.0; 0.0 0.3];
-    b = [1.5; 3.2];
-    f(x) = A * x + b;
-    @test fixedpoint(f, [3.4, 4.3]; inplace = false).zero ≈ [5.0, 4.571428571428571];
-    # In place, no Jacobian, Vector{Float64}. 
-    function f!(out, x)
-        out .= f(x)
+# Function converter for out of place --> in place. 
+function make_inplace(f::Function)
+    function inplace_f(out, x)
+        out .= f(x) 
     end
-    @test fixedpoint(f!, [3.4, 4.3]).zero ≈ [5.0, 4.571428571428571];
+    return inplace_f
+end 
 
-
-    # Simple iteration stuff ****************
+# "Naive" simple iteration methods for comparison. 
+    # In place. 
     function iterate!(f!, x0; residualnorm = (x -> norm(x,Inf)), tol = 1E-10, maxiter=100)
         residual = Inf
         iter = 1
@@ -70,7 +27,7 @@
         end
         return (xold,iter)
     end
-    # Out of place iterator from the tests. 
+    # Out of place.
     function iterate(f, x0; residualnorm = (x -> norm(x,Inf)), tol = 1E-10, maxiter=100)
         residual = Inf
         iter = 1
@@ -84,22 +41,50 @@
         end
         return (xold,iter)
     end
-    @test iterate!(f!, [3.4, 4.3])[1] == iterate(f, [3.4, 4.3])[1] ≈ [5.0, 4.571428571428571]
+    # Tests of these. 
+    A_1 = [0.7 0.0; 0.0 0.3];
+    b_1 = [1.5; 3.2];
+    f_1 = x -> A_1 * x + b_1; 
+    f_1! = make_inplace(f_1)
+    init_x = [3.4, 4.3]
+    @test iterate!(f_1!, init_x)[1] == iterate(f_1, init_x)[1] ≈ [5.0, 4.571428571428571]
 
-    #In place, no Jacobian, Vector{Float64}., beta is different
-    @test fixedpoint(f!, [3.4, 4.3];beta=2.0).zero ≈ [5.0, 4.571428571428571];
-    #In place, no Jacobian, Vector{Float64}., m is different
-    @test fixedpoint(f!, [3.4, 4.3];m=2).zero ≈ [5.0, 4.571428571428571];
-     #In place, no Jacobian, Vector{Float64}., autoscale is different
-     @test fixedpoint(f!, [3.4, 4.3];autoscale= false).zero ≈ [5.0, 4.571428571428571];
-     
-     #In place, no Jacobian, Vector{Float64}, nonlinear functions
-     f(x) = sin.(x)
-     @test fixedpoint(f!, [3.4]).zero ≈ [-0.05353333980500071]
-     f(x)=x.^2
-     @test fixedpoint(f!, [.4]).zero ≈ [1.8446744072278014e-13]
-     f(x)=exp.(-x)
-     @test fixedpoint(f!, [.4]).zero ≈ [0.567143294481315]
+#= 
+    Anderson tests. 
+=#
+
+# Tests against the above example. 
+    @test fixedpoint(f_1!, [3.4, 4.3]).zero == fixedpoint(f_1, [3.4, 4.3]; inplace = false).zero ≈ [5.0, 4.571428571428571]
+    @test fixedpoint(f_1!, [3.4, 4.3]; m = 2).zero == fixedpoint(f_1, [3.4, 4.3]; inplace = false, m = 2).zero ≈ [5.0, 4.571428571428571]
+
+# Tests for some common functions. 
+    # x -> sin.(x) 
+    f_2 = x -> 0.5 * x
+    f_2! = make_inplace(f_2)
+    srand = 123 # For determinism in the random tests. 
+    init_x2 = rand(Float64, 4)
+    @test fixedpoint(f_2!, init_x2; iterations = 10000, ftol = 1e-15).zero == fixedpoint(f_2, init_x2; inplace = false, iterations = 10000, ftol = 1e-15).zero 
+    @test isapprox(fixedpoint(f_2!, init_x2; iterations = 10000, ftol = 1e-15).zero, zeros(Float64, 4), atol = 1e-10)
+    # x -> exp(-x)
+    f_3 = x -> exp.(-x)
+    f_3! = make_inplace(f_3)
+    init_x3 = [rand(Float64)*100]
+    @test fixedpoint(f_3!, init_x3).zero == fixedpoint(f_3, init_x3; inplace = false).zero ≈ [0.5671432953088511]
+    @test fixedpoint(f_3!, init_x3; m = 4).zero == fixedpoint(f_3, init_x3; inplace = false, m = 4).zero ≈ [0.5671432953088511]
+
+# Tests for...
+
+#= 
+    Gradient method tests. 
+=#
+    # Autodifferentiation tests. 
+    @test fixedpoint(f_3!, init_x3; autodiff = :forward).zero == fixedpoint(f_3, init_x3; inplace = false, autodiff = :forward).zero ≈ [0.5671432953088511]
+    @test fixedpoint(f_3!, init_x3; autodiff = :central).zero == fixedpoint(f_3, init_x3; inplace = false, autodiff = :central).zero ≈ [0.5671432953088511]
+
+    # Newton tests. 
+    @test fixedpoint(f_3!, init_x3; autodiff = :forward, method = :newton).zero == fixedpoint(f_3, init_x3; inplace = false, autodiff = :forward, method = :newton).zero ≈ [0.5671432953088511]
+    @test fixedpoint(f_3!, init_x3; autodiff = :central, method = :newton).zero == fixedpoint(f_3, init_x3; inplace = false, autodiff = :central, method = :newton).zero ≈ [0.5671432953088511]
+
 
 
 end 
