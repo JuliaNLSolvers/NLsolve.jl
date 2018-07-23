@@ -5,7 +5,7 @@ function f!(fvec, x)
     fvec[2] = sin(x[2]*exp(x[1])-1)
 end
 
-r = nlsolve(f!, [ -0.5; 1.4], autodiff = :central)
+r = nlsolve(f!, [ -0.5; 1.4], autodiff = :forward)
 @test converged(r)
 @test norm(r.zero - [ 0; 1]) < 1e-8
 

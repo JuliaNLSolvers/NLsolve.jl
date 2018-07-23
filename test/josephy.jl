@@ -47,7 +47,7 @@ r = mcpsolve(f!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00
 @test converged(r)
 @test norm(r.zero - solution) < 1e-8
 
-r = mcpsolve(f!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :smooth, autodiff = true)
+r = mcpsolve(f!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :smooth, autodiff = :forward)
 @test converged(r)
 @test norm(r.zero - solution) < 1e-8
 
@@ -66,7 +66,7 @@ r = mcpsolve(f!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00
 @test converged(r)
 @test norm(r.zero - solution) < 1e-8
 
-r = mcpsolve(f!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :minmax, autodiff = true)
+r = mcpsolve(f!, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50], reformulation = :minmax, autodiff = :forward)
 @test converged(r)
 @test norm(r.zero - solution) < 1e-8
 

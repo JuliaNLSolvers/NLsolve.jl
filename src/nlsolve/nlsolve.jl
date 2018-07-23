@@ -12,9 +12,6 @@ function nlsolve(df::TDF,
                  autoscale::Bool = true,
                  m::Integer = 0,
                  beta::Real = 1.0) where {T, TDF <: OnceDifferentiable}
-    if extended_trace
-        show_trace = true
-    end
     if show_trace
         @printf "Iter     f(x) inf-norm    Step 2-norm \n"
         @printf "------   --------------   --------------\n"
@@ -34,7 +31,7 @@ function nlsolve(df::TDF,
     end
 end
 
-function nlsolve{T}(f,
+function nlsolve(f,
                  initial_x::AbstractArray{T};
                  method::Symbol = :trust_region,
                  xtol::Real = zero(T),
@@ -48,14 +45,18 @@ function nlsolve{T}(f,
                  autoscale::Bool = true,
                  m::Integer = 0,
                  beta::Real = 1.0,
-                 autodiff::Symbol = :central,
-                 inplace::Bool = true)
-    if inplace
-        df = OnceDifferentiable(f, initial_x, initial_x, autodiff)
+                 autodiff = :central,
+                 inplace = true) where T
+    if typeof(f) <: Union{InplaceObjective, NotInplaceObjective}
+        df = OnceDifferentiable(f, initial_x, initial_x)
     else
-        df = OnceDifferentiable(not_in_place(f), initial_x, initial_x, autodiff)
+        if inplace
+            df = OnceDifferentiable(f, initial_x, initial_x, autodiff)
+        else
+            df = OnceDifferentiable(not_in_place(f), initial_x, initial_x, autodiff)
+        end
     end
-    
+
     nlsolve(df,
             initial_x, method = method, xtol = xtol, ftol = ftol,
             iterations = iterations, store_trace = store_trace,

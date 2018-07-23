@@ -1,36 +1,32 @@
-rusing NLsolve
-using DiffEqBase
-using Base.Test
-import Base.convert
 @testset "fixed points" begin
 
-    # Basic container tests *******
-    for T in (Float64, Int64, BigFloat, BigInt)
-        # Write an @test for out of place vector 
-        # Write an @test for in place vector 
-        # Write an @test for out of place matrix 
-        # Write an @test for in place matrix 
-        # Write an @test for out of place n_ary scalar
-        # Write an @test for in place n_ary scalar 
-    end 
-   #Testing different types of number, in place and out of place
+#     # Basic container tests *******
+#     for T in (Float64, Int64, BigFloat, BigInt)
+#         # Write an @test for out of place vector 
+#         # Write an @test for in place vector 
+#         # Write an @test for out of place matrix 
+#         # Write an @test for in place matrix 
+#         # Write an @test for out of place n_ary scalar
+#         # Write an @test for in place n_ary scalar 
+#     end 
+#    #Testing different types of number, in place and out of place
 
-    #adding BigFloat ot rand function
-    Base.rand(::Type{BigFloat}) =  get(tryparse(BigFloat, "0." .* join(rand(['0','1'], precision(BigFloat))), 2))
+#     #adding BigFloat ot rand function
+#     Base.rand(::Type{BigFloat}) =  get(tryparse(BigFloat, "0." .* join(rand(['0','1'], precision(BigFloat))), 2))
 
-    # StaticArray tests. ************
-    for T in (Float64, Int64, big.(1:6),BigFloat) 
+#     # StaticArray tests. ************
+#     for T in (Float64, Int64, big.(1:6),BigFloat) 
         
-        # In place
-        g(x) = sin.(x)-x
-        init_x = rand(T)
-        @test fixedpoint(g, init_x).zero≈ 0.05454863537945502*ones(T)
-        # there is a problem with Int64  also, there is a fixed point at 0.545
+#         # In place
+#         g(x) = sin.(x)-x
+#         init_x = rand(T)
+#         @test fixedpoint(g, init_x).zero≈ 0.05454863537945502*ones(T)
+#         # there is a problem with Int64  also, there is a fixed point at 0.545
 
-        # Out of place
-        h(x)= sin.(x)
-        @test fixedpoint(h, init_x; inplace = false).zero≈ 0.05454863537945502*ones(T)
-    end 
+#         # Out of place
+#         h(x)= sin.(x)
+#         @test fixedpoint(h, init_x; inplace = false).zero≈ 0.05454863537945502*ones(T)
+#     end 
 
     # Error tests **********
     # @test_throws for DimensionMismatch on the f(x) - x 

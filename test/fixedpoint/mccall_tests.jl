@@ -1,5 +1,5 @@
 # Dependencies 
-using BenchmarkTools, Base.Test
+using BenchmarkTools
 include("mccall_utilities.jl")
 
 # Benchmark the QuantEcon default solution

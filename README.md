@@ -132,9 +132,7 @@ nlsolve(df, initial_x)
 
 ### Optimization of simultaneous residuals and Jacobian
 
-If, in addition to `f!` and `j!`, you have a function `fj!(x::AbstractArray,
-F::AbstractArray, J::AbstractArray)` or `fj!(x::AbstractArray,
-F::AbstractArray, J::AbstractArray)` that computes both the residual and the
+If, in addition to `f!` and `j!`, you have a function `fj!(F::AbstractArray, J::AbstractArray, x::AbstractArray)` that computes both the residual and the
 Jacobian at the same time, you can use the following syntax
 
 ```jl
@@ -242,9 +240,8 @@ matrix at the beginning of the function. If `J` is the sparse Jacobian, this
 can be achieved with:
 
 ```jl
-fill!(J.colptr, 1)
-empty!(J.rowval)
-empty!(J.nzval)
+fill!(a, 0)
+dropzeros!(a) # if you also want to remove the sparsity pattern
 ```
 
 # Fine tunings
@@ -287,15 +284,15 @@ vector and evaluate the function at the new point.
 This method is selected with `method = :anderson`.
 
 It is also known as DIIS or Pulay mixing, this method is based on the
-acceleration of the fixed-point iteration `xn+1 = xn + β f(xn)`, where
-by default `β=1`. It does not use Jacobian information or linesearch,
+acceleration of the fixed-point iteration `xₙ₊₁ = xₙ + beta*f(xₙ)`, where
+by default `beta=1`. It does not use Jacobian information or linesearch,
 but has a history whose size is controlled by the `m` parameter: `m=0`
 (the default) corresponds to the simple fixed-point iteration above,
 and higher values use a larger history size to accelerate the
 iterations. Higher values of `m` usually increase the speed of
 convergence, but increase the storage and computation requirements and
 might lead to instabilities. This method is useful to accelerate a
-fixed-point iteration `xn+1 = g(xn)` (in which case use this solver
+fixed-point iteration `xₙ₊₁ = g(xₙ)` (in which case use this solver
 with `f(x) = g(x) - x`).
 
 Reference: H. Walker, P. Ni, Anderson acceleration for fixed-point
@@ -362,7 +359,7 @@ function f!(F, x)
 end
 
 r = mcpsolve(f!, [0., 0., 0., 0.], [Inf, Inf, Inf, Inf],
-             [1.25, 0., 0., 0.5], reformulation = :smooth, autodiff = true)
+             [1.25, 0., 0., 0.5], reformulation = :smooth, autodiff = :forward)
 ```
 
 The solution is:
