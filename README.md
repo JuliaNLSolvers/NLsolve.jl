@@ -324,6 +324,8 @@ There is a `fixedpoint()` wrapper around `nlsolve()` which maps an input functio
 * Autodifferentiation is supported; e.g. `fixedpoint(f!, init_x; method = :newtonm. autodiff = :true`).
 * Tolerances and iteration bounds can be set exactly as in `nlsolve()`, since this function is a wrapper, e.g. `fixedpoint(f, init_x; inplace = false, iterations = 500, ...)`. 
 
+**Note:** If you are supplying your own derivative, it is currently not automatically mapped, so it must correspond with `F(x) = x`. 
+
 # Mixed complementarity problems
 
 Given a multivariate function `f` and two vectors `a` and `b`, the solution to
