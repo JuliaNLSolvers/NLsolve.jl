@@ -10,12 +10,14 @@ NLsolve.jl is part of the [JuliaNLSolvers](https://github.com/JuliaNLSolvers) fa
 # Non-linear systems of equations
 The NLsolve package solves systems of nonlinear equations. Formally, if `F` is
 a multivalued function, then this package looks for some vector `x` that
-satisfies `F(x)=0` to some accuracy.
+satisfies `F(x)=0` to some accuracy. 
 
 The package is also able to solve mixed complementarity problems, which are
 similar to systems of nonlinear equations, except that the equality to zero is
 allowed to become an inequality if some boundary condition is satisfied. See
 further below for a formal definition and the related commands.
+
+There is also an identical API for solving fixed points (i.e., taking as input a function `F(x)`, and solving `F(x) = x`).
 
 # Simple example
 
@@ -313,6 +315,16 @@ Other optional arguments to `nlsolve`, available for all algorithms, are:
   on `STDOUT`? Default: `false`.
 * `extended_trace`: should additifonal algorithm internals be added to the state
   trace? Default: `false`.
+
+## Fixed Points 
+
+There is a `fixedpoint()` wrapper around `nlsolve()` which maps an input function `F(x)` to `G(x) = F(x) - x`, and likewise for the in-place. This allows convenient solution of fixed-point problems, e.g. of the kind commonly encountered in computational economics. Some notes:
+
+* The default method is `:anderson` with `m = 0`, which corresponds to simple iteration. This is a robust algorithm for strict contractions, but may not be efficient when the Lipschitz constant is close to 1. 
+* Autodifferentiation is supported; e.g. `fixedpoint(f!, init_x; method = :newton, autodiff = :true)`.
+* Tolerances and iteration bounds can be set exactly as in `nlsolve()`, since this function is a wrapper, e.g. `fixedpoint(f, init_x; inplace = false, iterations = 500, ...)`. 
+
+**Note:** If you are supplying your own derivative, make sure that it is appropriately transformed (i.e., we currently map `f -> f - x`, but are waiting on the API to stabilize before mapping `J -> J - I`, so you'll need to do that yourself.)
 
 # Mixed complementarity problems
 
