@@ -33,7 +33,7 @@ else
              "throws.jl",
              "f_g_counts.jl",
              "no_linesearch.jl",
-             #"abstractarray.jl",
+             "abstractarray.jl",
              "fixedpoint/fixedpoint.jl"]
 end
 
