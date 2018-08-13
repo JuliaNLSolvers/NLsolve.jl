@@ -2,6 +2,7 @@ using NLsolve
 using DiffEqBase
 using Test
 using NLSolversBase
+using LineSearches
 using LinearAlgebra
 import Base.convert
 using SparseArrays
@@ -34,6 +35,7 @@ else
              "f_g_counts.jl",
              "no_linesearch.jl",
              "abstractarray.jl",
+             "interface/caches.jl",
              "fixedpoint/fixedpoint.jl"]
 end
 
