@@ -31,7 +31,16 @@ export OnceDifferentiable,
        only_fj!,
        fixedpoint
 
+abstract type AbstractSolver end
 abstract type AbstractSolverCache end
+
+"""
+    cache(::AbstractSolver, df::OnceDifferentiable)
+
+Return a solver cache that can be used to reduce memory allocations on
+successive calls to `nlsolve` with the same problem structure.
+"""
+function cache end
 
 struct IsFiniteException <: Exception
   indices::Vector{Int}

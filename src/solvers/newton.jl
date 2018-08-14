@@ -1,5 +1,3 @@
-struct Newton
-end
 struct NewtonCache{Tx} <: AbstractSolverCache
     x::Tx
     xold::Tx
@@ -13,6 +11,53 @@ function NewtonCache(df)
     g = similar(x)
     NewtonCache(x, xold, p, g)
 end
+
+# QUESTION: should this be mutable? or at least have a copy constructor?
+struct Newton{T, C <: Union{NewtonCache, Missing}, L} <: AbstractSolver  # TODO: it might be good to subtype L <: AbstractLineSearch but such a type doesn't exist yet
+    xtol::T
+    ftol::T
+    iterations::Int
+    store_trace::Bool
+    show_trace::Bool
+    extended_trace::Bool
+    linesearch::L
+    cache::C
+end
+
+"""
+    Newton(; xtol, ftol, iterations, store_trace, show_trace, extended_trace, linesearch, cache)
+
+Return a solver options structure for the Newton solver; all arguments are
+optional.
+
+# Example
+```
+x0 = [0.0]
+opts = Newton(ftol=1e-6, iterations=100)
+df = OnceDifferentiable(x -> x^2 - 1, x0)
+sol = nlsolve(df, x0, opts)
+```
+"""
+function Newton(;
+        xtol::Real = 0.0,
+        ftol::Real = 1e-8,
+        iterations::Integer = 1_000,
+        store_trace::Bool = false,
+        show_trace::Bool = false,
+        extended_trace::Bool = false,
+        linesearch = LineSearches.Static(),
+        cache::Union{Missing, NewtonCache{Tx}} = missing) where Tx
+    if @isdefined Tx
+        xtol_ = convert(eltype(Tx), xtol)
+        ftol_ = convert(eltype(Tx), ftol)
+    else
+        (xtol_, ftol_) = promote(xtol, ftol)
+    end
+    Newton(xtol_, ftol_, iterations, store_trace, show_trace, extended_trace, linesearch, cache)
+end
+
+cache(::Type{Newton}, df) = NewtonCache(df)
+
 function no_linesearch(dfo, xold, p, x, lsr, alpha, mayterminate)
     @simd for i in eachindex(x)
         @inbounds x[i] = xold[i] + p[i]
@@ -140,4 +185,17 @@ function newton(df::OnceDifferentiable,
                    linesearch,
                    cache = NewtonCache(df)) where T
     newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch, cache)
+end
+
+function newton(df::OnceDifferentiable, initial_x::AbstractArray{T}, opts::Newton{<: Real, Missing}) where T
+    cache = NewtonCache(df)
+    xtol = convert(T, opts.xtol)
+    ftol = convert(T, opts.ftol)
+    newton_(df, initial_x, xtol, ftol, opts.iterations, opts.store_trace,
+        opts.show_trace, opts.extended_trace, opts.linesearch, cache)
+end
+
+function newton(df::OnceDifferentiable, initial_x::AbstractArray{T}, opts::Newton{T}) where T
+    newton_(df, initial_x, opts.xtol, opts.ftol, opts.iterations, opts.store_trace,
+        opts.show_trace, opts.extended_trace, opts.linesearch, cache)
 end
