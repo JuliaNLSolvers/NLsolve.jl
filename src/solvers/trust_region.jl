@@ -226,5 +226,5 @@ function trust_region(df::OnceDifferentiable,
                          factor::Real,
                          autoscale::Bool,
                          cache = NewtonTrustRegionCache(df)) where T
-    trust_region_(df, initial_x, convert(T,xtol), convert(T,ftol), iterations, store_trace, show_trace, extended_trace, convert(T,factor), autoscale)
+    trust_region_(df, initial_x, convert(T,xtol), convert(T,ftol), iterations, store_trace, show_trace, extended_trace, convert(T,factor), autoscale, cache)
 end

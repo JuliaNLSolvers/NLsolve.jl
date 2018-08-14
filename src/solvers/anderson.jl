@@ -119,5 +119,5 @@ function anderson(df::OnceDifferentiable,
                      m::Integer,
                      beta::Real,
                      cache = AndersonCache(df, Anderson(m, beta))) where T
-    anderson_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, m, beta)
+    anderson_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, m, beta, cache)
 end

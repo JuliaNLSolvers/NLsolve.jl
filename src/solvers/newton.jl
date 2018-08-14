@@ -139,5 +139,5 @@ function newton(df::OnceDifferentiable,
                    extended_trace::Bool,
                    linesearch,
                    cache = NewtonCache(df)) where T
-    newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch)
+    newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch, cache)
 end
