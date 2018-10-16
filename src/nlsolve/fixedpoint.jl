@@ -27,7 +27,7 @@ function fixedpoint(f,
         dg = OnceDifferentiable(g!, initial_x, initial_x, autodiff) 
     else 
         g(x) = f(x) - x;
-        dg = OnceDifferentiable(not_in_place(g), initial_x, initial_x, autodiff)
+        dg = OnceDifferentiable(g, initial_x, initial_x; autodiff = autodiff, inplace = inplace)
     end 
 
     return nlsolve(dg,
