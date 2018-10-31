@@ -17,7 +17,7 @@ similar to systems of nonlinear equations, except that the equality to zero is
 allowed to become an inequality if some boundary condition is satisfied. See
 further below for a formal definition and the related commands.
 
-There is also an identical API for solving fixed points (i.e., taking as input a function `F(x)`, and solving `F(x) = x`).
+There is also an almost-identical API for solving fixed points (i.e., taking as input a function `F(x)`, and solving `F(x) = x`).
 
 # Simple example
 
@@ -187,6 +187,10 @@ is not coded in a mutating way:
 nlsolve(f, initial_x; inplace = false)
 ```
 
+:warning: For `fixedpoint`, the default is chosen programmatically, in that we set it to
+`!applicable(f, initial_x)`. In other words, if there is a one-argument method for `f`, then 
+the default is false, and otherwise the default is true. 
+
 Via the `autodiff` keyword both finite-differencing and autodifferentiation can
 be used to compute the Jacobian in that case.
 
@@ -323,6 +327,7 @@ There is a `fixedpoint()` wrapper around `nlsolve()` which maps an input functio
 * The default method is `:anderson` with `m = 0`, which corresponds to simple iteration. This is a robust algorithm for strict contractions, but may not be efficient when the Lipschitz constant is close to 1. 
 * Autodifferentiation is supported; e.g. `fixedpoint(f!, init_x; method = :newton, autodiff = :true)`.
 * Tolerances and iteration bounds can be set exactly as in `nlsolve()`, since this function is a wrapper, e.g. `fixedpoint(f, init_x; inplace = false, iterations = 500, ...)`. 
+* The default `inplace` flag is set programmatically for `fixedpoint` but not `nlsolve`, as described above.
 
 **Note:** If you are supplying your own derivative, make sure that it is appropriately transformed (i.e., we currently map `f -> f - x`, but are waiting on the API to stabilize before mapping `J -> J - I`, so you'll need to do that yourself.)
 
