@@ -12,7 +12,7 @@ function fixedpoint(f,
     linesearch = LineSearches.Static(),
     factor::Real = one(T),
     autoscale::Bool = true,
-    m::Integer = 0,
+    m::Integer = 5,
     beta::Real = 1.0,
     autodiff::Symbol = :central,
     inplace::Bool = !applicable(f, initial_x)) where T
