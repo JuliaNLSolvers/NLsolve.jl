@@ -85,6 +85,24 @@ end
     @test fixedpoint(f_3!, init_x3; autodiff = :forward, method = :newton).zero == fixedpoint(f_3, init_x3; inplace = false, autodiff = :forward, method = :newton).zero ≈ [0.5671432953088511]
     @test fixedpoint(f_3!, init_x3; autodiff = :central, method = :newton).zero == fixedpoint(f_3, init_x3; inplace = false, autodiff = :central, method = :newton).zero ≈ [0.5671432953088511]
 
-
-
+#=
+    `inplace` flag tests. 
+=#
+    # default behavior 
+    foo = x -> 0.5 * x
+    @test norm(fixedpoint(foo, init_x2, xtol = 1e-10, ftol = 0.0).zero) ≈ 0.0 atol = 1e-10
+    bar = make_inplace(foo)
+    @test norm(fixedpoint(bar, init_x2, xtol = 1e-10, ftol = 0.0).zero) ≈ 0.0 atol = 1e-10
+    # error handling 
+    @test_throws MethodError fixedpoint(foo, init_x2, xtol = 1e-10, ftol = 0.0, inplace = true).zero
+    @test_throws MethodError fixedpoint(bar, init_x2, xtol = 1e-10, ftol = 0.0, inplace = false).zero
+    # concurrency tests 
+    baz(x) = 0.5*x
+    function baz(out, x)
+        out .= 0.5*x
+    end 
+    @test fixedpoint(baz, init_x2).zero == fixedpoint(foo, init_x2).zero # use the one-argument (out of place) method if it exists  
+    # edge case 
+    zak(x) = map!(n -> 1/2 * n, x, x) # one-argument in-place function 
+    @test (fixedpoint(zak, init_x2).zero == fixedpoint(baz, init_x2).zero) == false # should fail 
 end 

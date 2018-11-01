@@ -15,7 +15,7 @@ function fixedpoint(f,
     m::Integer = 0,
     beta::Real = 1.0,
     autodiff::Symbol = :central,
-    inplace::Bool = true) where T
+    inplace::Bool = !applicable(f, initial_x)) where T
     # Check for weird case. (Causes to hang for now)
     # typeof(f) <: Union{InplaceObjective, NotInplaceObjective} ? error("Union{InplaceObjective, NotInplaceObjective} Case") : true; 
     # Wrapping 
