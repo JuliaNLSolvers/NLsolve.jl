@@ -5,11 +5,11 @@ struct Anderson{Tm, Tb}
     m::Tm
     beta::Tb
 end
-struct AndersonCache{Txs, Tx, Ta, Tf} <: AbstractSolverCache
+struct AndersonCache{Txs, Tx, Tr, Ta, Tf} <: AbstractSolverCache
     xs::Txs
     gs::Txs
     old_x::Tx
-    residuals::Txs
+    residuals::Tr
     alphas::Ta
     fx::Tf
 end
@@ -21,8 +21,13 @@ function AndersonCache(df, method::Anderson)
     xs = zeros(T, N, m+1) #ring buffer storing the iterates, from newest to oldest
     gs = zeros(T, N, m+1) #ring buffer storing the g of the iterates, from newest to oldest
     old_x = xs[:,1]
-    residuals = zeros(T, N, m) #matrix of residuals used for the least-squares problem
-    alphas = zeros(T, m) #coefficients obtained by least-squares
+    if m > 0
+        residuals = zeros(T, N, m) #matrix of residuals used for the least-squares problem
+        alphas = zeros(T, m) #coefficients obtained by least-squares
+    else
+        residuals = nothing
+        alphas = nothing
+    end
     fx = similar(df.x_f, N) # temp variable to store f!
 
     AndersonCache(xs, gs, old_x, residuals, alphas, fx)
@@ -39,7 +44,7 @@ end
                              m::Integer,
                              beta::Real,
                              cache = AndersonCache(df, Anderson(m, beta))) where T
-
+    picard_iteration = cache.alphas == nothing
     copyto!(cache.xs[:,1], x0)
     iters = 0
     tr = SolverTrace()
@@ -76,31 +81,39 @@ end
             break
         end
 
-        #update of new_x
-        m_eff = min(n-1,m)
         new_x = copy(cache.gs[:,1])
-        if m_eff > 0
-            cache.residuals[:, 1:m_eff] .= (cache.gs[:,2:m_eff+1] .- cache.xs[:,2:m_eff+1]) .- (cache.gs[:,1] .- cache.xs[:,1])
-            cache.alphas[1:m_eff] .= cache.residuals[:,1:m_eff] \ (cache.xs[:,1] .- cache.gs[:,1])
-            for i = 1:m_eff
-                new_x .+= cache.alphas[i].*(cache.gs[:,i+1] .- cache.gs[:,1])
-            end
-        end
 
-        cache.xs .= circshift(cache.xs,(0,1)) # no in-place circshift, unfortunately...
-        cache.gs .= circshift(cache.gs,(0,1))
-        if m > 1
-            copyto!(cache.old_x, cache.xs[:,2])
+        if !picard_iteration
+            #update of new_x
+            m_eff = min(n-1,m)
+            if m_eff > 0
+                cache.residuals[:, 1:m_eff] .= (cache.gs[:,2:m_eff+1] .- cache.xs[:,2:m_eff+1]) .- (cache.gs[:,1] .- cache.xs[:,1])
+                cache.alphas[1:m_eff] .= cache.residuals[:,1:m_eff] \ (cache.xs[:,1] .- cache.gs[:,1])
+                for i = 1:m_eff
+                    new_x .+= cache.alphas[i].*(cache.gs[:,i+1] .- cache.gs[:,1])
+                end
+            end
+
+            cache.xs .= circshift(cache.xs,(0,1)) # no in-place circshift, unfortunately...
+            cache.gs .= circshift(cache.gs,(0,1))
+
+            if m > 1
+                copyto!(cache.old_x, cache.xs[:,2])
+            else
+                copyto!(cache.old_x, cache.xs[:,1])
+            end
+            copyto!(cache.xs[:,1], new_x)
         else
             copyto!(cache.old_x, cache.xs[:,1])
+            copyto!(cache.xs[:,1], cache.gs[:,1])
         end
-        copyto!(cache.xs[:,1], new_x)
     end
 
     # returning gs[:,1] rather than xs[:,1] would be better here if
     # xₙ₊₁ = xₙ + beta*f(xₙ) is convergent, but the convergence
     # criterion is not guaranteed
-    x = similar(x0)
+
+    x = similar(x0) # this is done to ensure that the final x is oftype(x0)
     copyto!(x, cache.xs[:,1])
     return SolverResults("Anderson m=$m beta=$beta",
                          x0, x, maximum(abs,cache.fx),
