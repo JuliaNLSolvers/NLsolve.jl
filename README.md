@@ -10,14 +10,14 @@ NLsolve.jl is part of the [JuliaNLSolvers](https://github.com/JuliaNLSolvers) fa
 # Non-linear systems of equations
 The NLsolve package solves systems of nonlinear equations. Formally, if `F` is
 a multivalued function, then this package looks for some vector `x` that
-satisfies `F(x)=0` to some accuracy. 
+satisfies `F(x)=0` to some accuracy.
 
 The package is also able to solve mixed complementarity problems, which are
 similar to systems of nonlinear equations, except that the equality to zero is
 allowed to become an inequality if some boundary condition is satisfied. See
 further below for a formal definition and the related commands.
 
-There is also an almost-identical API for solving fixed points (i.e., taking as input a function `F(x)`, and solving `F(x) = x`).
+There is also an identical API for solving fixed points (i.e., taking as input a function `F(x)`, and solving `F(x) = x`).
 
 # Simple example
 
@@ -173,33 +173,31 @@ nlsolve(only_fj!(myfun), initial_x)
 
 This will make enable `nlsolve` to efficiently calculate `F(x)` and `J(x)`
 together, but still be efficient when calculating either `F(x)` or `J(x)`
-separately. 
+separately.
 
 ## With functions returning residuals and Jacobian as output
 
 Here it is assumed that you have a function `f(x::AbstractArray)` that returns
-a newly-allocated vector containing the residuals. To use such a function directly,
-use the `inplace` keyword. The `inplace` keyword in `nlsolve` defaults to `true`,
-so we have to change it to `false` to let `nlsolve` know what we're passing it
-is not coded in a mutating way:
+a newly-allocated vector containing the residuals. Simply pass it to `nlsolve`,
+and it will automatically detect if `f` is defined for one or two arguments:
 
 ```jl
-nlsolve(f, initial_x; inplace = false)
+nlsolve(f, initial_x)
 ```
 
-:warning: For `fixedpoint`, the default is chosen programmatically, in that we set it to
-`!applicable(f, initial_x)`. In other words, if there is a one-argument method for `f`, then 
-the default is false, and otherwise the default is true. 
+Note, that this means that if you have a function `f` with a method that accepts
+one argument, and another method that accepts two arguments, it will assume that
+the two argument version is a mutating `f`, such as described above.
 
 Via the `autodiff` keyword both finite-differencing and autodifferentiation can
 be used to compute the Jacobian in that case.
 
 If, in addition to `f(x::AbstractArray)`, there is a function
 `j(x::AbstractArray)` returning a newly-allocated matrix containing the
-Jacobian, we again use the `inplace` keyword:
+Jacobian, we again simply pass these to `nlsolve`:
 
 ```jl
-nlsolve(f, j, initial_x; inplace = false)
+nlsolve(f, j, initial_x)
 ```
 
 If, in addition to `f` and `j`, there is a function `fj` returning a tuple of a
@@ -207,7 +205,7 @@ newly-allocated vector of residuals and a newly-allocated matrix of the
 Jacobian, the approach is the same:
 
 ```jl
-nlsolve(f, j, fj, initial_x; inplace = false)
+nlsolve(f, j, fj, initial_x)
 ```
 
 ## With functions taking several scalar arguments
@@ -227,7 +225,7 @@ Finite-differencing is used to compute the Jacobian.
 
 If the Jacobian of your function is sparse, it is possible to ask the routines
 to manipulate sparse matrices instead of full ones, in order to increase
-performance on large systems. This means that we must necessarily provide an 
+performance on large systems. This means that we must necessarily provide an
 appropriate Jacobian type so the solver knows what to feed `j!`.
 
 ```jl
@@ -320,14 +318,13 @@ Other optional arguments to `nlsolve`, available for all algorithms, are:
 * `extended_trace`: should additifonal algorithm internals be added to the state
   trace? Default: `false`.
 
-## Fixed Points 
+## Fixed Points
 
 There is a `fixedpoint()` wrapper around `nlsolve()` which maps an input function `F(x)` to `G(x) = F(x) - x`, and likewise for the in-place. This allows convenient solution of fixed-point problems, e.g. of the kind commonly encountered in computational economics. Some notes:
 
 * The default method is `:anderson` with `m = 5`. Naive "Picard"-style iteration can be achieved by setting `m=0`, but that isn't advisable for contractions whose Lipschitz constants are close to 1. If convergence fails, though, you may consider lowering it.
 * Autodifferentiation is supported; e.g. `fixedpoint(f!, init_x; method = :newton, autodiff = :true)`.
-* Tolerances and iteration bounds can be set exactly as in `nlsolve()`, since this function is a wrapper, e.g. `fixedpoint(f, init_x; inplace = false, iterations = 500, ...)`. 
-* The default `inplace` flag is set programmatically for `fixedpoint` but not `nlsolve`, as described above.
+* Tolerances and iteration bounds can be set exactly as in `nlsolve()`, since this function is a wrapper, e.g. `fixedpoint(f, init_x; iterations = 500, ...)`.
 
 **Note:** If you are supplying your own derivative, make sure that it is appropriately transformed (i.e., we currently map `f -> f - x`, but are waiting on the API to stabilize before mapping `J -> J - I`, so you'll need to do that yourself.)
 
