@@ -105,7 +105,7 @@ function newton_(df::OnceDifferentiable,
                 # FIXME: better selection for lambda, see Nocedal & Wright p. 289
                 fjac2 = jacobian(df)'*jacobian(df)
                 lambda = convert(T,1e6)*sqrt(n*eps())*norm(fjac2, 1)
-                cache.p .= -(fjac2 + lambda * I)\vec(cache.g)
+                cache.p .= rehape(-(fjac2 + lambda * I)\vec(cache.g), size(cache.p))
             else
                 throw(e)
             end
