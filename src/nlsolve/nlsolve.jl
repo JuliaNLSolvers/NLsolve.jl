@@ -8,6 +8,7 @@ function nlsolve(df::TDF,
                  show_trace::Bool = false,
                  extended_trace::Bool = false,
                  linesearch = LineSearches.Static(),
+                 linsolve=(x, A, b) -> copyto!(x, A\b),
                  factor::Real = one(T),
                  autoscale::Bool = true,
                  m::Integer = 0,
@@ -18,7 +19,7 @@ function nlsolve(df::TDF,
     end
     if method == :newton
         newton(df, initial_x, xtol, ftol, iterations,
-               store_trace, show_trace, extended_trace, linesearch)
+               store_trace, show_trace, extended_trace, linesearch; linsolve=linsolve)
     elseif method == :trust_region
         trust_region(df, initial_x, xtol, ftol, iterations,
                      store_trace, show_trace, extended_trace, factor,
@@ -46,6 +47,7 @@ function nlsolve(f,
                  m::Integer = 0,
                  beta::Real = 1.0,
                  autodiff = :central,
+                 linsolve=(x, A, b) -> copyto!(x, A\b),
                  inplace = !applicable(f, initial_x)) where T
     if typeof(f) <: Union{InplaceObjective, NotInplaceObjective}
         df = OnceDifferentiable(f, initial_x, initial_x)
@@ -62,7 +64,7 @@ function nlsolve(f,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
             linesearch = linesearch, factor = factor, autoscale = autoscale,
-            m = m, beta = beta)
+            m = m, beta = beta, linsolve=linsolve)
 end
 
 
@@ -81,7 +83,8 @@ function nlsolve(f,
                 autoscale::Bool = true,
                 m::Integer = 0,
                 beta::Real = 1.0,
-                inplace = !applicable(f, initial_x)) where T
+                inplace = !applicable(f, initial_x),
+                linsolve=(x, A, b) -> copyto!(x, A\b)) where T
     if inplace
         df = OnceDifferentiable(f, j, initial_x, initial_x)
     else
@@ -92,7 +95,7 @@ function nlsolve(f,
     iterations = iterations, store_trace = store_trace,
     show_trace = show_trace, extended_trace = extended_trace,
     linesearch = linesearch, factor = factor, autoscale = autoscale,
-    m = m, beta = beta)
+    m = m, beta = beta, linsolve=linsolve)
 end
 
 function nlsolve(f,
@@ -111,7 +114,8 @@ function nlsolve(f,
                 autoscale::Bool = true,
                 m::Integer = 0,
                 beta::Real = 1.0,
-                inplace = !applicable(f, initial_x)) where T
+                inplace = !applicable(f, initial_x),
+                linsolve=(x, A, b) -> copyto!(x, A\b)) where T
     if inplace
         df = OnceDifferentiable(f, j, fj, initial_x, initial_x)
     else
@@ -122,5 +126,5 @@ function nlsolve(f,
     iterations = iterations, store_trace = store_trace,
     show_trace = show_trace, extended_trace = extended_trace,
     linesearch = linesearch, factor = factor, autoscale = autoscale,
-    m = m, beta = beta)
+    m = m, beta = beta, linsolve=linsolve)
 end

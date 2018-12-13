@@ -7,6 +7,7 @@ using LinearAlgebra
 import Base.convert
 using SparseArrays
 using Printf
+using IterativeSolvers
 
 add_jl(x) = endswith(x, ".jl") ? x : x*".jl"
 
@@ -21,6 +22,7 @@ if length(ARGS) > 0
     tests = map(add_jl, ARGS)
 else
     tests = ["2by2.jl",
+             "linsolve.jl",
              "singular.jl",
              "finite_difference.jl",
              "minpack.jl",

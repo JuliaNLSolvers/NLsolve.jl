@@ -50,6 +50,7 @@ function newton_(df::OnceDifferentiable,
                     show_trace::Bool,
                     extended_trace::Bool,
                     linesearch,
+                    linsolve,
                     cache = NewtonCache(df)) where T
     n = length(initial_x)
     copyto!(cache.x, initial_x)
@@ -97,7 +98,7 @@ function newton_(df::OnceDifferentiable,
 
         try
             mul!(vec(cache.g), transpose(jacobian(df)), vec(value(df)))
-            copyto!(cache.p, jacobian(df)\vec(value(df)))
+            linsolve(cache.p, jacobian(df), vec(value(df)))
             rmul!(cache.p, -1)
         catch e
             if isa(e, LAPACKException) || isa(e, SingularException)
@@ -105,7 +106,7 @@ function newton_(df::OnceDifferentiable,
                 # FIXME: better selection for lambda, see Nocedal & Wright p. 289
                 fjac2 = jacobian(df)'*jacobian(df)
                 lambda = convert(T,1e6)*sqrt(n*eps())*norm(fjac2, 1)
-                cache.p .= reshape(-(fjac2 + lambda * I)\vec(cache.g), size(cache.p))
+                linsolve(cache.p, -(fjac2 + lambda * I), vec(value(df)))
             else
                 throw(e)
             end
@@ -138,6 +139,7 @@ function newton(df::OnceDifferentiable,
                    show_trace::Bool,
                    extended_trace::Bool,
                    linesearch,
-                   cache = NewtonCache(df)) where T
-    newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch, cache)
+                   cache = NewtonCache(df);
+                   linsolve=(x, A, b) -> copyto!(x, A\b)) where T
+    newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch, linsolve, cache)
 end
