@@ -21,10 +21,11 @@
     @test res_gmres_solve.zero ≈ res_default_solve.zero
     res_idrs_solve = nlsolve(df, prob[2]; method=:newton, linsolve = idrs!)
     @test res_idrs_solve.zero ≈ res_default_solve.zero
-
+    testy = [false]
     function loud_solve(x, A, b)
-        println("linear solver is passed trough")
+        testy[1] = true
         gmres!(x, A, b)
     end
     nlsolve(df, prob[2]; method=:newton, linsolve = loud_solve)
+    @test testy[1] == true
 end
