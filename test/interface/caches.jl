@@ -7,6 +7,8 @@ end
 
 df = OnceDifferentiable(f!, rand(2), rand(2))
 
+# Test that the cache is actually passed all the way by verifying that it's
+# modified during the solve calls. 
 nc = NLsolve.NewtonCache(df)
 nc.p .= 22.0
 ncp = copy(nc.p)
