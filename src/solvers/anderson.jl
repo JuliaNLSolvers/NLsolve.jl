@@ -33,7 +33,7 @@ function AndersonCache(df, method::Anderson)
     AndersonCache(xs, gs, old_x, residuals, alphas, fx)
 end
 
-@views function anderson_(df::OnceDifferentiable,
+@views function anderson_(df::Union{NonDifferentiable, OnceDifferentiable},
                              x0::AbstractArray{T},
                              xtol::T,
                              ftol::T,
@@ -121,7 +121,7 @@ end
                          first(df.f_calls), 0)
 end
 
-function anderson(df::OnceDifferentiable,
+function anderson(df::Union{NonDifferentiable, OnceDifferentiable},
                      initial_x::AbstractArray{T},
                      xtol::Real,
                      ftol::Real,
