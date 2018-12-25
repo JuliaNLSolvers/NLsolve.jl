@@ -1,11 +1,17 @@
 using NLsolve
 using DiffEqBase
-using Base.Test
+using Test
+using NLSolversBase
+using LineSearches
+using LinearAlgebra
 import Base.convert
+using SparseArrays
+using Printf
+using IterativeSolvers
 
 add_jl(x) = endswith(x, ".jl") ? x : x*".jl"
 
-type WrappedArray{T,N} <: DEDataArray{T,N}
+mutable struct WrappedArray{T,N} <: DEDataArray{T,N}
     x::Array{T,N}
 end
 
@@ -16,10 +22,12 @@ if length(ARGS) > 0
     tests = map(add_jl, ARGS)
 else
     tests = ["2by2.jl",
+             "linsolve.jl",
              "singular.jl",
              "finite_difference.jl",
              "minpack.jl",
              "iface.jl",
+             "incomplete.jl",
              "already_converged.jl",
              "autodiff.jl",
              "josephy.jl",
@@ -28,7 +36,9 @@ else
              "throws.jl",
              "f_g_counts.jl",
              "no_linesearch.jl",
-             "abstractarray.jl"]
+             "abstractarray.jl",
+             "interface/caches.jl",
+             "fixedpoint/fixedpoint.jl"]
 end
 
 println("Running tests:")

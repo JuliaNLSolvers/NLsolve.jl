@@ -51,14 +51,14 @@ r = nlsolve(f!, j!, [ -0.5; 1.4])
 
 # Use not-in-place forms
 function f(x)
-    F = Array{eltype(x)}(2)
+    F = Array{eltype(x)}(undef, 2)
     F[1] = (x[1]+3)*(x[2]^3-7)+18
     F[2] = sin(x[2]*exp(x[1])-1)
     return F
 end
 
 function g(x)
-    J = Array{eltype(x)}(2, 2)
+    J = Array{eltype(x)}(undef, 2, 2)
     J[1, 1] = x[2]^3-7
     J[1, 2] = 3*x[2]^2*(x[1]+3)
     u = exp(x[1])*cos(x[2]*exp(x[1])-1)
@@ -68,8 +68,8 @@ function g(x)
 end
 
 function fg(x)
-    F = Array{eltype(x)}(2)
-    J = Array{eltype(x)}(2, 2)
+    F = Array{eltype(x)}(undef, 2)
+    J = Array{eltype(x)}(undef, 2, 2)
     F[1] = (x[1]+3)*(x[2]^3-7)+18
     F[2] = sin(x[2]*exp(x[1])-1)
     J[1, 1] = x[2]^3-7
@@ -81,20 +81,17 @@ function fg(x)
 end
 
 
-#FIXME Need to use the new interface
-#=
-r = nlsolve(not_in_place(f), [ -0.5; 1.4])
+r = nlsolve(f, [ -0.5; 1.4]; inplace = false)
 @test converged(r)
 
-r = nlsolve(not_in_place(f), [ -0.5; 1.4], autodiff = true)
+r = nlsolve(f, [ -0.5; 1.4]; inplace = false, autodiff = :forward)
 @test converged(r)
 
-r = nlsolve(not_in_place(f, g), [ -0.5; 1.4])
+r = nlsolve(f, g, [ -0.5; 1.4]; inplace = false)
 @test converged(r)
 
-r = nlsolve(not_in_place(f, g, fg), [ -0.5; 1.4])
+r = nlsolve(f, g, fg, [ -0.5; 1.4]; inplace = false)
 @test converged(r)
-=#
 
 # Using functions taking scalar as inputs
 
@@ -106,7 +103,26 @@ end
 
 r = nlsolve(n_ary(f), [ -0.5; 1.4])
 @test converged(r)
-r = nlsolve(n_ary(f), [ -0.5; 1.4], autodiff = true)
+r = nlsolve(n_ary(f), [ -0.5; 1.4], autodiff = :forward)
 @test converged(r)
 
+@testset "andersont trace issue #160" begin
+
+    function f_2by2!(F, x)
+        F[1] = (x[1]+3)*(x[2]^3-7)+18
+        F[2] = sin(x[2]*exp(x[1])-1)
+    end
+
+    function g_2by2!(J, x)
+        J[1, 1] = x[2]^3-7
+        J[1, 2] = 3*x[2]^2*(x[1]+3)
+        u = exp(x[1])*cos(x[2]*exp(x[1])-1)
+        J[2, 1] = x[2]*u
+        J[2, 2] = u
+    end
+
+    df = OnceDifferentiable(f_2by2!, g_2by2!, [ -0.5; 1.4], [ -0.5; 1.4])
+
+    r = nlsolve(df, [ 0.01; .99], method = :anderson, m = 10, beta=.01, show_trace=true)
+end
 end
