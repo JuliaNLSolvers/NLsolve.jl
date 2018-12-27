@@ -22,10 +22,10 @@ if length(ARGS) > 0
     tests = map(add_jl, ARGS)
 else
     tests = ["2by2.jl",
+             "minpack.jl",
              "linsolve.jl",
              "singular.jl",
              "finite_difference.jl",
-             "minpack.jl",
              "iface.jl",
              "incomplete.jl",
              "already_converged.jl",

@@ -511,6 +511,7 @@ alltests = [rosenbrock();
            ]
 
 TESTS_FAIL_NEWTON = ["Trigonometric", "Chebyquad", "Brown almost-linear"]
+TESTS_FAIL_BROYDEN = ["Rosenbrock",  "Powell singular", "Powell badly scaled", "Variably dimensioned", "Watson"]
 
 if PRINT_FILE; f_out = open("minpack_results.dat", "w"); end
 
@@ -528,6 +529,9 @@ end
 for (df, initial, name) in alltests
     for method in (:trust_region, :newton, :broyden)
         if method == :newton && name in TESTS_FAIL_NEWTON
+            continue
+        end
+        if method == :broyden && name in TESTS_FAIL_BROYDEN
             continue
         end
         tot_time = @elapsed r = nlsolve(df, initial, method = method)

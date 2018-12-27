@@ -16,11 +16,11 @@ function assess_convergence(x,
                             ftol)
     x_converged, f_converged = false, false
 
-    if !any(isnan, x_previous) && chebyshev(x, x_previous) < xtol
+    if !any(isnan, x_previous) && chebyshev(x, x_previous) <= xtol
         x_converged = true
     end
 
-    if maximum(abs, f) < ftol
+    if maximum(abs, f) <= ftol
         f_converged = true
     end
 
