@@ -68,17 +68,17 @@ function broyden_(df::OnceDifferentiable,
         copyto!(xold, x)
         copyto!(fold, value(df))
         p = - Jinv*fold
-        function lsf(y)
+        function line_objective(y)
             value!(df, y)
             dot(value(df), value(df))/2
         end
 
-        function lsgs(α)
+        function line_gradient(α)
             value_jacobian!(df, x+α*p)
-            inv(Jinv)'*vecvalue
+            Jinv'\vecvalue
         end
 
-        α = backtracking(lsf, x, p, lsgs(T(1.0)))
+        α = backtracking(line_objective, x, p, line_gradient(T(1.0)))
 
         x = xold + α*p
 

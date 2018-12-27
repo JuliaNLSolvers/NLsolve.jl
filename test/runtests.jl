@@ -8,7 +8,7 @@ import Base.convert
 using SparseArrays
 using Printf
 using IterativeSolvers
-
+using Random
 add_jl(x) = endswith(x, ".jl") ? x : x*".jl"
 
 mutable struct WrappedArray{T,N} <: DEDataArray{T,N}
