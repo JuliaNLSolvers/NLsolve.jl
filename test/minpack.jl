@@ -511,7 +511,7 @@ alltests = [rosenbrock();
            ]
 
 TESTS_FAIL_NEWTON = ["Trigonometric", "Chebyquad", "Brown almost-linear"]
-TESTS_FAIL_BROYDEN = ["Rosenbrock",  "Powell singular", "Powell badly scaled", "Variably dimensioned", "Watson"]
+TESTS_FAIL_BROYDEN = ["Powell singular", "Wood", "Trigonometric", "Watson"]# ["Rosenbrock", "Powell singular", "Powell badly scaled", "Trigonometric", "Watson"]
 
 if PRINT_FILE; f_out = open("minpack_results.dat", "w"); end
 

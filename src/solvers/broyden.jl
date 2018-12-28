@@ -21,7 +21,7 @@ macro broydentrace(stepnorm)
     end)
 end
 
-function broyden_(df::OnceDifferentiable,
+function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
                     initial_x::AbstractArray{T},
                     xtol::T,
                     ftol::T,
@@ -59,7 +59,7 @@ function broyden_(df::OnceDifferentiable,
     @broydentrace T(NaN)
 
     maybe_stuck = false
-    max_resets = 10
+    max_resets = 3
     resets = 0
     while !converged && it < iterations
 
@@ -68,19 +68,18 @@ function broyden_(df::OnceDifferentiable,
         copyto!(xold, x)
         copyto!(fold, value(df))
         p = - Jinv*fold
-        function line_objective(y)
-            value!(df, y)
-            dot(value(df), value(df))/2
+
+
+        ρ = T(0.9)
+        σ₂ = T(0.001)
+        x = xold + p
+        value!(df, x)
+        if norm(value(df), 2) <= ρ*norm(fold, 2) - σ₂*norm(p, 2)^2 # condition 2.7
+            α = T(1.0)
+        else
+            α = approximate_norm_descent(x->value!(df, x), x, p)
+            x = xold + α*p
         end
-
-        function line_gradient(α)
-            value_jacobian!(df, x+α*p)
-            Jinv'\vecvalue
-        end
-
-        α = backtracking(line_objective, x, p, line_gradient(T(1.0)))
-
-        x = xold + α*p
 
         value!(df, x)
 
@@ -112,7 +111,7 @@ function broyden_(df::OnceDifferentiable,
                          first(df.f_calls), first(df.df_calls))
 end
 
-function broyden(df::OnceDifferentiable,
+function broyden(df::Union{NonDifferentiable, OnceDifferentiable},
                    initial_x::AbstractArray{T},
                    xtol::Real,
                    ftol::Real,
@@ -124,46 +123,66 @@ function broyden(df::OnceDifferentiable,
     broyden_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch)
 end
 
-function backtracking(f, x::AbstractArray{T}, d, ∇f_x; α_0=T(1.0),
-                      ratio=T(0.5), c=T(0.001), max_iter=1000,
-                      verbose=false) where T
-    if verbose
-        println("Entering line search with step size: ", α_0)
-        println("Initial value: ", f(x))
+# A derivative-free line search and global convergence
+# of Broyden-like method for nonlinear equations
+# by Dong-Hui Li & Masao Fukushima
+# https://doi.org/10.1080/10556780008805782
+function approximate_norm_descent(F, x::AbstractArray{T}, p;
+                                  lambda_0=T(1.0), beta=T(0.5),
+                                  sigma_1=T(0.001), eta=T(0.1),
+                                  nan_max_iter=5, max_iter=50) where T
+    β, σ₁, η = beta, sigma_1, eta
+    λ₂ = lambda_0
+    λ₁ = λ₂
+
+    # Calculate norms
+    Fx_norm = norm(F(x), 2)
+    if isnan(Fx_norm)
+        throw(ErrorException("Exiting line search: 2-norm of current residuals is not a number. Value is: ", Fx_norm))
+    elseif !isfinite(Fx_norm)
+        throw(ErrorException("Exiting line search: 2-norm of current residuals is not finite. Value is: ", Fx_norm))
     end
 
-    t = -dot(d, ∇f_x)*c
-    α, β = α_0, α_0
+    Fxλp_norm = norm(F(x - λ₂*p), 2)
 
-    iter = 0
-
-    # Preface with check for NaN. As long as NaNs remain, keep backtracking
-    # without checking for sufficient descent.
-    f_α = f(x + α*d) # initial function value
-    while !isfinite(f_α) && iter <= max_iter
-        iter += 1
-        β, α = α, α*ratio # backtrack according to specified ratio
-        f_α = f(x + α*d) # update function value
+    # If the step produces something that is not finite or a number, backtrack
+    # a maximum number of nan_max_iter number of times to try to find a suitable
+    # range of values for which F(x + λp) is well-behaved
+    if isnan(Fxλp_norm) || !isfinite(Fxλp_norm)
+         λ₁, λ₂ = nantrack(F, x, λ₂, p; β=β, nan_max_iter=nan_max_iter)
     end
 
-    while f(x + α*d) - f(x) >= α*t && iter <= max_iter
-        iter += 1
-        β, α = α, ratio*β # backtrack according to specified ratio
-        if verbose
-            println("α: ", α)
-            println("α*t: ", α*t)
-            println("Value at α: ", f(x + α*d))
-        end
-    end
+    j = 0
+    converged = norm(F(x + λ₂*p), 2) <= Fx_norm - σ₁*norm(λ₂*p, 2)^2 + η*norm(F(x), 2)
 
-    if iter >= max_iter
-        if verbose
-            println("max_iter exceeded in backtracking")
-        end
-    end
+    while j < max_iter && !converged
+        j += 1
 
-    if verbose
-        println("Exiting line search with step size: ", α)
+        λ₁, λ₂ = λ₂, β*λ₂
+        Fxλp_norm = norm(F(x - λ₂*p), 2)
+
+        converged = norm(F(x + λ₂*p), 2) <= Fx_norm - σ₁*norm(λ₂*p, 2)^2 + η*norm(F(x), 2)
     end
-    return α
+    if j >= max_iter && !converged
+        throw(ErrorException("Exiting line search: failed to satisfy condition (2.4)."))
+    end
+    λ₂
+end
+
+
+function nantrack(F, x, λ₂, p; β=0.5, nan_max_iter=5)
+    i = 0
+    nan_converged = false
+    while i  <= nan_max_iter && !nan_converged
+        i +=1
+
+        λ₁, λ₂ = λ₂, β*λ₂
+        Fxλp_norm = norm(F(x - λ₂*p), 2)
+
+        converged = !isnan(Fxλp_norm)
+    end
+    if i >= nan_max_iter
+        throw(ErrorException("Exiting line search: failed to find finite 2-norm of residuals in $nan_max_iter trials."))
+    end
+    return λ₁, λ₂
 end
