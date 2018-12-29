@@ -1,5 +1,5 @@
 
-# Method for function with no Jacobian. 
+# Method for function with no Jacobian.
 function fixedpoint(f,
     initial_x::AbstractArray{T};
     method::Symbol = :anderson,
@@ -8,7 +8,7 @@ function fixedpoint(f,
     iterations::Integer = 1_000,
     store_trace::Bool = false,
     show_trace::Bool = false,
-    extended_trace::Bool = false, 
+    extended_trace::Bool = false,
     linesearch = LineSearches.Static(),
     factor::Real = one(T),
     autoscale::Bool = true,
@@ -17,18 +17,18 @@ function fixedpoint(f,
     autodiff::Symbol = :central,
     inplace::Bool = !applicable(f, initial_x)) where T
     # Check for weird case. (Causes to hang for now)
-    # typeof(f) <: Union{InplaceObjective, NotInplaceObjective} ? error("Union{InplaceObjective, NotInplaceObjective} Case") : true; 
-    # Wrapping 
+    # typeof(f) <: Union{InplaceObjective, NotInplaceObjective} ? error("Union{InplaceObjective, NotInplaceObjective} Case") : true;
+    # Wrapping
     if inplace
         function g!(out, x)
-            f(out, x); 
+            f(out, x);
             out .-= x;
-        end 
-        dg = OnceDifferentiable(g!, initial_x, initial_x, autodiff) 
-    else 
+        end
+        dg = OnceDifferentiable(g!, initial_x, similar(initial_x), autodiff)
+    else
         g(x) = f(x) - x;
-        dg = OnceDifferentiable(g, initial_x, initial_x; autodiff = autodiff, inplace = inplace)
-    end 
+        dg = OnceDifferentiable(g, initial_x, similar(initial_x); autodiff = autodiff, inplace = inplace)
+    end
 
     return nlsolve(dg,
             initial_x, method = method, xtol = xtol, ftol = ftol,
@@ -36,8 +36,4 @@ function fixedpoint(f,
             show_trace = show_trace, extended_trace = extended_trace,
             linesearch = linesearch, factor = factor, autoscale = autoscale,
             m = m, beta = beta)
-end 
-
-
-
-
+end

@@ -34,7 +34,7 @@ function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
     n = length(initial_x)
     x = vec(copy(initial_x))
 
-    value!(df, x)
+    value!!(df, x)
 
     vecvalue = vec(value(df))
     fold, xold = similar(vecvalue), similar(x)
@@ -108,7 +108,7 @@ function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
     return SolverResults("broyden without line-search",
                          initial_x, copyto!(similar(initial_x), x), norm(value(df), Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
-                         first(df.f_calls), first(df.df_calls))
+                         first(df.f_calls), 0)
 end
 
 function broyden(df::Union{NonDifferentiable, OnceDifferentiable},

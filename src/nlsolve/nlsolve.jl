@@ -53,16 +53,16 @@ function nlsolve(f,
                  linsolve=(x, A, b) -> copyto!(x, A\b),
                  inplace = !applicable(f, initial_x)) where T
     if typeof(f) <: Union{InplaceObjective, NotInplaceObjective}
-        if !(method == :anderson)
-            df = OnceDifferentiable(f, initial_x, initial_x)
+        if !(method in (:anderson, :broyden))
+            df = OnceDifferentiable(f, initial_x, similar(initial_x); autodiff=autodiff, inplace=inplace)
         else
-            df = NonDifferentiable(f, initial_x, initial_x)
+            df = NonDifferentiable(f, initial_x, similar(initial_x); inplace=inplace)
         end
     else
-        if !(method == :anderson)
-            df = OnceDifferentiable(f, initial_x, initial_x; autodiff=autodiff, inplace=inplace)
+        if !(method in (:anderson, :broyden))
+            df = OnceDifferentiable(f, initial_x, similar(initial_x); autodiff=autodiff, inplace=inplace)
         else
-            df = NonDifferentiable(f, initial_x, initial_x; inplace=inplace)
+            df = NonDifferentiable(f, initial_x, similar(initial_x); inplace=inplace)
         end
     end
 
@@ -93,9 +93,9 @@ function nlsolve(f,
                 inplace = !applicable(f, initial_x),
                 linsolve=(x, A, b) -> copyto!(x, A\b)) where T
     if inplace
-        df = OnceDifferentiable(f, j, initial_x, initial_x)
+        df = OnceDifferentiable(f, j, initial_x, similar(initial_x))
     else
-        df = OnceDifferentiable(not_in_place(f, j)..., initial_x, initial_x)
+        df = OnceDifferentiable(not_in_place(f, j)..., initial_x, similar(initial_x))
     end
     nlsolve(df,
     initial_x, method = method, xtol = xtol, ftol = ftol,
@@ -124,9 +124,9 @@ function nlsolve(f,
                 inplace = !applicable(f, initial_x),
                 linsolve=(x, A, b) -> copyto!(x, A\b)) where T
     if inplace
-        df = OnceDifferentiable(f, j, fj, initial_x, initial_x)
+        df = OnceDifferentiable(f, j, fj, initial_x, similar(initial_x))
     else
-        df = OnceDifferentiable(not_in_place(f, j, fj)..., initial_x, initial_x)
+        df = OnceDifferentiable(not_in_place(f, j, fj)..., initial_x, similar(initial_x))
     end
     nlsolve(df,
     initial_x, method = method, xtol = xtol, ftol = ftol,
