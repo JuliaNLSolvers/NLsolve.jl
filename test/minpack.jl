@@ -511,6 +511,7 @@ alltests = [rosenbrock();
            ]
 
 TESTS_FAIL_NEWTON = ["Trigonometric", "Chebyquad", "Brown almost-linear"]
+TESTS_FAIL_BROYDEN = ["Powell singular", "Wood", "Trigonometric", "Watson"]# ["Rosenbrock", "Powell singular", "Powell badly scaled", "Trigonometric", "Watson"]
 
 if PRINT_FILE; f_out = open("minpack_results.dat", "w"); end
 
@@ -526,25 +527,40 @@ end
 
 
 for (df, initial, name) in alltests
-    for method in (:trust_region, :newton)
+    for method in (:trust_region, :newton, :broyden)
+        if method == :broyden
+            obj = NonDifferentiable(df.f, initial, initial)
+        else
+            obj = OnceDifferentiable(df.f, initial, initial)
+        end
         if method == :newton && name in TESTS_FAIL_NEWTON
             continue
         end
-        tot_time = @elapsed r = nlsolve(df, initial, method = method)
+        if method == :broyden
+            if name in TESTS_FAIL_BROYDEN
+                continue
+            end
+            tot_time = @elapsed r = nlsolve(obj, initial, method = method)
+        else
+            tot_time = @elapsed r = nlsolve(obj, initial, method = method)
+        end
         @printf("%-45s   %5d   %5d   %5d   %14e   %10e\n", name*"-"*string(method), length(initial),
-                r.f_calls, r.g_calls, r.residual_norm, tot_time)
+        r.f_calls, r.g_calls, r.residual_norm, tot_time)
         @test converged(r)
         # with autodiff
-        tot_time2 = @elapsed r_AD = nlsolve(df.f, initial, method = method, autodiff = :forward)
-        @printf("%-45s   %5d   %5d   %5d   %14e   %10e\n", name*"-"*string(method)*"-AD",
-                length(initial), r_AD.f_calls, r_AD.g_calls, r_AD.residual_norm, tot_time)
+        if !(method == :broyden)
+            tot_time2 = @elapsed r_AD = nlsolve(obj.f, initial, method = method, autodiff = :forward)
+            @printf("%-45s   %5d   %5d   %5d   %14e   %10e\n", name*"-"*string(method)*"-AD",
+                    length(initial), r_AD.f_calls, r_AD.g_calls, r_AD.residual_norm, tot_time)
+            @test converged(r_AD)
+        end
+        # Fix this to work with ndf
         if PRINT_FILE
             @printf(f_out, "%-45s   %5d   %5d   %5d   %14e\n", name*"-"*string(method)*"-AD", length(initial),
                     r_AD.f_calls, r_AD.g_calls, r_AD.residual_norm)
             @printf(f_out, "%-45s   %5d   %5d   %5d   %14e\n", name*"-"*string(method), length(initial),
                     r.f_calls, r.g_calls, r.residual_norm)
         end
-        @test converged(r_AD)
     end
 end
 

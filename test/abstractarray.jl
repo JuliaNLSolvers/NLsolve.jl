@@ -36,7 +36,7 @@ initial_x_matrix = [-3. -3; -1 -1]
 initial_x = vec(initial_x_matrix)
 #initial_x_wrapped = WrappedArray(initial_x_matrix)
 
-for method in (:trust_region, :newton, :anderson)
+for method in (:trust_region, :newton, :anderson, :broyden)
     r = nlsolve(f!, j!, initial_x, method = method)
     r_matrix = nlsolve(f!, j!, initial_x_matrix, method = method)
     #r_wrapped = nlsolve(f!, j!, initial_x_wrapped, method = method)
@@ -48,9 +48,8 @@ for method in (:trust_region, :newton, :anderson)
     @test typeof(r.zero) == typeof(initial_x)
     @test typeof(r_matrix.zero) == typeof(initial_x_matrix)
     #@test typeof(r_wrapped.zero) == typeof(initial_x_wrapped)
-
-    r_AD = nlsolve(f!, initial_x, method = method, autodiff = :forward)
-    r_matrix_AD = nlsolve(f!, initial_x_matrix, method = method, autodiff = :forward)
+    @show r_AD = nlsolve(f!, initial_x, method = method, autodiff = :forward)
+    @show r_matrix_AD = nlsolve(f!, initial_x_matrix, method = method, autodiff = :forward)
     #r_wrapped_AD = nlsolve(f!, initial_x_wrapped, method = method, autodiff = :forward)
 
     @test r_AD.zero == vec(r_matrix_AD.zero)

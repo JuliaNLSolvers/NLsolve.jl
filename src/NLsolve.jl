@@ -43,6 +43,7 @@ show(io::IO, e::IsFiniteException) = print(io,
 include("objectives/helpers.jl")
 
 include("solvers/newton.jl")
+include("solvers/broyden.jl")
 include("solvers/trust_region.jl")
 include("solvers/anderson.jl")
 include("solvers/mcp_func_defs.jl")

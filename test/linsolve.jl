@@ -19,6 +19,8 @@
     df = prob[1]
     res_gmres_solve = nlsolve(df, prob[2]; method=:newton, linsolve = gmres!)
     @test res_gmres_solve.zero ≈ res_default_solve.zero
+    prob = rosenbrock()
+    df = prob[1]
     res_idrs_solve = nlsolve(df, prob[2]; method=:newton, linsolve = idrs!)
     @test res_idrs_solve.zero ≈ res_default_solve.zero
     testy = [false]
@@ -26,6 +28,8 @@
         testy[1] = true
         gmres!(x, A, b)
     end
+    prob = rosenbrock()
+    df = prob[1]
     nlsolve(df, prob[2]; method=:newton, linsolve = loud_solve)
     @test testy[1] == true
 end
