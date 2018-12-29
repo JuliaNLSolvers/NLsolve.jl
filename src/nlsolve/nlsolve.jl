@@ -12,7 +12,7 @@ function nlsolve(df::TDF,
                  factor::Real = one(T),
                  autoscale::Bool = true,
                  m::Integer = 0,
-                 beta::Real = 1.0) where {T, TDF <: OnceDifferentiable}
+                 beta::Real = 1.0) where {T, TDF <: Union{NonDifferentiable, OnceDifferentiable}}
     if show_trace
         @printf "Iter     f(x) inf-norm    Step 2-norm \n"
         @printf "------   --------------   --------------\n"
@@ -53,12 +53,16 @@ function nlsolve(f,
                  linsolve=(x, A, b) -> copyto!(x, A\b),
                  inplace = !applicable(f, initial_x)) where T
     if typeof(f) <: Union{InplaceObjective, NotInplaceObjective}
-        df = OnceDifferentiable(f, initial_x, initial_x)
-    else
-        if inplace
-            df = OnceDifferentiable(f, initial_x, initial_x, autodiff)
+        if !(method == :anderson)
+            df = OnceDifferentiable(f, initial_x, initial_x)
         else
-            df = OnceDifferentiable(not_in_place(f), initial_x, initial_x, autodiff)
+            df = NonDifferentiable(f, initial_x, initial_x)
+        end
+    else
+        if !(method == :anderson)
+            df = OnceDifferentiable(f, initial_x, initial_x; autodiff=autodiff, inplace=inplace)
+        else
+            df = NonDifferentiable(f, initial_x, initial_x; inplace=inplace)
         end
     end
 
