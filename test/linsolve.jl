@@ -17,7 +17,7 @@
     res_default_solve = nlsolve(df, prob[2]; method=:newton)
     prob = rosenbrock()
     df = prob[1]
-    res_gmres_solve = nlsolve(df, prob[2]; method=:newton, linsolve = gmres!)
+    res_gmres_solve = nlsolve(df, prob[2]; method=:newton, linsolve = (x, A, b)->gmres!(x, A, b; verbose=true))
     @test res_gmres_solve.zero ≈ res_default_solve.zero
     prob = rosenbrock()
     df = prob[1]
