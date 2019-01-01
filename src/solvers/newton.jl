@@ -54,6 +54,7 @@ function newton_(df::OnceDifferentiable,
     n = length(initial_x)
     copyto!(cache.x, initial_x)
     value_jacobian!!(df, cache.x)
+    push!(arr, value(df))
     check_isfinite(value(df))
     vecvalue = vec(value(df))
     it = 0
