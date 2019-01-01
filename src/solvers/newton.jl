@@ -96,8 +96,9 @@ function newton_(df::OnceDifferentiable,
         end
 
         try
+            push!(arr, (it, jacobian(df), vec(value(df))))
             mul!(vec(cache.g), transpose(jacobian(df)), vec(value(df)))
-            push!(arr, (jacobian(df), vec(value(df))))
+            push!(arr, (it, jacobian(df), vec(value(df))))
             linsolve(cache.p, jacobian(df), vec(value(df)))
             rmul!(cache.p, -1)
         catch e
