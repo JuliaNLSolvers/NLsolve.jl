@@ -21,24 +21,22 @@ function no_linesearch(dfo, xold, p, x, lsr, alpha, mayterminate)
     return 0.0, 0, 0
 end
 
-macro newtontrace(stepnorm)
-    esc(quote
-        if tracing
-            dt = Dict()
-            if extended_trace
-                dt["x"] = copy(cache.x)
-                dt["f(x)"] = copy(value(df))
-                dt["g(x)"] = copy(jacobian(df))
-            end
-            update!(tr,
-                    it,
-                    maximum(abs, value(df)),
-                    $stepnorm,
-                    dt,
-                    store_trace,
-                    show_trace)
+function newtontrace(stepnorm, tracing, extended_trace, cache, df, it, tr, store_trace, show_trace)
+    if tracing
+        dt = Dict()
+        if extended_trace
+            dt["x"] = copy(cache.x)
+            dt["f(x)"] = copy(value(df))
+            dt["g(x)"] = copy(jacobian(df))
         end
-    end)
+        update!(tr,
+                it,
+                maximum(abs, value(df)),
+                stepnorm,
+                dt,
+                store_trace,
+                show_trace)
+    end
 end
 
 function newton_(df::OnceDifferentiable,
@@ -62,7 +60,7 @@ function newton_(df::OnceDifferentiable,
     x_ls = copy(cache.x)
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
-    @newtontrace convert(T, NaN)
+    newtontrace(convert(T, NaN), tracing, extended_trace, cache, df, it, tr, store_trace, show_trace)
 
     # Create objective function for the linesearch.
     # This function is defined as fo(x) = 0.5 * f(x) ⋅ f(x) and thus
@@ -121,9 +119,8 @@ function newton_(df::OnceDifferentiable,
         copyto!(cache.x, x_ls)
         x_converged, f_converged, converged = assess_convergence(cache.x, cache.xold, value(df), xtol, ftol)
 
-        @newtontrace sqeuclidean(cache.x, cache.xold)
+        newtontrace(sqeuclidean(cache.x, cache.xold), tracing, extended_trace, cache, df, it, tr, store_trace, show_trace)
     end
-
     return SolverResults("Newton with line-search",
                          initial_x, copy(cache.x), norm(value(df), Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
