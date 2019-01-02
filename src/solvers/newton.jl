@@ -50,12 +50,9 @@ function newton_(df::OnceDifferentiable,
                     linesearch,
                     linsolve,
                     cache = NewtonCache(df)) where T
-    arr = []
     n = length(initial_x)
     copyto!(cache.x, initial_x)
-    push!(arr, (0.1, copy(cache.x), copy(initial_x), copy(value(df)), copy(jacobian(df))))
     value_jacobian!!(df, cache.x)
-    push!(arr, (0.2, copy(cache.x), copy(initial_x), copy(value(df)), copy(jacobian(df))))
     check_isfinite(value(df))
     vecvalue = vec(value(df))
     it = 0
@@ -98,9 +95,7 @@ function newton_(df::OnceDifferentiable,
         end
 
         try
-            push!(arr, (it, copy(jacobian(df)), copy(vec(value(df)))))
             mul!(vec(cache.g), transpose(jacobian(df)), vec(value(df)))
-            push!(arr, (it, copy(jacobian(df)), copy(vec(value(df)))))
             linsolve(cache.p, jacobian(df), vec(value(df)))
             rmul!(cache.p, -1)
         catch e
@@ -126,7 +121,6 @@ function newton_(df::OnceDifferentiable,
 
         newtontrace(sqeuclidean(cache.x, cache.xold), tracing, extended_trace, cache, df, it, tr, store_trace, show_trace)
     end
-    println(arr)
     return SolverResults("Newton with line-search",
                          initial_x, copy(cache.x), norm(value(df), Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
