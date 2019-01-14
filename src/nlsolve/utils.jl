@@ -20,8 +20,14 @@ function assess_convergence(x,
         x_converged = true
     end
 
-    if maximum(abs, f) <= ftol
-        f_converged = true
+    if ftol isa AbstractArray
+        if all( f .< ftol )
+          f_converged = true
+        end
+    else
+        if maximum(abs, f) <= ftol
+          f_converged = true
+        end
     end
 
     converged = x_converged || f_converged
