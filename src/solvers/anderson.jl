@@ -36,7 +36,7 @@ end
 @views function anderson_(df::Union{NonDifferentiable, OnceDifferentiable},
                              x0::AbstractArray{T},
                              xtol::T,
-                             ftol::T,
+                             ftol::Union{T,AbstractArray{T}},
                              iterations::Integer,
                              store_trace::Bool,
                              show_trace::Bool,
@@ -124,7 +124,7 @@ end
 function anderson(df::Union{NonDifferentiable, OnceDifferentiable},
                      initial_x::AbstractArray{T},
                      xtol::Real,
-                     ftol::Real,
+                     ftol::Union{Real,AbstractArray{<:Real}},
                      iterations::Integer,
                      store_trace::Bool,
                      show_trace::Bool,
@@ -132,5 +132,5 @@ function anderson(df::Union{NonDifferentiable, OnceDifferentiable},
                      m::Integer,
                      beta::Real,
                      cache = AndersonCache(df, Anderson(m, beta))) where T
-    anderson_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, m, beta, cache)
+    anderson_(df, initial_x, convert(T, xtol), convert.(T, ftol), iterations, store_trace, show_trace, extended_trace, m, beta, cache)
 end

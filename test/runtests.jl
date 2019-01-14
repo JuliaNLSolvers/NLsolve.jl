@@ -38,7 +38,8 @@ else
              "no_linesearch.jl",
              "abstractarray.jl",
              "interface/caches.jl",
-             "fixedpoint/fixedpoint.jl"]
+             "fixedpoint/fixedpoint.jl",
+             "tolerances.jl"]
 end
 
 println("Running tests:")

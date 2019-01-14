@@ -21,9 +21,9 @@ function assess_convergence(x,
     end
 
     if all( abs.(f) .<= ftol )
-      f_converged = true
+        f_converged = true
     end
-    
+
     converged = x_converged || f_converged
 
     return x_converged, f_converged, converged

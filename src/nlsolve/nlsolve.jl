@@ -2,7 +2,7 @@ function nlsolve(df::TDF,
                  initial_x::AbstractArray{T};
                  method::Symbol = :trust_region,
                  xtol::Real = zero(T),
-                 ftol::Real = convert(T,1e-8),
+                 ftol::Union{Real, AbstractArray{<:Real}} = convert(T,1e-8),
                  iterations::Integer = 1_000,
                  store_trace::Bool = false,
                  show_trace::Bool = false,

@@ -65,7 +65,7 @@ function update!(tr::SolverTrace,
     return
 end
 
-mutable struct SolverResults{T,I<:AbstractArray{T},Z<:AbstractArray{T}}
+mutable struct SolverResults{T,I<:AbstractArray{T},Z<:AbstractArray{T},F<:Union{T,AbstractArray{T}}}
     method::String
     initial_x::I
     zero::Z
@@ -74,7 +74,7 @@ mutable struct SolverResults{T,I<:AbstractArray{T},Z<:AbstractArray{T}}
     x_converged::Bool
     xtol::T
     f_converged::Bool
-    ftol::T
+    ftol::F
     trace::SolverTrace
     f_calls::Int
     g_calls::Int

@@ -107,7 +107,7 @@ end
 function trust_region_(df::OnceDifferentiable,
                           initial_x::AbstractArray{T},
                           xtol::T,
-                          ftol::T,
+                          ftol::Union{T,AbstractArray{T}},
                           iterations::Integer,
                           store_trace::Bool,
                           show_trace::Bool,
@@ -218,7 +218,7 @@ end
 function trust_region(df::OnceDifferentiable,
                          initial_x::AbstractArray{T},
                          xtol::Real,
-                         ftol::Real,
+                         ftol::Union{Real,AbstractArray{<:Real}},
                          iterations::Integer,
                          store_trace::Bool,
                          show_trace::Bool,
@@ -226,5 +226,5 @@ function trust_region(df::OnceDifferentiable,
                          factor::Real,
                          autoscale::Bool,
                          cache = NewtonTrustRegionCache(df)) where T
-    trust_region_(df, initial_x, convert(T,xtol), convert(T,ftol), iterations, store_trace, show_trace, extended_trace, convert(T,factor), autoscale, cache)
+    trust_region_(df, initial_x, convert(T,xtol), convert.(T,ftol), iterations, store_trace, show_trace, extended_trace, convert(T,factor), autoscale, cache)
 end

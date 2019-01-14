@@ -24,7 +24,7 @@ end
 function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
                     initial_x::AbstractArray{T},
                     xtol::T,
-                    ftol::T,
+                    ftol::Union{T,AbstractArray{T}},
                     iterations::Integer,
                     store_trace::Bool,
                     show_trace::Bool,
@@ -114,13 +114,13 @@ end
 function broyden(df::Union{NonDifferentiable, OnceDifferentiable},
                    initial_x::AbstractArray{T},
                    xtol::Real,
-                   ftol::Real,
+                   ftol::Union{Real,AbstractArray{<:Real}},
                    iterations::Integer,
                    store_trace::Bool,
                    show_trace::Bool,
                    extended_trace::Bool,
                    linesearch) where T
-    broyden_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch)
+    broyden_(df, initial_x, convert(T, xtol), convert.(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch)
 end
 
 # A derivative-free line search and global convergence

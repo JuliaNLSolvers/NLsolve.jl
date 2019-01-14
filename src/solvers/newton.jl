@@ -42,7 +42,7 @@ end
 function newton_(df::OnceDifferentiable,
                     initial_x::AbstractArray{T},
                     xtol::T,
-                    ftol::T,
+                    ftol::Union{T,AbstractArray{T}},
                     iterations::Integer,
                     store_trace::Bool,
                     show_trace::Bool,
@@ -130,7 +130,7 @@ end
 function newton(df::OnceDifferentiable,
                    initial_x::AbstractArray{T},
                    xtol::Real,
-                   ftol::Real,
+                   ftol::Union{Real,AbstractArray{<:Real}},
                    iterations::Integer,
                    store_trace::Bool,
                    show_trace::Bool,
@@ -138,5 +138,5 @@ function newton(df::OnceDifferentiable,
                    linesearch,
                    cache = NewtonCache(df);
                    linsolve=(x, A, b) -> copyto!(x, A\b)) where T
-    newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch, linsolve, cache)
+    newton_(df, initial_x, convert(T, xtol), convert.(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch, linsolve, cache)
 end
