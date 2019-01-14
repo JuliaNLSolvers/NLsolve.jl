@@ -1,7 +1,8 @@
-julia 0.6.0
-DiffEqDiffTools
+julia 0.7.0-beta2
 Distances
-ForwardDiff 0.7.0
-LineSearches 2.1.0
+NLSolversBase 6.0.0
+LineSearches 5.0.0
 DiffBase
-NLSolversBase 4.0.0
+DiffEqDiffTools
+ForwardDiff 0.7.0
+Reexport

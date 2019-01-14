@@ -17,6 +17,8 @@ similar to systems of nonlinear equations, except that the equality to zero is
 allowed to become an inequality if some boundary condition is satisfied. See
 further below for a formal definition and the related commands.
 
+There is also an identical API for solving fixed points (i.e., taking as input a function `F(x)`, and solving `F(x) = x`).
+
 # Simple example
 
 We consider the following bivariate function of two variables:
@@ -132,9 +134,7 @@ nlsolve(df, initial_x)
 
 ### Optimization of simultaneous residuals and Jacobian
 
-If, in addition to `f!` and `j!`, you have a function `fj!(x::AbstractArray,
-F::AbstractArray, J::AbstractArray)` or `fj!(x::AbstractArray,
-F::AbstractArray, J::AbstractArray)` that computes both the residual and the
+If, in addition to `f!` and `j!`, you have a function `fj!(F::AbstractArray, J::AbstractArray, x::AbstractArray)` that computes both the residual and the
 Jacobian at the same time, you can use the following syntax
 
 ```jl
@@ -173,29 +173,31 @@ nlsolve(only_fj!(myfun), initial_x)
 
 This will make enable `nlsolve` to efficiently calculate `F(x)` and `J(x)`
 together, but still be efficient when calculating either `F(x)` or `J(x)`
-separately. 
+separately.
 
 ## With functions returning residuals and Jacobian as output
 
 Here it is assumed that you have a function `f(x::AbstractArray)` that returns
-a newly-allocated vector containing the residuals. To use such a function directly,
-use the `inplace` keyword. The `inplace` keyword in `nlsolve` defaults to `true`,
-so we have to change it to `false` to let `nlsolve` know what we're passing it
-is not coded in a mutating way:
+a newly-allocated vector containing the residuals. Simply pass it to `nlsolve`,
+and it will automatically detect if `f` is defined for one or two arguments:
 
 ```jl
-nlsolve(f, initial_x; inplace = false)
+nlsolve(f, initial_x)
 ```
+
+Note, that this means that if you have a function `f` with a method that accepts
+one argument, and another method that accepts two arguments, it will assume that
+the two argument version is a mutating `f`, such as described above.
 
 Via the `autodiff` keyword both finite-differencing and autodifferentiation can
 be used to compute the Jacobian in that case.
 
 If, in addition to `f(x::AbstractArray)`, there is a function
 `j(x::AbstractArray)` returning a newly-allocated matrix containing the
-Jacobian, we again use the `inplace` keyword:
+Jacobian, we again simply pass these to `nlsolve`:
 
 ```jl
-nlsolve(f, j, initial_x; inplace = false)
+nlsolve(f, j, initial_x)
 ```
 
 If, in addition to `f` and `j`, there is a function `fj` returning a tuple of a
@@ -203,7 +205,7 @@ newly-allocated vector of residuals and a newly-allocated matrix of the
 Jacobian, the approach is the same:
 
 ```jl
-nlsolve(f, j, fj, initial_x; inplace = false)
+nlsolve(f, j, fj, initial_x)
 ```
 
 ## With functions taking several scalar arguments
@@ -223,7 +225,7 @@ Finite-differencing is used to compute the Jacobian.
 
 If the Jacobian of your function is sparse, it is possible to ask the routines
 to manipulate sparse matrices instead of full ones, in order to increase
-performance on large systems. This means that we must necessarily provide an 
+performance on large systems. This means that we must necessarily provide an
 appropriate Jacobian type so the solver knows what to feed `j!`.
 
 ```jl
@@ -242,9 +244,8 @@ matrix at the beginning of the function. If `J` is the sparse Jacobian, this
 can be achieved with:
 
 ```jl
-fill!(J.colptr, 1)
-empty!(J.rowval)
-empty!(J.nzval)
+fill!(a, 0)
+dropzeros!(a) # if you also want to remove the sparsity pattern
 ```
 
 # Fine tunings
@@ -284,16 +285,18 @@ vector and evaluate the function at the new point.
 
 ## Anderson acceleration
 
-Also known as DIIS or Pulay mixing, this method is based on the
-acceleration of the fixed-point iteration `xn+1 = xn + β f(xn)`, where
-by default `β=1`. It does not use Jacobian information or linesearch,
+This method is selected with `method = :anderson`.
+
+It is also known as DIIS or Pulay mixing, this method is based on the
+acceleration of the fixed-point iteration `xₙ₊₁ = xₙ + beta*f(xₙ)`, where
+by default `beta=1`. It does not use Jacobian information or linesearch,
 but has a history whose size is controlled by the `m` parameter: `m=0`
 (the default) corresponds to the simple fixed-point iteration above,
 and higher values use a larger history size to accelerate the
 iterations. Higher values of `m` usually increase the speed of
 convergence, but increase the storage and computation requirements and
 might lead to instabilities. This method is useful to accelerate a
-fixed-point iteration `xn+1 = g(xn)` (in which case use this solver
+fixed-point iteration `xₙ₊₁ = g(xₙ)` (in which case use this solver
 with `f(x) = g(x) - x`).
 
 Reference: H. Walker, P. Ni, Anderson acceleration for fixed-point
@@ -314,6 +317,16 @@ Other optional arguments to `nlsolve`, available for all algorithms, are:
   on `STDOUT`? Default: `false`.
 * `extended_trace`: should additifonal algorithm internals be added to the state
   trace? Default: `false`.
+
+## Fixed Points
+
+There is a `fixedpoint()` wrapper around `nlsolve()` which maps an input function `F(x)` to `G(x) = F(x) - x`, and likewise for the in-place. This allows convenient solution of fixed-point problems, e.g. of the kind commonly encountered in computational economics. Some notes:
+
+* The default method is `:anderson` with `m = 5`. Naive "Picard"-style iteration can be achieved by setting `m=0`, but that isn't advisable for contractions whose Lipschitz constants are close to 1. If convergence fails, though, you may consider lowering it.
+* Autodifferentiation is supported; e.g. `fixedpoint(f!, init_x; method = :newton, autodiff = :true)`.
+* Tolerances and iteration bounds can be set exactly as in `nlsolve()`, since this function is a wrapper, e.g. `fixedpoint(f, init_x; iterations = 500, ...)`.
+
+**Note:** If you are supplying your own derivative, make sure that it is appropriately transformed (i.e., we currently map `f -> f - x`, but are waiting on the API to stabilize before mapping `J -> J - I`, so you'll need to do that yourself.)
 
 # Mixed complementarity problems
 
@@ -360,7 +373,7 @@ function f!(F, x)
 end
 
 r = mcpsolve(f!, [0., 0., 0., 0.], [Inf, Inf, Inf, Inf],
-             [1.25, 0., 0., 0.5], reformulation = :smooth, autodiff = true)
+             [1.25, 0., 0., 0.5], reformulation = :smooth, autodiff = :forward)
 ```
 
 The solution is:

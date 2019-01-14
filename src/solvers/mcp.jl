@@ -55,7 +55,7 @@ function mcp_smooth(df::OnceDifferentiable,
 
         sqminus = sqrt.(phiplus.^2 .+ (x .- lower).^2)
 
-        dminus_du = 1.-phiplus./sqminus
+        dminus_du = 1 .- phiplus ./ sqminus
 
         dminus_dv = similar(x)
         for i = 1:length(x)

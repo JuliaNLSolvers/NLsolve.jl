@@ -11,7 +11,7 @@
 
 
 # If the results should be printed to a
-const PRINT_FILE = false
+PRINT_FILE = false
 
 @testset "minpack" begin
 
@@ -51,8 +51,8 @@ function powell_singular()
 end
 
 function powell_badly_scaled()
-    const c1 = 1e4
-    const c2 = 1.0001
+    c1 = 1e4
+    c2 = 1.0001
     function f!(fvec, x)
         fvec[1] = c1*x[1]*x[2] - 1
         fvec[2] = exp(-x[1]) + exp(-x[2]) - c2
@@ -67,10 +67,10 @@ function powell_badly_scaled()
 end
 
 function wood()
-    const c3 = 2e2
-    const c4 = 2.02e1
-    const c5 = 1.98e1
-    const c6 = 1.8e2
+    c3 = 2e2
+    c4 = 2.02e1
+    c5 = 1.98e1
+    c6 = 1.8e2
 
     function f!(fvec, x)
         temp1 = x[2] - x[1]^2
@@ -100,9 +100,9 @@ function wood()
 end
 
 function helical_valley()
-    const tpi = 8*atan(1)
-    const c7 = 2.5e-1
-    const c8 = 5e-1
+    tpi = 8*atan(1)
+    c7 = 2.5e-1
+    c8 = 5e-1
 
     function f!(fvec, x)
         if x[1] > 0
@@ -136,7 +136,7 @@ function helical_valley()
 end
 
 function watson(n::Integer)
-    const c9 = 2.9e1
+    c9 = 2.9e1
 
     function f!(fvec, x)
         fill!(fvec, 0)
@@ -211,7 +211,7 @@ function watson(n::Integer)
 end
 
 function chebyquad(n::Integer)
-    const tk = 1/n
+    tk = 1/n
 
     function f!(fvec, x)
         fill!(fvec, 0)
@@ -268,7 +268,7 @@ function brown_almost_linear(n::Integer)
 
     function j!(fjac, x)
         fill!(fjac, 1)
-        fjac[diagind(fjac)] = 2
+        fjac[diagind(fjac)] .= 2
         prd = prod(x)
         for j = 1:n
             if x[j] == 0.0
@@ -287,7 +287,7 @@ function brown_almost_linear(n::Integer)
 end
 
 function discrete_boundary_value(n::Integer)
-    const h = 1/(n+1)
+    h = 1/(n+1)
 
     function f!(fvec, x)
         for k = 1:n
@@ -328,7 +328,7 @@ function discrete_boundary_value(n::Integer)
 end
 
 function discrete_integral_equation(n::Integer)
-    const h = 1/(n+1)
+    h = 1/(n+1)
 
     function f!(fvec, x)
         for k = 1:n
@@ -453,8 +453,8 @@ function broyden_tridiagonal(n::Integer)
 end
 
 function broyden_banded(n::Integer)
-    const ml = 5
-    const mu = 1
+    ml = 5
+    mu = 1
 
     function f!(fvec, x)
         for k = 1:n
@@ -511,6 +511,7 @@ alltests = [rosenbrock();
            ]
 
 TESTS_FAIL_NEWTON = ["Trigonometric", "Chebyquad", "Brown almost-linear"]
+TESTS_FAIL_BROYDEN = ["Powell singular", "Wood", "Trigonometric", "Watson"]# ["Rosenbrock", "Powell singular", "Powell badly scaled", "Trigonometric", "Watson"]
 
 if PRINT_FILE; f_out = open("minpack_results.dat", "w"); end
 
@@ -526,25 +527,40 @@ end
 
 
 for (df, initial, name) in alltests
-    for method in (:trust_region, :newton)
+    for method in (:trust_region, :newton, :broyden)
+        if method == :broyden
+            obj = NonDifferentiable(df.f, initial, initial)
+        else
+            obj = OnceDifferentiable(df.f, initial, initial)
+        end
         if method == :newton && name in TESTS_FAIL_NEWTON
             continue
         end
-        tot_time = @elapsed r = nlsolve(df, initial, method = method)
+        if method == :broyden
+            if name in TESTS_FAIL_BROYDEN
+                continue
+            end
+            tot_time = @elapsed r = nlsolve(obj, initial, method = method)
+        else
+            tot_time = @elapsed r = nlsolve(obj, initial, method = method)
+        end
         @printf("%-45s   %5d   %5d   %5d   %14e   %10e\n", name*"-"*string(method), length(initial),
-                r.f_calls, r.g_calls, r.residual_norm, tot_time)
+        r.f_calls, r.g_calls, r.residual_norm, tot_time)
         @test converged(r)
         # with autodiff
-        tot_time2 = @elapsed r_AD = nlsolve(df.f, initial, method = method, autodiff = true)
-        @printf("%-45s   %5d   %5d   %5d   %14e   %10e\n", name*"-"*string(method)*"-AD",
-                length(initial), r_AD.f_calls, r_AD.g_calls, r_AD.residual_norm, tot_time)
+        if !(method == :broyden)
+            tot_time2 = @elapsed r_AD = nlsolve(obj.f, initial, method = method, autodiff = :forward)
+            @printf("%-45s   %5d   %5d   %5d   %14e   %10e\n", name*"-"*string(method)*"-AD",
+                    length(initial), r_AD.f_calls, r_AD.g_calls, r_AD.residual_norm, tot_time)
+            @test converged(r_AD)
+        end
+        # Fix this to work with ndf
         if PRINT_FILE
             @printf(f_out, "%-45s   %5d   %5d   %5d   %14e\n", name*"-"*string(method)*"-AD", length(initial),
                     r_AD.f_calls, r_AD.g_calls, r_AD.residual_norm)
             @printf(f_out, "%-45s   %5d   %5d   %5d   %14e\n", name*"-"*string(method), length(initial),
                     r.f_calls, r.g_calls, r.residual_norm)
         end
-        @test converged(r_AD)
     end
 end
 
