@@ -1,124 +1,178 @@
 # Notations from Walker & Ni, "Anderson acceleration for fixed-point iterations", SINUM 2011
 # Attempts to accelerate the iteration xₙ₊₁ = xₙ + beta*f(xₙ)
 
-struct Anderson{Tm, Tb}
-    m::Tm
-    beta::Tb
-end
-struct AndersonCache{Txs, Tx, Tr, Ta, Tf} <: AbstractSolverCache
-    xs::Txs
-    gs::Txs
-    old_x::Tx
-    residuals::Tr
-    alphas::Ta
-    fx::Tf
-end
-function AndersonCache(df, method::Anderson)
-    m = method.m
-    N = length(df.x_f)
-    T = eltype(df.x_f)
+struct Anderson{m} end
 
-    xs = zeros(T, N, m+1) #ring buffer storing the iterates, from newest to oldest
-    gs = zeros(T, N, m+1) #ring buffer storing the g of the iterates, from newest to oldest
-    old_x = xs[:,1]
-    if m > 0
-        residuals = zeros(T, N, m) #matrix of residuals used for the least-squares problem
-        alphas = zeros(T, m) #coefficients obtained by least-squares
-    else
-        residuals = nothing
-        alphas = nothing
-    end
-    fx = similar(df.x_f, N) # temp variable to store f!
-
-    AndersonCache(xs, gs, old_x, residuals, alphas, fx)
+struct AndersonCache{Tx,To,Tdg,Tg,TQ,TR} <: AbstractSolverCache
+    x::Tx
+    g::Tx
+    fxold::To
+    gold::To
+    Δgs::Tdg
+    γs::Tg
+    Q::TQ
+    R::TR
 end
+
+function AndersonCache(df, ::Anderson{m}) where m
+    x = similar(df.x_f)
+    g = similar(x)
+
+    fxold = similar(x)
+    gold = similar(x)
+
+    # maximum size of history
+    mmax = min(length(x), m)
+
+    # buffer storing the differences between g of the iterates, from oldest to newest
+    Δgs = [similar(x) for _ in 1:mmax]
+
+    T = eltype(x)
+    γs = Vector{T}(undef, mmax) # coefficients obtained from the least-squares problem
+
+    # matrices for QR decomposition
+    Q = Matrix{T}(undef, length(x), mmax)
+    R = Matrix{T}(undef, mmax, mmax)
+
+    AndersonCache(x, g, fxold, gold, Δgs, γs, Q, R)
+end
+
+AndersonCache(df, ::Anderson{0}) =
+    AndersonCache(similar(df.x_f), similar(df.x_f), nothing, nothing, nothing, nothing, nothing, nothing)
 
 @views function anderson_(df::Union{NonDifferentiable, OnceDifferentiable},
-                             x0::AbstractArray{T},
+                             initial_x::AbstractArray{T},
                              xtol::T,
                              ftol::T,
                              iterations::Integer,
                              store_trace::Bool,
                              show_trace::Bool,
                              extended_trace::Bool,
-                             m::Integer,
                              beta::Real,
-                             cache = AndersonCache(df, Anderson(m, beta))) where T
-    picard_iteration = cache.alphas == nothing
-    copyto!(cache.xs[:,1], x0)
-    iters = 0
+                             aa_start::Integer,
+                             droptol::Real,
+                             cache::AndersonCache) where T
+    copyto!(cache.x, initial_x)
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
+
+    aa_iteration = cache.γs !== nothing
     x_converged, f_converged, converged = false, false, false
+    m = aa_iteration ? length(cache.γs) : 0
+    aa_iteration && (m_eff = 0)
 
-    errs = zeros(iterations)
+    iter = 0
+    while iter < iterations
+        iter += 1
 
-    for n = 1:iterations
-        iters += 1
         # fixed-point iteration
-        value!!(df, cache.fx, cache.xs[:,1])
+        value!!(df, cache.x)
+        fx = value(df)
+        @. cache.g = cache.x + beta * fx
 
-        cache.gs[:,1] .= cache.xs[:,1] .+ beta.*cache.fx
-
-        x_converged, f_converged, converged = assess_convergence(cache.gs[:,1], cache.old_x, cache.fx, xtol, ftol)
-
+        # save trace
         if tracing
             dt = Dict()
             if extended_trace
-                dt["x"] = copy(cache.xs[:,1])
-                dt["f(x)"] = copy(cache.fx)
+                dt["x"] = copy(cache.x)
+                dt["f(x)"] = copy(fx)
             end
             update!(tr,
-                    n,
-                    maximum(abs,cache.fx),
-                    n > 1 ? sqeuclidean(cache.xs[:,1],cache.old_x) : convert(T,NaN),
+                    iter,
+                    maximum(abs, fx),
+                    iter > 1 ? sqeuclidean(cache.g, cache.x) : convert(T,NaN),
                     dt,
                     store_trace,
                     show_trace)
         end
 
-        if converged
-            break
-        end
+        # check convergence
+        x_converged, f_converged, converged = assess_convergence(cache.g, cache.x, fx, xtol, ftol)
+        converged && break
 
-        new_x = copy(cache.gs[:,1])
+        # define next iterate
+        copyto!(cache.x, cache.g)
 
-        if !picard_iteration
-            #update of new_x
-            m_eff = min(n-1,m)
-            if m_eff > 0
-                cache.residuals[:, 1:m_eff] .= (cache.gs[:,2:m_eff+1] .- cache.xs[:,2:m_eff+1]) .- (cache.gs[:,1] .- cache.xs[:,1])
-                cache.alphas[1:m_eff] .= cache.residuals[:,1:m_eff] \ (cache.xs[:,1] .- cache.gs[:,1])
-                for i = 1:m_eff
-                    new_x .+= cache.alphas[i].*(cache.gs[:,i+1] .- cache.gs[:,1])
+        # perform Anderson acceleration
+        if aa_iteration
+            if iter == aa_start
+                # initialize cache of residuals and g
+                copyto!(cache.fxold, fx)
+                copyto!(cache.gold, cache.g)
+            elseif iter > aa_start
+                # increase size of history
+                m_eff += 1
+
+                # remove oldest history if maximum size is exceeded
+                if m_eff > m
+                    # circularly shift differences of g
+                    ptr = cache.Δgs[1]
+                    for i in 1:(m-1)
+                        cache.Δgs[i] = cache.Δgs[i + 1]
+                    end
+                    cache.Δgs[m] = ptr
+
+                    # delete left-most column of QR decomposition
+                    qrdelete!(cache.Q, cache.R, m)
+
+                    # update size of history
+                    m_eff = m
+                end
+
+                # update history of differences of g
+                @. cache.Δgs[m_eff] = cache.g - cache.gold
+
+                # replace/add difference of residuals as right-most column to QR decomposition
+                @. cache.fxold = fx - cache.fxold
+                qradd!(cache.Q, cache.R, vec(cache.fxold), m_eff)
+
+                # update cached values
+                copyto!(cache.fxold, fx)
+                copyto!(cache.gold, cache.g)
+
+                # define current Q and R matrices
+                Q, R = view(cache.Q, :, 1:m_eff), UpperTriangular(view(cache.R, 1:m_eff, 1:m_eff))
+
+                # check condition (TODO: incremental estimation)
+                if droptol > 0
+                    while cond(R) > droptol && m_eff > 1
+                        qrdelete!(cache.Q, cache.R, m_eff)
+                        m_eff -= 1
+                        R = UpperTriangular(view(cache.R, 1:m_eff, 1:m_eff))
+                    end
+                end
+
+                # solve least squares problem
+                γs = view(cache.γs, 1:m_eff)
+                ldiv!(R, mul!(γs, Q', fx))
+
+                # update next iterate
+                for i in 1:m_eff
+                    @. cache.x -= cache.γs[i] * cache.Δgs[i]
                 end
             end
-
-            cache.xs .= circshift(cache.xs,(0,1)) # no in-place circshift, unfortunately...
-            cache.gs .= circshift(cache.gs,(0,1))
-
-            if m > 1
-                copyto!(cache.old_x, cache.xs[:,2])
-            else
-                copyto!(cache.old_x, cache.xs[:,1])
-            end
-            copyto!(cache.xs[:,1], new_x)
-        else
-            copyto!(cache.old_x, cache.xs[:,1])
-            copyto!(cache.xs[:,1], cache.gs[:,1])
         end
     end
 
-    # returning gs[:,1] rather than xs[:,1] would be better here if
-    # xₙ₊₁ = xₙ + beta*f(xₙ) is convergent, but the convergence
-    # criterion is not guaranteed
-
-    x = similar(x0) # this is done to ensure that the final x is oftype(x0)
-    copyto!(x, cache.xs[:,1])
-    return SolverResults("Anderson m=$m beta=$beta",
-                         x0, x, maximum(abs,cache.fx),
-                         iters, x_converged, xtol, f_converged, ftol, tr,
+    return SolverResults("Anderson m=$m beta=$beta aa_start=$aa_start droptol=$droptol",
+                         initial_x, copy(cache.x), norm(value(df), Inf),
+                         iter, x_converged, xtol, f_converged, ftol, tr,
                          first(df.f_calls), 0)
+end
+
+function anderson(df::Union{NonDifferentiable, OnceDifferentiable},
+                     initial_x::AbstractArray,
+                     xtol::Real,
+                     ftol::Real,
+                     iterations::Integer,
+                     store_trace::Bool,
+                     show_trace::Bool,
+                     extended_trace::Bool,
+                     m::Integer,
+                     beta::Real,
+                     aa_start::Integer,
+                     droptol::Real)
+    anderson(df, initial_x, xtol, ftol, iterations, store_trace, show_trace, extended_trace, beta, aa_start, droptol, AndersonCache(df, Anderson{m}()))
 end
 
 function anderson(df::Union{NonDifferentiable, OnceDifferentiable},
@@ -129,8 +183,9 @@ function anderson(df::Union{NonDifferentiable, OnceDifferentiable},
                      store_trace::Bool,
                      show_trace::Bool,
                      extended_trace::Bool,
-                     m::Integer,
                      beta::Real,
-                     cache = AndersonCache(df, Anderson(m, beta))) where T
-    anderson_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, m, beta, cache)
+                     aa_start::Integer,
+                     droptol::Real,
+                     cache::AndersonCache) where T
+    anderson_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, beta, aa_start, droptol, cache)
 end

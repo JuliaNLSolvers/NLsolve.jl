@@ -12,7 +12,9 @@ function nlsolve(df::TDF,
                  factor::Real = one(T),
                  autoscale::Bool = true,
                  m::Integer = 0,
-                 beta::Real = 1.0) where {T, TDF <: Union{NonDifferentiable, OnceDifferentiable}}
+                 beta::Real = 1,
+                 aa_start::Integer = 1,
+                 droptol::Real = 0) where {T, TDF <: Union{NonDifferentiable, OnceDifferentiable}}
     if show_trace
         @printf "Iter     f(x) inf-norm    Step 2-norm \n"
         @printf "------   --------------   --------------\n"
@@ -26,7 +28,7 @@ function nlsolve(df::TDF,
                      autoscale)
     elseif method == :anderson
         anderson(df, initial_x, xtol, ftol, iterations,
-                 store_trace, show_trace, extended_trace, m, beta)
+                 store_trace, show_trace, extended_trace, m, beta, aa_start, droptol)
     elseif method == :broyden
         broyden(df, initial_x, xtol, ftol, iterations,
                 store_trace, show_trace, extended_trace, linesearch)
@@ -48,7 +50,9 @@ function nlsolve(f,
                  factor::Real = one(T),
                  autoscale::Bool = true,
                  m::Integer = 0,
-                 beta::Real = 1.0,
+                 beta::Real = 1,
+                 aa_start::Integer = 1,
+                 droptol::Real = 0,
                  autodiff = :central,
                  linsolve=(x, A, b) -> copyto!(x, A\b),
                  inplace = !applicable(f, initial_x)) where T
@@ -71,7 +75,7 @@ function nlsolve(f,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
             linesearch = linesearch, factor = factor, autoscale = autoscale,
-            m = m, beta = beta, linsolve=linsolve)
+            m = m, beta = beta, aa_start = aa_start, droptol = droptol, linsolve=linsolve)
 end
 
 
@@ -89,7 +93,9 @@ function nlsolve(f,
                 factor::Real = one(T),
                 autoscale::Bool = true,
                 m::Integer = 0,
-                beta::Real = 1.0,
+                beta::Real = 1,
+                aa_start::Integer = 1,
+                droptol::Real = 0,
                 inplace = !applicable(f, initial_x),
                 linsolve=(x, A, b) -> copyto!(x, A\b)) where T
     if inplace
@@ -102,7 +108,7 @@ function nlsolve(f,
     iterations = iterations, store_trace = store_trace,
     show_trace = show_trace, extended_trace = extended_trace,
     linesearch = linesearch, factor = factor, autoscale = autoscale,
-    m = m, beta = beta, linsolve=linsolve)
+    m = m, beta = beta, aa_start = aa_start, droptol = droptol, linsolve=linsolve)
 end
 
 function nlsolve(f,
@@ -120,7 +126,9 @@ function nlsolve(f,
                 factor::Real = one(T),
                 autoscale::Bool = true,
                 m::Integer = 0,
-                beta::Real = 1.0,
+                beta::Real = 1,
+                aa_start::Integer = 1,
+                droptol::Real = 0,
                 inplace = !applicable(f, initial_x),
                 linsolve=(x, A, b) -> copyto!(x, A\b)) where T
     if inplace
@@ -133,5 +141,5 @@ function nlsolve(f,
     iterations = iterations, store_trace = store_trace,
     show_trace = show_trace, extended_trace = extended_trace,
     linesearch = linesearch, factor = factor, autoscale = autoscale,
-    m = m, beta = beta, linsolve=linsolve)
+    m = m, beta = beta, aa_start = aa_start, droptol = droptol, linsolve=linsolve)
 end
