@@ -138,7 +138,7 @@ AndersonCache(df, ::Anderson{0}) =
                     while cond(R) > droptol && m_eff > 1
                         qrdelete!(cache.Q, cache.R, m_eff)
                         m_eff -= 1
-                        R = UpperTriangular(view(cache.R, 1:m_eff, 1:m_eff))
+                        Q, R = view(cache.Q, :, 1:m_eff), UpperTriangular(view(cache.R, 1:m_eff, 1:m_eff))
                     end
                 end
 
