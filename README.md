@@ -7,6 +7,9 @@ NLsolve.jl is part of the [JuliaNLSolvers](https://github.com/JuliaNLSolvers) fa
 
 [![Build Status](https://travis-ci.org/JuliaNLSolvers/NLsolve.jl.svg?branch=master)](https://travis-ci.org/JuliaNLSolvers/NLsolve.jl)
 
+[![DOI](https://zenodo.org/badge/14562045.svg)](https://zenodo.org/badge/latestdoi/14562045)
+
+
 # Non-linear systems of equations
 The NLsolve package solves systems of nonlinear equations. Formally, if `F` is
 a multivalued function, then this package looks for some vector `x` that
