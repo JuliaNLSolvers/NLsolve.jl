@@ -412,7 +412,6 @@ julia> F
 * Broyden updating of Jacobian in trust-region
 * Homotopy methods
 * [LMMCP algorithm by C. Kanzow](http://www.mathematik.uni-wuerzburg.de/~kanzow/)
-* QR updating of the least-squares problem in the Anderson acceleration solver
 
 # Related Packages
 

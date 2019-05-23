@@ -15,11 +15,11 @@ ncp = copy(nc.p)
 r = NLsolve.newton(df, [ 1.; 1.], 0.1, 0.1, 100, false, false, false, LineSearches.Static(), nc)
 @test !(ncp == nc.p)
 
-ac = NLsolve.AndersonCache(df, NLsolve.Anderson(10, 0.9))
-ac.xs .= 22.0
-acxs = copy(ac.xs)
-r = NLsolve.anderson(df, [ 1.; 1.], 0.1, 0.1, 100, false, false, false, 10, 0.9, ac)
-@test !(acxs == ac.xs)
+ac = NLsolve.AndersonCache(df, NLsolve.Anderson{10}())
+ac.x .= 22.0
+acx = copy(ac.x)
+r = NLsolve.anderson(df, [ 1.; 1.], 0.1, 0.1, 100, false, false, false, 0.9, 1, 0, ac)
+@test !(acx == ac.x)
 
 ntc = NLsolve.NewtonTrustRegionCache(df)
 ntc.r_predict .= 22.0

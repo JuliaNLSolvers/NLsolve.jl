@@ -13,7 +13,8 @@ function fixedpoint(f,
     factor::Real = one(T),
     autoscale::Bool = true,
     m::Integer = 5,
-    beta::Real = 1.0,
+    beta::Real = 1,
+    droptol::Real = 0,
     autodiff::Symbol = :central,
     inplace::Bool = !applicable(f, initial_x)) where T
     # Check for weird case. (Causes to hang for now)
@@ -35,5 +36,5 @@ function fixedpoint(f,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
             linesearch = linesearch, factor = factor, autoscale = autoscale,
-            m = m, beta = beta)
+            m = m, beta = beta, droptol = droptol)
 end
