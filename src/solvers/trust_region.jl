@@ -106,8 +106,8 @@ end
 
 function trust_region_(df::OnceDifferentiable,
                           initial_x::AbstractArray{T},
-                          xtol::T,
-                          ftol::T,
+                          x_tol::T,
+                          f_tol::T,
                           iterations::Integer,
                           store_trace::Bool,
                           show_trace::Bool,
@@ -121,7 +121,7 @@ function trust_region_(df::OnceDifferentiable,
     check_isfinite(cache.r)
 
     it = 0
-    x_converged, f_converged, converged = assess_convergence(value(df), ftol)
+    x_converged, f_converged, converged = assess_convergence(value(df), f_tol)
     delta = convert(T, NaN)
     rho = convert(T, NaN)
     if converged
@@ -134,7 +134,7 @@ function trust_region_(df::OnceDifferentiable,
         return SolverResults(name,
         #initial_x, reshape(cache.x, size(initial_x)...), norm(cache.r, Inf),
         initial_x, copy(cache.x), norm(cache.r, Inf),
-        it, x_converged, xtol, f_converged, ftol, tr,
+        it, x_converged, x_tol, f_converged, f_tol, tr,
         first(df.f_calls), first(df.df_calls))
     end
 
@@ -187,7 +187,7 @@ function trust_region_(df::OnceDifferentiable,
                 end
             end
 
-            x_converged, f_converged, converged = assess_convergence(cache.x, cache.xold, cache.r, xtol, ftol)
+            x_converged, f_converged, converged = assess_convergence(cache.x, cache.xold, cache.r, x_tol, f_tol)
         else
             cache.x .-= cache.p
             x_converged, converged = false, false
@@ -211,14 +211,14 @@ function trust_region_(df::OnceDifferentiable,
     end
     return SolverResults(name,
                          initial_x, copy(cache.x), norm(cache.r, Inf),
-                         it, x_converged, xtol, f_converged, ftol, tr,
+                         it, x_converged, x_tol, f_converged, f_tol, tr,
                          first(df.f_calls), first(df.df_calls))
 end
 
 function trust_region(df::OnceDifferentiable,
                          initial_x::AbstractArray{T},
-                         xtol::Real,
-                         ftol::Real,
+                         x_tol::Real,
+                         f_tol::Real,
                          iterations::Integer,
                          store_trace::Bool,
                          show_trace::Bool,
@@ -226,5 +226,5 @@ function trust_region(df::OnceDifferentiable,
                          factor::Real,
                          autoscale::Bool,
                          cache = NewtonTrustRegionCache(df)) where T
-    trust_region_(df, initial_x, convert(T,xtol), convert(T,ftol), iterations, store_trace, show_trace, extended_trace, convert(T,factor), autoscale, cache)
+    trust_region_(df, initial_x, convert(T,x_tol), convert(T,f_tol), iterations, store_trace, show_trace, extended_trace, convert(T,factor), autoscale, cache)
 end

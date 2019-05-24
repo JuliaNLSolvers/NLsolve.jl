@@ -23,8 +23,8 @@ end
 
 function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
                     initial_x::AbstractArray{T},
-                    xtol::T,
-                    ftol::T,
+                    x_tol::T,
+                    f_tol::T,
                     iterations::Integer,
                     store_trace::Bool,
                     show_trace::Bool,
@@ -46,7 +46,7 @@ function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
     Jinv = Matrix{T}(I, n, n)
     check_isfinite(value(df))
     it = 0
-    x_converged, f_converged, converged = assess_convergence(value(df), ftol)
+    x_converged, f_converged, converged = assess_convergence(value(df), f_tol)
 
     # FIXME: How should this flag be set?
     mayterminate = false
@@ -99,7 +99,7 @@ function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
         end
 
         if !maybe_stuck
-            x_converged, f_converged, converged = assess_convergence(x, xold, value(df), xtol, ftol)
+            x_converged, f_converged, converged = assess_convergence(x, xold, value(df), x_tol, f_tol)
         end
 
         maybe_stuck = false
@@ -107,20 +107,20 @@ function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
     end
     return SolverResults("broyden without line-search",
                          initial_x, copyto!(similar(initial_x), x), norm(value(df), Inf),
-                         it, x_converged, xtol, f_converged, ftol, tr,
+                         it, x_converged, x_tol, f_converged, f_tol, tr,
                          first(df.f_calls), 0)
 end
 
 function broyden(df::Union{NonDifferentiable, OnceDifferentiable},
                    initial_x::AbstractArray{T},
-                   xtol::Real,
-                   ftol::Real,
+                   x_tol::Real,
+                   f_tol::Real,
                    iterations::Integer,
                    store_trace::Bool,
                    show_trace::Bool,
                    extended_trace::Bool,
                    linesearch) where T
-    broyden_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch)
+    broyden_(df, initial_x, convert(T, x_tol), convert(T, f_tol), iterations, store_trace, show_trace, extended_trace, linesearch)
 end
 
 # A derivative-free line search and global convergence
