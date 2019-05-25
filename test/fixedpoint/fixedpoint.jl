@@ -57,7 +57,7 @@ end
 # Tests against the above example.
     @test fixedpoint(f_1!, [3.4, 4.3]).zero == fixedpoint(f_1, [3.4, 4.3]; inplace = false).zero ≈ [5.0, 4.571428571428571]
     @test fixedpoint(f_1!, [3.4, 4.3]; m = 2).zero == fixedpoint(f_1, [3.4, 4.3]; inplace = false, m = 2).zero ≈ [5.0, 4.571428571428571]
-    @test fixedpoint(f_1!, [3.4, 4.3]; droptol = 5).zero == fixedpoint(f_1, [3.4, 4.3]; inplace = false, droptol = 5).zero ≈ [5.0, 4.571428571428571] 
+    @test fixedpoint(f_1!, [3.4, 4.3]; droptol = 5).zero == fixedpoint(f_1, [3.4, 4.3]; inplace = false, droptol = 5).zero ≈ [5.0, 4.571428571428571]
 
 # Tests for some common functions.
     # x -> sin.(x)
@@ -65,8 +65,8 @@ end
     f_2! = make_inplace(f_2)
     srand = 123 # For determinism in the random tests.
     init_x2 = rand(Float64, 4)
-    @test fixedpoint(f_2!, init_x2; iterations = 10000, ftol = 1e-15).zero == fixedpoint(f_2, init_x2; inplace = false, iterations = 10000, ftol = 1e-15).zero
-    @test isapprox(fixedpoint(f_2!, init_x2; iterations = 10000, ftol = 1e-15).zero, zeros(Float64, 4), atol = 1e-10)
+    @test fixedpoint(f_2!, init_x2; iterations = 10000, f_tol = 1e-15).zero == fixedpoint(f_2, init_x2; inplace = false, iterations = 10000, f_tol = 1e-15).zero
+    @test isapprox(fixedpoint(f_2!, init_x2; iterations = 10000, f_tol = 1e-15).zero, zeros(Float64, 4), atol = 1e-10)
     # x -> exp(-x)
     f_3 = x -> exp.(-x)
     f_3! = make_inplace(f_3)
@@ -92,12 +92,12 @@ end
 =#
     # default behavior
     foo = x -> 0.5 * x
-    @test norm(fixedpoint(foo, init_x2, xtol = 1e-10, ftol = 0.0).zero) ≈ 0.0 atol = 1e-10
+    @test norm(fixedpoint(foo, init_x2, x_tol = 1e-10, f_tol = 0.0).zero) ≈ 0.0 atol = 1e-10
     bar = make_inplace(foo)
-    @test norm(fixedpoint(bar, init_x2, xtol = 1e-10, ftol = 0.0).zero) ≈ 0.0 atol = 1e-10
+    @test norm(fixedpoint(bar, init_x2, x_tol = 1e-10, f_tol = 0.0).zero) ≈ 0.0 atol = 1e-10
     # error handling
-    @test_throws MethodError fixedpoint(foo, init_x2, xtol = 1e-10, ftol = 0.0, inplace = true).zero
-    @test_throws MethodError fixedpoint(bar, init_x2, xtol = 1e-10, ftol = 0.0, inplace = false).zero
+    @test_throws MethodError fixedpoint(foo, init_x2, x_tol = 1e-10, f_tol = 0.0, inplace = true).zero
+    @test_throws MethodError fixedpoint(bar, init_x2, x_tol = 1e-10, f_tol = 0.0, inplace = false).zero
     # concurrency tests
     baz(x) = 0.5*x
     function baz(out, x)

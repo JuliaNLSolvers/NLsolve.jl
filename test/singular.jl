@@ -20,7 +20,7 @@ df = OnceDifferentiable(f_sinj!, g_sinj!, [3.0, 0.0], [3.0, 0.0])
 df32 = OnceDifferentiable(f_sinj!, g_sinj!, [3.0f0, 0.0f0], [3.0f0, 0.0f0])
 
 # Test disabled, not stable across runs
-r = nlsolve(df, [ 3.0; 0], method = :newton, ftol = 1e-5)
+r = nlsolve(df, [ 3.0; 0], method = :newton, f_tol = 1e-5)
 #@assert converged(r)
 #@assert norm(r.zero) < 1e-5
 
