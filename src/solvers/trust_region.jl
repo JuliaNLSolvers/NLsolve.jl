@@ -105,16 +105,16 @@ function dogleg!(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i,
 end
 
 function trust_region_(df::OnceDifferentiable,
-                          initial_x::AbstractArray{T},
-                          xtol::T,
-                          ftol::T,
-                          iterations::Integer,
-                          store_trace::Bool,
-                          show_trace::Bool,
-                          extended_trace::Bool,
-                          factor::T,
-                          autoscale::Bool,
-                          cache = NewtonTrustRegionCache(df)) where T
+                       initial_x::AbstractArray{T},
+                       xtol::Real,
+                       ftol::Real,
+                       iterations::Integer,
+                       store_trace::Bool,
+                       show_trace::Bool,
+                       extended_trace::Bool,
+                       factor::Real,
+                       autoscale::Bool,
+                       cache = NewtonTrustRegionCache(df)) where T
     copyto!(cache.x, initial_x)
     value_jacobian!!(df, cache.x)
     cache.r .= value(df)
@@ -122,8 +122,8 @@ function trust_region_(df::OnceDifferentiable,
 
     it = 0
     x_converged, f_converged, converged = assess_convergence(value(df), ftol)
-    delta = convert(T, NaN)
-    rho = convert(T, NaN)
+    delta = convert(real(T), NaN)
+    rho = convert(real(T), NaN)
     if converged
         tr = SolverTrace()
         name = "Trust-region with dogleg"
@@ -140,25 +140,25 @@ function trust_region_(df::OnceDifferentiable,
 
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
-    @trustregiontrace convert(T, NaN)
+    @trustregiontrace convert(real(T), NaN)
     nn = length(cache.x)
     if autoscale
         for j = 1:nn
             cache.d[j] = norm(view(jacobian(df), :, j))
-            if cache.d[j] == zero(T)
-                cache.d[j] = one(T)
+            if cache.d[j] == zero(cache.d[j])
+                cache.d[j] = one(cache.d[j])
             end
         end
     else
-        fill!(cache.d, one(T))
+        fill!(cache.d, one(real(T)))
     end
 
     delta = factor * wnorm(cache.d, cache.x)
-    if delta == zero(T)
+    if delta == zero(delta)
         delta = factor
     end
 
-    eta = convert(T, 1e-4)
+    eta = convert(real(T), 1e-4)
 
     while !converged && it < iterations
         it += 1
@@ -183,7 +183,7 @@ function trust_region_(df::OnceDifferentiable,
             # Update scaling vector
             if autoscale
                 for j = 1:nn
-                    cache.d[j] = max(convert(T, 0.1) * cache.d[j], norm(view(jacobian(df), :, j)))
+                    cache.d[j] = max(convert(real(T), 0.1) * real(cache.d[j]), norm(view(jacobian(df), :, j)))
                 end
             end
 
@@ -216,15 +216,15 @@ function trust_region_(df::OnceDifferentiable,
 end
 
 function trust_region(df::OnceDifferentiable,
-                         initial_x::AbstractArray{T},
-                         xtol::Real,
-                         ftol::Real,
-                         iterations::Integer,
-                         store_trace::Bool,
-                         show_trace::Bool,
-                         extended_trace::Bool,
-                         factor::Real,
-                         autoscale::Bool,
-                         cache = NewtonTrustRegionCache(df)) where T
-    trust_region_(df, initial_x, convert(T,xtol), convert(T,ftol), iterations, store_trace, show_trace, extended_trace, convert(T,factor), autoscale, cache)
+                      initial_x::AbstractArray{T},
+                      xtol::Real,
+                      ftol::Real,
+                      iterations::Integer,
+                      store_trace::Bool,
+                      show_trace::Bool,
+                      extended_trace::Bool,
+                      factor::Real,
+                      autoscale::Bool,
+                      cache = NewtonTrustRegionCache(df)) where T
+    trust_region_(df, initial_x, convert(real(T), xtol), convert(real(T), ftol), iterations, store_trace, show_trace, extended_trace, convert(real(T), factor), autoscale, cache)
 end
