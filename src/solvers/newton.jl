@@ -103,7 +103,7 @@ function newton_(df::OnceDifferentiable,
                 # Modify the search direction if the jacobian is singular
                 # FIXME: better selection for lambda, see Nocedal & Wright p. 289
                 fjac2 = jacobian(df)'*jacobian(df)
-                lambda = convert(T,1e6)*sqrt(n*eps())*norm(fjac2, 1)
+                lambda = convert(real(T),1e6)*sqrt(n*eps())*norm(fjac2, 1)
                 linsolve(cache.p, -(fjac2 + lambda * I), vec(value(df)))
             else
                 throw(e)

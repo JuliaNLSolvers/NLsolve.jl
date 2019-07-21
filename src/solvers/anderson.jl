@@ -42,8 +42,8 @@ AndersonCache(df, ::Anderson{0}) =
 
 @views function anderson_(df::Union{NonDifferentiable, OnceDifferentiable},
                              initial_x::AbstractArray{T},
-                             xtol::T,
-                             ftol::T,
+                             xtol::Real,
+                             ftol::Real,
                              iterations::Integer,
                              store_trace::Bool,
                              show_trace::Bool,
@@ -80,7 +80,7 @@ AndersonCache(df, ::Anderson{0}) =
             update!(tr,
                     iter,
                     maximum(abs, fx),
-                    iter > 1 ? sqeuclidean(cache.g, cache.x) : convert(T,NaN),
+                    iter > 1 ? sqeuclidean(cache.g, cache.x) : convert(real(T),NaN),
                     dt,
                     store_trace,
                     show_trace)
@@ -187,5 +187,5 @@ function anderson(df::Union{NonDifferentiable, OnceDifferentiable},
                      aa_start::Integer,
                      droptol::Real,
                      cache::AndersonCache) where T
-    anderson_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, beta, aa_start, droptol, cache)
+    anderson_(df, initial_x, convert(real(T), xtol), convert(real(T), ftol), iterations, store_trace, show_trace, extended_trace, beta, aa_start, droptol, cache)
 end
