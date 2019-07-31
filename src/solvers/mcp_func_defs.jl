@@ -18,8 +18,8 @@ function mcpsolve(df::OnceDifferentiable,
                   initial_x::AbstractArray{T};
                   method::Symbol = :trust_region,
                   reformulation::Symbol = :smooth,
-                  xtol::Real = zero(T),
-                  ftol::Real = convert(T,1e-8),
+                  x_tol::Real = zero(T),
+                  f_tol::Real = convert(T,1e-8),
                   iterations::Integer = 1_000,
                   store_trace::Bool = false,
                   show_trace::Bool = false,
@@ -30,7 +30,7 @@ function mcpsolve(df::OnceDifferentiable,
 
     @reformulate df
     nlsolve(rf,
-            initial_x, method = method, xtol = xtol, ftol = ftol,
+            initial_x, method = method, x_tol = x_tol, f_tol = f_tol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
             linesearch = linesearch, factor = factor, autoscale = autoscale)
@@ -43,8 +43,8 @@ function mcpsolve(f,
                   initial_x::AbstractArray{T};
                   method::Symbol = :trust_region,
                   reformulation::Symbol = :smooth,
-                  xtol::Real = zero(T),
-                  ftol::Real = convert(T,1e-8),
+                  x_tol::Real = zero(T),
+                  f_tol::Real = convert(T,1e-8),
                   iterations::Integer = 1_000,
                   store_trace::Bool = false,
                   show_trace::Bool = false,
@@ -60,7 +60,7 @@ function mcpsolve(f,
     end
     @reformulate df
     nlsolve(rf,
-            initial_x, method = method, xtol = xtol, ftol = ftol,
+            initial_x, method = method, x_tol = x_tol, f_tol = f_tol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
             linesearch = linesearch, factor = factor, autoscale = autoscale)
@@ -72,8 +72,8 @@ function mcpsolve(f,
                   initial_x::AbstractArray{T};
                   method::Symbol = :trust_region,
                   reformulation::Symbol = :smooth,
-                  xtol::Real = zero(T),
-                  ftol::Real = convert(T,1e-8),
+                  x_tol::Real = zero(T),
+                  f_tol::Real = convert(T,1e-8),
                   iterations::Integer = 1_000,
                   store_trace::Bool = false,
                   show_trace::Bool = false,
@@ -91,7 +91,7 @@ function mcpsolve(f,
 
     @reformulate df
     nlsolve(rf,
-            initial_x, method = method, xtol = xtol, ftol = ftol,
+            initial_x, method = method, x_tol = x_tol, f_tol = f_tol,
             iterations = iterations, store_trace = store_trace,
             show_trace = show_trace, extended_trace = extended_trace,
             linesearch = linesearch, factor = factor, autoscale = autoscale)

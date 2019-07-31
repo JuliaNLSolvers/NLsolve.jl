@@ -42,8 +42,8 @@ AndersonCache(df, ::Anderson{0}) =
 
 @views function anderson_(df::Union{NonDifferentiable, OnceDifferentiable},
                              initial_x::AbstractArray{T},
-                             xtol::T,
-                             ftol::T,
+                             x_tol::T,
+                             f_tol::T,
                              iterations::Integer,
                              store_trace::Bool,
                              show_trace::Bool,
@@ -87,7 +87,7 @@ AndersonCache(df, ::Anderson{0}) =
         end
 
         # check convergence
-        x_converged, f_converged, converged = assess_convergence(cache.g, cache.x, fx, xtol, ftol)
+        x_converged, f_converged, converged = assess_convergence(cache.g, cache.x, fx, x_tol, f_tol)
         converged && break
 
         # define next iterate
@@ -156,14 +156,14 @@ AndersonCache(df, ::Anderson{0}) =
 
     return SolverResults("Anderson m=$m beta=$beta aa_start=$aa_start droptol=$droptol",
                          initial_x, copy(cache.x), norm(value(df), Inf),
-                         iter, x_converged, xtol, f_converged, ftol, tr,
+                         iter, x_converged, x_tol, f_converged, f_tol, tr,
                          first(df.f_calls), 0)
 end
 
 function anderson(df::Union{NonDifferentiable, OnceDifferentiable},
                      initial_x::AbstractArray,
-                     xtol::Real,
-                     ftol::Real,
+                     x_tol::Real,
+                     f_tol::Real,
                      iterations::Integer,
                      store_trace::Bool,
                      show_trace::Bool,
@@ -172,13 +172,13 @@ function anderson(df::Union{NonDifferentiable, OnceDifferentiable},
                      beta::Real,
                      aa_start::Integer,
                      droptol::Real)
-    anderson(df, initial_x, xtol, ftol, iterations, store_trace, show_trace, extended_trace, beta, aa_start, droptol, AndersonCache(df, Anderson{m}()))
+    anderson(df, initial_x, x_tol, f_tol, iterations, store_trace, show_trace, extended_trace, beta, aa_start, droptol, AndersonCache(df, Anderson{m}()))
 end
 
 function anderson(df::Union{NonDifferentiable, OnceDifferentiable},
                      initial_x::AbstractArray{T},
-                     xtol::Real,
-                     ftol::Real,
+                     x_tol::Real,
+                     f_tol::Real,
                      iterations::Integer,
                      store_trace::Bool,
                      show_trace::Bool,
@@ -187,5 +187,5 @@ function anderson(df::Union{NonDifferentiable, OnceDifferentiable},
                      aa_start::Integer,
                      droptol::Real,
                      cache::AndersonCache) where T
-    anderson_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, beta, aa_start, droptol, cache)
+    anderson_(df, initial_x, convert(T, x_tol), convert(T, f_tol), iterations, store_trace, show_trace, extended_trace, beta, aa_start, droptol, cache)
 end

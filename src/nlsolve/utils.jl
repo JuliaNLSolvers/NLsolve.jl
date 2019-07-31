@@ -8,19 +8,19 @@ function wdot(wx::AbstractArray{T}, x::AbstractArray{T},
 end
 
 wnorm(w, x) = sqrt(wdot(w, x, w, x))
-assess_convergence(f, ftol) = assess_convergence(NaN, NaN, f, NaN, ftol)
+assess_convergence(f, f_tol) = assess_convergence(NaN, NaN, f, NaN, f_tol)
 function assess_convergence(x,
                             x_previous,
                             f,
-                            xtol,
-                            ftol)
+                            x_tol,
+                            f_tol)
     x_converged, f_converged = false, false
 
-    if !any(isnan, x_previous) && chebyshev(x, x_previous) <= xtol
+    if !any(isnan, x_previous) && chebyshev(x, x_previous) <= x_tol
         x_converged = true
     end
 
-    if maximum(abs, f) <= ftol
+    if maximum(abs, f) <= f_tol
         f_converged = true
     end
 

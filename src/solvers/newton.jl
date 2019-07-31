@@ -41,8 +41,8 @@ end
 
 function newton_(df::OnceDifferentiable,
                     initial_x::AbstractArray{T},
-                    xtol::T,
-                    ftol::T,
+                    x_tol::T,
+                    f_tol::T,
                     iterations::Integer,
                     store_trace::Bool,
                     show_trace::Bool,
@@ -56,7 +56,7 @@ function newton_(df::OnceDifferentiable,
     check_isfinite(value(df))
     vecvalue = vec(value(df))
     it = 0
-    x_converged, f_converged, converged = assess_convergence(value(df), ftol)
+    x_converged, f_converged, converged = assess_convergence(value(df), f_tol)
     x_ls = copy(cache.x)
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
@@ -117,20 +117,20 @@ function newton_(df::OnceDifferentiable,
         alpha, ϕalpha = linesearch(dfo, cache.x, cache.p, one(T), x_ls, value(dfo), dot(cache.g, cache.p))
         # fvec is here also updated in the linesearch so no need to call f again.
         copyto!(cache.x, x_ls)
-        x_converged, f_converged, converged = assess_convergence(cache.x, cache.xold, value(df), xtol, ftol)
+        x_converged, f_converged, converged = assess_convergence(cache.x, cache.xold, value(df), x_tol, f_tol)
 
         newtontrace(sqeuclidean(cache.x, cache.xold), tracing, extended_trace, cache, df, it, tr, store_trace, show_trace)
     end
     return SolverResults("Newton with line-search",
                          initial_x, copy(cache.x), norm(value(df), Inf),
-                         it, x_converged, xtol, f_converged, ftol, tr,
+                         it, x_converged, x_tol, f_converged, f_tol, tr,
                          first(df.f_calls), first(df.df_calls))
 end
 
 function newton(df::OnceDifferentiable,
                    initial_x::AbstractArray{T},
-                   xtol::Real,
-                   ftol::Real,
+                   x_tol::Real,
+                   f_tol::Real,
                    iterations::Integer,
                    store_trace::Bool,
                    show_trace::Bool,
@@ -138,5 +138,5 @@ function newton(df::OnceDifferentiable,
                    linesearch,
                    cache = NewtonCache(df);
                    linsolve=(x, A, b) -> copyto!(x, A\b)) where T
-    newton_(df, initial_x, convert(T, xtol), convert(T, ftol), iterations, store_trace, show_trace, extended_trace, linesearch, linsolve, cache)
+    newton_(df, initial_x, convert(T, x_tol), convert(T, f_tol), iterations, store_trace, show_trace, extended_trace, linesearch, linsolve, cache)
 end

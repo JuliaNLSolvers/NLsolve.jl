@@ -72,9 +72,9 @@ mutable struct SolverResults{T,I<:AbstractArray{T},Z<:AbstractArray{T}}
     residual_norm::T
     iterations::Int
     x_converged::Bool
-    xtol::T
+    x_tol::T
     f_converged::Bool
-    ftol::T
+    f_tol::T
     trace::SolverTrace
     f_calls::Int
     g_calls::Int
@@ -92,8 +92,8 @@ function Base.show(io::IO, r::SolverResults)
     @printf io " * Inf-norm of residuals: %f\n" r.residual_norm
     @printf io " * Iterations: %d\n" r.iterations
     @printf io " * Convergence: %s\n" converged(r)
-    @printf io "   * |x - x'| < %.1e: %s\n" r.xtol r.x_converged
-    @printf io "   * |f(x)| < %.1e: %s\n" r.ftol r.f_converged
+    @printf io "   * |x - x'| < %.1e: %s\n" r.x_tol r.x_converged
+    @printf io "   * |f(x)| < %.1e: %s\n" r.f_tol r.f_converged
     @printf io " * Function Calls (f): %d\n" r.f_calls
     @printf io " * Jacobian Calls (df/dx): %d" r.g_calls
     return
