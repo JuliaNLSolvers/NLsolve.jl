@@ -37,6 +37,7 @@ else
              "f_g_counts.jl",
              "no_linesearch.jl",
              "abstractarray.jl",
+             "complex.jl",
              "interface/caches.jl",
              "fixedpoint/fixedpoint.jl"]
 end
