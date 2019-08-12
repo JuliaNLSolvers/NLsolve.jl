@@ -72,4 +72,9 @@ r = nlsolve(df, [ -0.5; 1.4], method = :newton, linesearch = LineSearches.Strong
 r = nlsolve(df, [ 0.01; .99], method = :anderson, m = 10, beta=.01)
 @test converged(r)
 @test norm(r.zero - [ 0; 1]) < 1e-8
+@test r.iterations == 9
+
+# without Anderson acceleration fixed-point iteration does not converge in 1_000 iterations
+r = nlsolve(df, [ 0.01; .99], method = :anderson, m = 0, beta=.01)
+@test !converged(r)
 end
