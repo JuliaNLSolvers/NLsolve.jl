@@ -45,7 +45,7 @@ function AndersonCache(df, m)
 end
 
 @views function anderson_(df::Union{NonDifferentiable, OnceDifferentiable},
-                             initial_x::AbstractArray{T},
+                             initial_x::AbstractArray,
                              xtol::Real,
                              ftol::Real,
                              iterations::Integer,
@@ -55,7 +55,7 @@ end
                              beta::Real,
                              aa_start::Integer,
                              droptol::Real,
-                             cache::AndersonCache) where T
+                             cache::AndersonCache)
     copyto!(cache.x, initial_x)
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
@@ -89,7 +89,7 @@ end
             update!(tr,
                     iter,
                     maximum(abs, fx),
-                    iter > 1 ? sqeuclidean(cache.g, cache.x) : convert(real(T),NaN),
+                    iter > 1 ? sqeuclidean(cache.g, cache.x) : convert(real(eltype(initial_x)), NaN),
                     dt,
                     store_trace,
                     show_trace)
@@ -185,16 +185,16 @@ function anderson(df::Union{NonDifferentiable, OnceDifferentiable},
 end
 
 function anderson(df::Union{NonDifferentiable, OnceDifferentiable},
-                     initial_x::AbstractArray{T},
-                     xtol::Real,
-                     ftol::Real,
-                     iterations::Integer,
-                     store_trace::Bool,
-                     show_trace::Bool,
-                     extended_trace::Bool,
-                     beta::Real,
-                     aa_start::Integer,
-                     droptol::Real,
-                     cache::AndersonCache) where T
-    anderson_(df, initial_x, convert(real(T), xtol), convert(real(T), ftol), iterations, store_trace, show_trace, extended_trace, beta, aa_start, droptol, cache)
+                  initial_x::AbstractArray,
+                  xtol::Real,
+                  ftol::Real,
+                  iterations::Integer,
+                  store_trace::Bool,
+                  show_trace::Bool,
+                  extended_trace::Bool,
+                  beta::Real,
+                  aa_start::Integer,
+                  droptol::Real,
+                  cache::AndersonCache)
+    anderson_(df, initial_x, convert(real(eltype(initial_x)), xtol), convert(real(eltype(initial_x)), ftol), iterations, store_trace, show_trace, extended_trace, beta, aa_start, droptol, cache)
 end
