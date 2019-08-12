@@ -69,9 +69,14 @@ end
     while iter < iterations
         iter += 1
 
-        # fixed-point iteration
+        # evaluate function
         value!!(df, cache.x)
         fx = value(df)
+
+        # check that all values are finite
+        check_isfinite(fx)
+
+        # compute next iterate of fixed-point iteration
         @. cache.g = cache.x + beta * fx
 
         # save trace
@@ -94,7 +99,7 @@ end
         x_converged, f_converged, converged = assess_convergence(cache.g, cache.x, fx, xtol, ftol)
         converged && break
 
-        # define next iterate
+        # update current iterate
         copyto!(cache.x, cache.g)
 
         # perform Anderson acceleration

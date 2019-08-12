@@ -30,8 +30,8 @@ function assess_convergence(x,
 end
 
 function check_isfinite(x::AbstractArray)
-    if any((y)->!isfinite(y),x)
-        i = findall((!).(isfinite.(x)))
+    if any(!isfinite, x)
+        i = findall(!isfinite, x)
         throw(IsFiniteException(i))
     end
 end
