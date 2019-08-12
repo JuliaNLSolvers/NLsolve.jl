@@ -153,7 +153,7 @@ end
 
                 # solve least squares problem
                 γs = view(cache.γs, 1:m_eff)
-                ldiv!(R, mul!(γs, Q', fx))
+                ldiv!(R, mul!(γs, Q', vec(fx)))
 
                 # update next iterate
                 for i in 1:m_eff
