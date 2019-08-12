@@ -1,8 +1,6 @@
 # Notations from Walker & Ni, "Anderson acceleration for fixed-point iterations", SINUM 2011
 # Attempts to accelerate the iteration xₙ₊₁ = xₙ + beta*f(xₙ)
 
-struct Anderson{m} end
-
 struct AndersonCache{Tx,To,Tdg,Tg,TQ,TR} <: AbstractSolverCache
     x::Tx
     g::Tx
@@ -14,31 +12,37 @@ struct AndersonCache{Tx,To,Tdg,Tg,TQ,TR} <: AbstractSolverCache
     R::TR
 end
 
-function AndersonCache(df, ::Anderson{m}) where m
+function AndersonCache(df, m)
     x = similar(df.x_f)
     g = similar(x)
 
-    fxold = similar(x)
-    gold = similar(x)
+    if m > 0
+        fxold = similar(x)
+        gold = similar(x)
 
-    # maximum size of history
-    mmax = min(length(x), m)
+        # maximum size of history
+        mmax = min(length(x), m)
 
-    # buffer storing the differences between g of the iterates, from oldest to newest
-    Δgs = [similar(x) for _ in 1:mmax]
+        # buffer storing the differences between g of the iterates, from oldest to newest
+        Δgs = [similar(x) for _ in 1:mmax]
 
-    T = eltype(x)
-    γs = Vector{T}(undef, mmax) # coefficients obtained from the least-squares problem
+        T = eltype(x)
+        γs = Vector{T}(undef, mmax) # coefficients obtained from the least-squares problem
 
-    # matrices for QR decomposition
-    Q = Matrix{T}(undef, length(x), mmax)
-    R = Matrix{T}(undef, mmax, mmax)
+        # matrices for QR decomposition
+        Q = Matrix{T}(undef, length(x), mmax)
+        R = Matrix{T}(undef, mmax, mmax)
+    else
+        fxold = nothing
+        gold = nothing
+        Δgs = nothing
+        γs = nothing
+        Q = nothing
+        R = nothing
+    end
 
     AndersonCache(x, g, fxold, gold, Δgs, γs, Q, R)
 end
-
-AndersonCache(df, ::Anderson{0}) =
-    AndersonCache(similar(df.x_f), similar(df.x_f), nothing, nothing, nothing, nothing, nothing, nothing)
 
 @views function anderson_(df::Union{NonDifferentiable, OnceDifferentiable},
                              initial_x::AbstractArray{T},
@@ -161,18 +165,18 @@ AndersonCache(df, ::Anderson{0}) =
 end
 
 function anderson(df::Union{NonDifferentiable, OnceDifferentiable},
-                     initial_x::AbstractArray,
-                     xtol::Real,
-                     ftol::Real,
-                     iterations::Integer,
-                     store_trace::Bool,
-                     show_trace::Bool,
-                     extended_trace::Bool,
-                     m::Integer,
-                     beta::Real,
-                     aa_start::Integer,
-                     droptol::Real)
-    anderson(df, initial_x, xtol, ftol, iterations, store_trace, show_trace, extended_trace, beta, aa_start, droptol, AndersonCache(df, Anderson{m}()))
+                  initial_x::AbstractArray,
+                  xtol::Real,
+                  ftol::Real,
+                  iterations::Integer,
+                  store_trace::Bool,
+                  show_trace::Bool,
+                  extended_trace::Bool,
+                  m::Integer,
+                  beta::Real,
+                  aa_start::Integer,
+                  droptol::Real)
+    anderson(df, initial_x, xtol, ftol, iterations, store_trace, show_trace, extended_trace, beta, aa_start, droptol, AndersonCache(df, m))
 end
 
 function anderson(df::Union{NonDifferentiable, OnceDifferentiable},
