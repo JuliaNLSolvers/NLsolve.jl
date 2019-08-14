@@ -106,7 +106,7 @@ r = nlsolve(n_ary(f), [ -0.5; 1.4])
 r = nlsolve(n_ary(f), [ -0.5; 1.4], autodiff = :forward)
 @test converged(r)
 
-@testset "andersont trace issue #160" begin
+@testset "anderson trace issue #160" begin
 
     function f_2by2!(F, x)
         F[1] = (x[1]+3)*(x[2]^3-7)+18

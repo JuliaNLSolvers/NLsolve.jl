@@ -15,7 +15,7 @@ ncp = copy(nc.p)
 r = NLsolve.newton(df, [ 1.; 1.], 0.1, 0.1, 100, false, false, false, LineSearches.Static(), nc)
 @test !(ncp == nc.p)
 
-ac = NLsolve.AndersonCache(df, NLsolve.Anderson{10}())
+ac = NLsolve.AndersonCache(df, 10)
 ac.x .= 22.0
 acx = copy(ac.x)
 r = NLsolve.anderson(df, [ 1.; 1.], 0.1, 0.1, 100, false, false, false, 0.9, 1, 0, ac)

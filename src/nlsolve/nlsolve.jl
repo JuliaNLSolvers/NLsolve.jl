@@ -11,10 +11,10 @@ function nlsolve(df::TDF,
                  linsolve=(x, A, b) -> copyto!(x, A\b),
                  factor::Real = one(real(T)),
                  autoscale::Bool = true,
-                 m::Integer = 0,
+                 m::Integer = 10,
                  beta::Real = 1,
                  aa_start::Integer = 1,
-                 droptol::Real = 0) where {T, TDF <: Union{NonDifferentiable, OnceDifferentiable}}
+                 droptol::Real = convert(real(T), 1e10)) where {T, TDF <: Union{NonDifferentiable, OnceDifferentiable}}
     if show_trace
         @printf "Iter     f(x) inf-norm    Step 2-norm \n"
         @printf "------   --------------   --------------\n"
@@ -49,10 +49,10 @@ function nlsolve(f,
                  linesearch = LineSearches.Static(),
                  factor::Real = one(real(T)),
                  autoscale::Bool = true,
-                 m::Integer = 0,
+                 m::Integer = 10,
                  beta::Real = 1,
                  aa_start::Integer = 1,
-                 droptol::Real = 0,
+                 droptol::Real = convert(real(T), 1e10),
                  autodiff = :central,
                  linsolve=(x, A, b) -> copyto!(x, A\b),
                  inplace = !applicable(f, initial_x)) where T
@@ -92,10 +92,10 @@ function nlsolve(f,
                 linesearch = LineSearches.Static(),
                 factor::Real = one(real(T)),
                 autoscale::Bool = true,
-                m::Integer = 0,
+                m::Integer = 10,
                 beta::Real = 1,
                 aa_start::Integer = 1,
-                droptol::Real = 0,
+                droptol::Real = convert(real(T), 1e10),
                 inplace = !applicable(f, initial_x),
                 linsolve=(x, A, b) -> copyto!(x, A\b)) where T
     if inplace
@@ -125,10 +125,10 @@ function nlsolve(f,
                 linesearch = LineSearches.Static(),
                 factor::Real = one(real(T)),
                 autoscale::Bool = true,
-                m::Integer = 0,
+                m::Integer = 10,
                 beta::Real = 1,
                 aa_start::Integer = 1,
-                droptol::Real = 0,
+                droptol::Real = convert(real(T), 1e10),
                 inplace = !applicable(f, initial_x),
                 linsolve=(x, A, b) -> copyto!(x, A\b)) where T
     if inplace
