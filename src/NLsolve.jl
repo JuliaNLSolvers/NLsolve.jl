@@ -2,7 +2,6 @@ __precompile__()
 
 module NLsolve
 
-using Distances
 using NLSolversBase
 using LineSearches
 using ForwardDiff
