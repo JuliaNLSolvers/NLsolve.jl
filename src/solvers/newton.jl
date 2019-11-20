@@ -13,13 +13,6 @@ function NewtonCache(df)
     g = similar(x)
     NewtonCache(x, xold, p, g)
 end
-function no_linesearch(dfo, xold, p, x, lsr, alpha, mayterminate)
-    @simd for i in eachindex(x)
-        @inbounds x[i] = xold[i] + p[i]
-    end
-    dfo.f(x)
-    return 0.0, 0, 0
-end
 
 function newtontrace(stepnorm, tracing, extended_trace, cache, df, it, tr, store_trace, show_trace)
     if tracing
