@@ -5,8 +5,6 @@ module NLsolve
 using Distances
 using NLSolversBase
 using LineSearches
-using ForwardDiff
-using DiffEqDiffTools
 using LinearAlgebra
 using Printf
 
