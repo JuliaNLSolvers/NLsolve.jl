@@ -1,9 +1,6 @@
 wdot(wx, x, wy, y) = dot(wx.*x, wy.*x)
-wnorm(w, x) = norm(w.*x)#sqrt(real(wdot(w, x, w, x)))
-#function wnorm(w, x)
-#  wx = w.*x#sqrt(real(wdot(w, x, w, x)))
-#  sqrt(wx'wx)
-#end
+wnorm(w, x) = norm(w.*x)
+
 assess_convergence(f, ftol) = assess_convergence(NaN, NaN, f, NaN, ftol)
 function assess_convergence(x,
                             x_previous,
