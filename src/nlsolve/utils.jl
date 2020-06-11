@@ -1,4 +1,4 @@
-wdot(wx, x, wy, y) = dot(wx.*x, wy.*x)
+wdot(wx, x, wy, y) = dot(wx.*x, wy.*y)
 wnorm(w, x) = norm(w.*x)
 
 assess_convergence(f, ftol) = assess_convergence(NaN, NaN, f, NaN, ftol)
