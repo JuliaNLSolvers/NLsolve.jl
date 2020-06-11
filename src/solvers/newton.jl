@@ -84,7 +84,7 @@ function newton_(df::OnceDifferentiable,
         it += 1
 
         if it > 1
-            jacobian!(df, cache.x)
+            value_jacobian!(df, cache.x)
         end
 
         try
@@ -105,9 +105,16 @@ function newton_(df::OnceDifferentiable,
 
         copyto!(cache.xold, cache.x)
 
-        value_gradient!(dfo, cache.x)
 
-        alpha, ϕalpha = linesearch(dfo, cache.x, cache.p, one(real(T)), x_ls, value(dfo), dot(cache.g, cache.p))
+        
+        if linesearch isa Static
+            x_ls .= cache.x .+ cache.p
+            value_jacobian!(df, x_ls)
+            alpha, ϕalpha = one(real(T)), value(dfo)
+        else
+            value_gradient!(dfo, cache.x)
+            alpha, ϕalpha = linesearch(dfo, cache.x, cache.p, one(real(T)), x_ls, value(dfo), dot(cache.g, cache.p))
+        end
         # fvec is here also updated in the linesearch so no need to call f again.
         copyto!(cache.x, x_ls)
         x_converged, f_converged, converged = assess_convergence(cache.x, cache.xold, value(df), xtol, ftol)
