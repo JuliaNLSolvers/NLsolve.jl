@@ -1,13 +1,6 @@
-function wdot(wx::AbstractArray{T}, x::AbstractArray{T},
-                 wy::AbstractArray{T}, y::AbstractArray{T}) where T
-    out = zero(T)
-    @inbounds @simd for i in 1:length(x)
-        out += conj(wx[i]*x[i]) * wy[i]*y[i]
-    end
-    return out
-end
+wdot(wx, x, wy, y) = dot(wx.*x, wy.*y)
+wnorm(w, x) = norm(w.*x)
 
-wnorm(w, x) = sqrt(real(wdot(w, x, w, x)))
 assess_convergence(f, ftol) = assess_convergence(NaN, NaN, f, NaN, ftol)
 function assess_convergence(x,
                             x_previous,
@@ -15,8 +8,7 @@ function assess_convergence(x,
                             xtol,
                             ftol)
     x_converged, f_converged = false, false
-
-    if !any(isnan, x_previous) && chebyshev(x, x_previous) <= xtol
+    if !any(isnan, x_previous) && norm(x-x_previous) <= xtol
         x_converged = true
     end
 
