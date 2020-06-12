@@ -47,6 +47,8 @@ function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
     check_isfinite(value(df))
     it = 0
     x_converged, f_converged = assess_convergence(x, xold, value(df), NaN, ftol)
+    stopped = any(isnan, x) || any(isnan, value(df)) ? true : false
+
     converged = x_converged || f_converged
 
     # Maintain a cache for line search results
@@ -59,7 +61,7 @@ function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
     maybe_stuck = false
     max_resets = 3
     resets = 0
-    while !converged && it < iterations
+    while !stopped && !converged && it < iterations
 
         it += 1
 
@@ -100,6 +102,7 @@ function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
             x_converged, f_converged = assess_convergence(x, xold, value(df), xtol, ftol)
             converged = x_converged || f_converged
         end
+        stopped = any(isnan, x) || any(isnan, value(df)) ? true : false
 
         maybe_stuck = false
         @broydentrace sqeuclidean(x, xold)

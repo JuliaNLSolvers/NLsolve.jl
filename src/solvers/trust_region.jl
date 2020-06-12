@@ -122,6 +122,8 @@ function trust_region_(df::OnceDifferentiable,
 
     it = 0
     x_converged, f_converged = assess_convergence(initial_x, cache.xold, value(df), NaN, ftol)
+    stopped = any(isnan, cache.x) || any(isnan, value(df)) ? true : false
+
     converged = x_converged || f_converged
     delta = convert(real(T), NaN)
     rho = convert(real(T), NaN)
@@ -161,7 +163,7 @@ function trust_region_(df::OnceDifferentiable,
 
     eta = convert(real(T), 1e-4)
 
-    while !converged && it < iterations
+    while !stopped && !converged && it < iterations
         it += 1
 
         # Compute proposed iteration step
@@ -193,6 +195,7 @@ function trust_region_(df::OnceDifferentiable,
         else
             cache.x .-= cache.p
             x_converged, converged = false, false
+
         end
 
         @trustregiontrace euclidean(cache.x, cache.xold)
@@ -205,6 +208,7 @@ function trust_region_(df::OnceDifferentiable,
         elseif rho >= 0.5
             delta = max(delta, 2 * wnorm(cache.d, cache.p))
         end
+        stopped = any(isnan, cache.x) || any(isnan, value(df)) ? true : false
     end
 
     name = "Trust-region with dogleg"

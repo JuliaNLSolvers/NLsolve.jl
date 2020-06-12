@@ -8,7 +8,7 @@ function assess_convergence(x,
                             xtol,
                             ftol)
     x_converged, f_converged = false, false
-    if any(isnan, x) || norm(x-x_previous) <= xtol
+    if norm(x-x_previous) <= xtol
         x_converged = true
     end
     if maximum(abs, f) <= ftol
