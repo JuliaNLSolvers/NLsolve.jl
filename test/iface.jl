@@ -27,6 +27,23 @@ function fj!(F, J, x)
     J[2, 2] = u
 end
 
+function __only_fj!(F, J, x)
+    if !(F isa Nothing)
+        F[1] = (x[1]+3)*(x[2]^3-7)+18
+        F[2] = sin(x[2]*exp(x[1])-1)
+    end
+    if !(J isa Nothing)
+        J[1, 1] = x[2]^3-7
+        J[1, 2] = 3*x[2]^2*(x[1]+3)
+        u = exp(x[1])*cos(x[2]*exp(x[1])-1)
+        J[2, 1] = x[2]*u
+        J[2, 2] = u
+    end
+end
+
+r = nlsolve(OnceDifferentiable(only_fj!(__only_fj!), [ -0.5; 1.4], [ -0.5; 1.4]), [ -0.5; 1.4])
+@test converged(r)
+
 r = nlsolve(OnceDifferentiable(f!, [ -0.5; 1.4], [ -0.5; 1.4]), [ -0.5; 1.4])
 @test converged(r)
 
