@@ -46,13 +46,11 @@ function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
     Jinv = Matrix{T}(I, n, n)
     check_isfinite(value(df))
     it = 0
-    x_converged, f_converged, converged = assess_convergence(value(df), ftol)
-
-    # FIXME: How should this flag be set?
-    mayterminate = false
+    x_converged, f_converged = assess_convergence(x, xold, value(df), NaN, ftol)
+    converged = x_converged || f_converged
 
     # Maintain a cache for line search results
-  #  lsr = LineSearches.LineSearchResults(T)
+    #  lsr = LineSearches.LineSearchResults(T)
 
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
@@ -99,7 +97,8 @@ function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
         end
 
         if !maybe_stuck
-            x_converged, f_converged, converged = assess_convergence(x, xold, value(df), xtol, ftol)
+            x_converged, f_converged = assess_convergence(x, xold, value(df), xtol, ftol)
+            converged = x_converged || f_converged
         end
 
         maybe_stuck = false

@@ -96,7 +96,8 @@ end
         end
 
         # check convergence
-        x_converged, f_converged, converged = assess_convergence(cache.g, cache.x, fx, xtol, ftol)
+        x_converged, f_converged = assess_convergence(cache.g, cache.x, fx, xtol, ftol)
+        converged = x_converged || f_converged
         converged && break
 
         # update current iterate

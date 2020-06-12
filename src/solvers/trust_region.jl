@@ -121,7 +121,8 @@ function trust_region_(df::OnceDifferentiable,
     check_isfinite(cache.r)
 
     it = 0
-    x_converged, f_converged, converged = assess_convergence(value(df), ftol)
+    x_converged, f_converged = assess_convergence(initial_x, cache.xold, value(df), NaN, ftol)
+    converged = x_converged || f_converged
     delta = convert(real(T), NaN)
     rho = convert(real(T), NaN)
     if converged
@@ -187,7 +188,8 @@ function trust_region_(df::OnceDifferentiable,
                 end
             end
 
-            x_converged, f_converged, converged = assess_convergence(cache.x, cache.xold, cache.r, xtol, ftol)
+            x_converged, f_converged = assess_convergence(cache.x, cache.xold, cache.r, xtol, ftol)
+            converged = x_converged || f_converged
         else
             cache.x .-= cache.p
             x_converged, converged = false, false
