@@ -46,13 +46,13 @@ function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
     Jinv = Matrix{T}(I, n, n)
     check_isfinite(value(df))
     it = 0
-    x_converged, f_converged, converged = assess_convergence(value(df), ftol)
+    x_converged, f_converged = assess_convergence(x, xold, value(df), NaN, ftol)
+    stopped = any(isnan, x) || any(isnan, value(df)) ? true : false
 
-    # FIXME: How should this flag be set?
-    mayterminate = false
+    converged = x_converged || f_converged
 
     # Maintain a cache for line search results
-  #  lsr = LineSearches.LineSearchResults(T)
+    #  lsr = LineSearches.LineSearchResults(T)
 
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
@@ -61,7 +61,7 @@ function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
     maybe_stuck = false
     max_resets = 3
     resets = 0
-    while !converged && it < iterations
+    while !stopped && !converged && it < iterations
 
         it += 1
 
@@ -99,8 +99,10 @@ function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
         end
 
         if !maybe_stuck
-            x_converged, f_converged, converged = assess_convergence(x, xold, value(df), xtol, ftol)
+            x_converged, f_converged = assess_convergence(x, xold, value(df), xtol, ftol)
+            converged = x_converged || f_converged
         end
+        stopped = any(isnan, x) || any(isnan, value(df)) ? true : false
 
         maybe_stuck = false
         @broydentrace sqeuclidean(x, xold)

@@ -49,7 +49,10 @@ function newton_(df::OnceDifferentiable,
     check_isfinite(value(df))
     vecvalue = vec(value(df))
     it = 0
-    x_converged, f_converged, converged = assess_convergence(value(df), ftol)
+    x_converged, f_converged = assess_convergence(initial_x, cache.xold, value(df), NaN, ftol)
+    stopped = any(isnan, cache.x) || any(isnan, value(df)) ? true : false
+
+    converged = x_converged || f_converged
     x_ls = copy(cache.x)
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
@@ -79,7 +82,7 @@ function newton_(df::OnceDifferentiable,
     end
     dfo = OnceDifferentiable(fo, go!, fgo!, cache.x, zero(real(T)))
 
-    while !converged && it < iterations
+    while !stopped && !converged && it < iterations
 
         it += 1
 
@@ -117,8 +120,10 @@ function newton_(df::OnceDifferentiable,
         end
         # fvec is here also updated in the linesearch so no need to call f again.
         copyto!(cache.x, x_ls)
-        x_converged, f_converged, converged = assess_convergence(cache.x, cache.xold, value(df), xtol, ftol)
+        x_converged, f_converged = assess_convergence(cache.x, cache.xold, value(df), xtol, ftol)
+        stopped = any(isnan, cache.x) || any(isnan, value(df)) ? true : false
 
+        converged = x_converged || f_converged
         newtontrace(sqeuclidean(cache.x, cache.xold), tracing, extended_trace, cache, df, it, tr, store_trace, show_trace)
     end
     return SolverResults("Newton with line-search",

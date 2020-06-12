@@ -8,17 +8,14 @@ function assess_convergence(x,
                             xtol,
                             ftol)
     x_converged, f_converged = false, false
-    if !any(isnan, x_previous) && norm(x-x_previous) <= xtol
+    if norm(x-x_previous) <= xtol
         x_converged = true
     end
-
     if maximum(abs, f) <= ftol
         f_converged = true
     end
 
-    converged = x_converged || f_converged
-
-    return x_converged, f_converged, converged
+    return x_converged, f_converged
 end
 
 function check_isfinite(x::AbstractArray)

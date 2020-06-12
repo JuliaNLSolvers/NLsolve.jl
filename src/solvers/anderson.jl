@@ -96,7 +96,11 @@ end
         end
 
         # check convergence
-        x_converged, f_converged, converged = assess_convergence(cache.g, cache.x, fx, xtol, ftol)
+        x_converged, f_converged = assess_convergence(cache.g, cache.x, fx, xtol, ftol)
+        if any(isnan, cache.x) || any(isnan, value(df))
+          break
+        end
+        converged = x_converged || f_converged
         converged && break
 
         # update current iterate
