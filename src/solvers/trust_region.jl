@@ -12,14 +12,14 @@ struct NewtonTrustRegionCache{Tx} <: AbstractSolverCache
     d::Tx
 end
 function NewtonTrustRegionCache(df)
-    x = similar(df.x_f) # Current point
-    xold = similar(x) # Old point
-    r = similar(df.F)       # Current residual
-    r_predict = similar(x)  # predicted residual
-    p = similar(x)          # Step
-    p_c = similar(x)          # Cauchy point
-    pi = similar(x)
-    d = similar(x)          # Scaling vector
+    x = copy(df.x_f) # Current point
+    xold = copy(x) # Old point
+    r = copy(df.F)       # Current residual
+    r_predict = copy(x)  # predicted residual
+    p = copy(x)          # Step
+    p_c = copy(x)          # Cauchy point
+    pi = copy(x)
+    d = copy(x)          # Scaling vector
     NewtonTrustRegionCache(x, xold, r, r_predict, p, p_c, pi, d)
 end
 macro trustregiontrace(stepnorm)
@@ -44,9 +44,9 @@ macro trustregiontrace(stepnorm)
     end)
 end
 
-function dogleg!(p::AbstractArray{T}, p_c::AbstractArray{T}, p_i,
-                 r::AbstractArray{T}, d::AbstractArray{T}, J::AbstractMatrix{T},
-                 delta::Real) where T
+function dogleg!(p, p_c, p_i,
+                 r, d, J, delta::Real)
+    T = eltype(d)
     try
         copyto!(p_i, J \ vec(r)) # Gauss-Newton step
     catch e

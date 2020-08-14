@@ -13,18 +13,18 @@ struct AndersonCache{Tx,To,Tdg,Tg,TQ,TR} <: AbstractSolverCache
 end
 
 function AndersonCache(df, m)
-    x = similar(df.x_f)
-    g = similar(x)
+    x = copy(df.x_f)
+    g = copy(x)
 
     if m > 0
-        fxold = similar(x)
-        gold = similar(x)
+        fxold = copy(x)
+        gold = copy(x)
 
         # maximum size of history
         mmax = min(length(x), m)
 
         # buffer storing the differences between g of the iterates, from oldest to newest
-        Δgs = [similar(x) for _ in 1:mmax]
+        Δgs = [copy(x) for _ in 1:mmax]
 
         T = eltype(x)
         γs = Vector{T}(undef, mmax) # coefficients obtained from the least-squares problem

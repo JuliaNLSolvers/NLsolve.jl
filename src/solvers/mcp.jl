@@ -28,7 +28,7 @@ function mcp_smooth(df::OnceDifferentiable,
     end
 
     function j!(J, x)
-        F = similar(x)
+        F = copy(x)
         value_jacobian!!(df, F, J, x)
 
         # Derivatives of phiplus
@@ -36,7 +36,7 @@ function mcp_smooth(df::OnceDifferentiable,
 
         dplus_du = 1 .+ F./sqplus
 
-        dplus_dv = similar(x)
+        dplus_dv = copy(x)
         for i = 1:length(x)
             if isfinite.(upper[i])
                 dplus_dv[i] = 1 + (x[i]-upper[i])/sqplus[i]
@@ -57,7 +57,7 @@ function mcp_smooth(df::OnceDifferentiable,
 
         dminus_du = 1 .- phiplus ./ sqminus
 
-        dminus_dv = similar(x)
+        dminus_dv = copy(x)
         for i = 1:length(x)
             if isfinite.(lower[i])
                 dminus_dv[i] = 1 - (x[i]-lower[i])/sqminus[i]
@@ -74,7 +74,7 @@ function mcp_smooth(df::OnceDifferentiable,
             J[i,i] += dminus_dv[i] + dminus_du[i]*dplus_dv[i]
         end
     end
-    return OnceDifferentiable(f!, j!, similar(df.x_f), similar(df.F))
+    return OnceDifferentiable(f!, j!, copy(df.x_f), copy(df.F))
 end
 
 # Generate a function whose roots are the solutions of the MCP.
@@ -99,7 +99,7 @@ function mcp_minmax(df::OnceDifferentiable,
     end
 
     function j!(J, x)
-        F = similar(x)
+        F = copy(x)
         value_jacobian!!(df, F, J, x)
         for i = 1:length(x)
             if F[i] < x[i]-upper[i] || F[i] > x[i]-lower[i]
@@ -109,5 +109,5 @@ function mcp_minmax(df::OnceDifferentiable,
             end
         end
     end
-    return OnceDifferentiable(f!, j!, similar(df.x_f), similar(df.F))
+    return OnceDifferentiable(f!, j!, copy(df.x_f), copy(df.F))
 end
