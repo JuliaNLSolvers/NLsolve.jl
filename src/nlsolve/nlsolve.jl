@@ -44,9 +44,9 @@ function nlsolve(f,
                  inplace = !applicable(f, initial_x),
                  kwargs...)
     if method in (:anderson, :broyden)
-        df = NonDifferentiable(f, initial_x, similar(initial_x); inplace=inplace)
+        df = NonDifferentiable(f, initial_x, copy(initial_x); inplace=inplace)
     else
-        df = OnceDifferentiable(f, initial_x, similar(initial_x); autodiff=autodiff, inplace=inplace)
+        df = OnceDifferentiable(f, initial_x, copy(initial_x); autodiff=autodiff, inplace=inplace)
     end
 
     nlsolve(df, initial_x; method = method, kwargs...)
@@ -59,9 +59,9 @@ function nlsolve(f,
                  inplace = !applicable(f, initial_x),
                  kwargs...)
     if inplace
-        df = OnceDifferentiable(f, j, initial_x, similar(initial_x))
+        df = OnceDifferentiable(f, j, initial_x, copy(initial_x))
     else
-        df = OnceDifferentiable(not_in_place(f, j)..., initial_x, similar(initial_x))
+        df = OnceDifferentiable(not_in_place(f, j)..., initial_x, copy(initial_x))
     end
 
     nlsolve(df, initial_x; kwargs...)
@@ -74,9 +74,9 @@ function nlsolve(f,
                  inplace = !applicable(f, initial_x),
                  kwargs...)
     if inplace
-        df = OnceDifferentiable(f, j, fj, initial_x, similar(initial_x))
+        df = OnceDifferentiable(f, j, fj, initial_x, copy(initial_x))
     else
-        df = OnceDifferentiable(not_in_place(f, j, fj)..., initial_x, similar(initial_x))
+        df = OnceDifferentiable(not_in_place(f, j, fj)..., initial_x, copy(initial_x))
     end
 
     nlsolve(df, initial_x; kwargs...)

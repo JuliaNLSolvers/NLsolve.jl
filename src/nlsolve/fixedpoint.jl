@@ -25,10 +25,10 @@ function fixedpoint(f,
             f(out, x);
             out .-= x;
         end
-        dg = OnceDifferentiable(g!, initial_x, similar(initial_x), autodiff)
+        dg = OnceDifferentiable(g!, initial_x, copy(initial_x), autodiff)
     else
         g(x) = f(x) - x;
-        dg = OnceDifferentiable(g, initial_x, similar(initial_x); autodiff = autodiff, inplace = inplace)
+        dg = OnceDifferentiable(g, initial_x, copy(initial_x); autodiff = autodiff, inplace = inplace)
     end
 
     return nlsolve(dg,

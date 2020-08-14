@@ -7,10 +7,10 @@ struct NewtonCache{Tx} <: AbstractSolverCache
     g::Tx
 end
 function NewtonCache(df)
-    x = similar(df.x_f)
-    xold = similar(x)
-    p = similar(x)
-    g = similar(x)
+    x = copy(df.x_f)
+    xold = copy(x)
+    p = copy(x)
+    g = copy(x)
     NewtonCache(x, xold, p, g)
 end
 

@@ -37,12 +37,12 @@ function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
     value!!(df, x)
 
     vecvalue = vec(value(df))
-    fold, xold = similar(vecvalue), similar(x)
+    fold, xold = copy(vecvalue), copy(x)
     fold .= T(0)
     xold .= T(0)
 
-    p = similar(x)
-    g = similar(x)
+    p = copy(x)
+    g = copy(x)
     Jinv = Matrix{T}(I, n, n)
     check_isfinite(value(df))
     it = 0
@@ -108,7 +108,7 @@ function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
         @broydentrace sqeuclidean(x, xold)
     end
     return SolverResults("broyden without line-search",
-                         initial_x, copyto!(similar(initial_x), x), norm(value(df), Inf),
+                         initial_x, copyto!(copy(initial_x), x), norm(value(df), Inf),
                          it, x_converged, xtol, f_converged, ftol, tr,
                          first(df.f_calls), 0)
 end
