@@ -32,7 +32,7 @@ export OnceDifferentiable,
 abstract type AbstractSolverCache end
 
 struct IsFiniteException <: Exception
-  indices::Vector{Int}
+  indices
 end
 show(io::IO, e::IsFiniteException) = print(io,
   "During the resolution of the non-linear system, the evaluation" *
