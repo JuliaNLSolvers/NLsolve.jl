@@ -63,7 +63,7 @@ function newton_(df::OnceDifferentiable,
     # has the gradient ∇fo(x) = ∇f(x) ⋅ f(x)
     function fo(xlin)
         value!(df, xlin)
-        dot(value(df), value(df)) / 2
+        real(dot(value(df), value(df))) / 2
     end
 
     # The line search algorithm will want to first compute ∇fo(xₖ).
@@ -73,11 +73,11 @@ function newton_(df::OnceDifferentiable,
     # in case of the line search asking us for the gradient at xₖ.
     function go!(storage, xlin)
         value_jacobian!(df, xlin)
-        mul!(vec(storage), transpose(jacobian(df)), vecvalue)
+        mul!(vec(storage), (jacobian(df))', vecvalue)
     end
     function fgo!(storage, xlin)
         value_jacobian!(df, xlin)
-        mul!(vec(storage), transpose(jacobian(df)), vecvalue)
+        mul!(vec(storage), (jacobian(df))', vecvalue)
         dot(value(df), value(df)) / 2
     end
     dfo = OnceDifferentiable(fo, go!, fgo!, cache.x, zero(real(T)))
@@ -108,15 +108,15 @@ function newton_(df::OnceDifferentiable,
         copyto!(cache.xold, cache.x)
 
 
-        
+
         if linesearch isa Static
             x_ls .= cache.x .+ cache.p
             value_jacobian!(df, x_ls)
             alpha, ϕalpha = one(real(T)), value(dfo)
         else
-            mul!(vec(cache.g), transpose(jacobian(df)), vec(value(df)))
+            mul!(vec(cache.g), jacobian(df)', vec(value(df)))
             value_gradient!(dfo, cache.x)
-            alpha, ϕalpha = linesearch(dfo, cache.x, cache.p, one(real(T)), x_ls, value(dfo), dot(cache.g, cache.p))
+            alpha, ϕalpha = linesearch(dfo, cache.x, cache.p, one(real(T)), x_ls, value(dfo), real(dot(cache.g, cache.p)))
         end
         # fvec is here also updated in the linesearch so no need to call f again.
         copyto!(cache.x, x_ls)
