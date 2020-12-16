@@ -91,7 +91,6 @@ function newton_(df::OnceDifferentiable,
         end
 
         try
-            mul!(vec(cache.g), (jacobian(df))', vec(value(df)))
             linsolve(cache.p, jacobian(df), vec(value(df)))
             rmul!(cache.p, -1)
         catch e
@@ -115,6 +114,7 @@ function newton_(df::OnceDifferentiable,
             value_jacobian!(df, x_ls)
             alpha, ϕalpha = one(real(T)), value(dfo)
         else
+            mul!(vec(cache.g), jacobian(df)', vec(value(df)))
             value_gradient!(dfo, cache.x)
             alpha, ϕalpha = linesearch(dfo, cache.x, cache.p, one(real(T)), x_ls, value(dfo), real(dot(cache.g, cache.p)))
         end
