@@ -32,5 +32,8 @@ for linesearches in [BackTracking(),StrongWolfe(),HagerZhang(),MoreThuente()] #S
     @test sol.g_calls == sol_real.g_calls
     @test all(sol_real.trace[i].stepnorm == sol_real.trace[i].stepnorm for i in 2:sol.iterations)
     @test all(norm(sol.trace[i].metadata["f(x)"]) ≈ norm(sol_real.trace[i].metadata["f(x)"]) for i in 1:5)
+    NLsolve.x_trace(sol_real)
+    NLsolve.F_trace(sol_real)
+    NLsolve.J_trace(sol_real)
 end
 end
