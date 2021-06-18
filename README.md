@@ -22,7 +22,8 @@ further below for a formal definition and the related commands.
 
 There is also an identical API for solving fixed points (i.e., taking as input a function `F(x)`, and solving `F(x) = x`).
 
-Note, if a single equation and not a system is to be solved, consider using [Roots.jl](https://github.com/JuliaMath/Roots.jl).
+Note, if a single equation and not a system is to be solved and performance is not critical, consider using [Roots.jl](https://github.com/JuliaMath/Roots.jl).
+If you want to solve a small system of equations at high performance, consider using [NonlinearSolve.jl](https://github.com/JuliaComputing/NonlinearSolve.jl).
 
 # A super simple example
 
