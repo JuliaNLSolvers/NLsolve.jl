@@ -294,7 +294,7 @@ It is also known as DIIS or Pulay mixing, this method is based on the
 acceleration of the fixed-point iteration `xₙ₊₁ = xₙ + beta*f(xₙ)`, where
 by default `beta=1`. It does not use Jacobian information or linesearch,
 but has a history whose size is controlled by the `m` parameter: `m=0`
-(the default) corresponds to the simple fixed-point iteration above,
+corresponds to the simple fixed-point iteration above,
 and higher values use a larger history size to accelerate the
 iterations. Higher values of `m` usually increase the speed of
 convergence, but increase the storage and computation requirements and
