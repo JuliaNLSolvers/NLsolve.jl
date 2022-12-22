@@ -326,7 +326,7 @@ Other optional arguments to `nlsolve`, available for all algorithms, are:
 There is a `fixedpoint()` wrapper around `nlsolve()` which maps an input function `F(x)` to `G(x) = F(x) - x`, and likewise for the in-place. This allows convenient solution of fixed-point problems, e.g. of the kind commonly encountered in computational economics. Some notes:
 
 * The default method is `:anderson` with `m = 5`. Naive "Picard"-style iteration can be achieved by setting `m=0`, but that isn't advisable for contractions whose Lipschitz constants are close to 1. If convergence fails, though, you may consider lowering it.
-* Autodifferentiation is supported; e.g. `fixedpoint(f!, init_x; method = :newton, autodiff = :true)`.
+* Autodifferentiation is supported; e.g. `fixedpoint(f!, init_x; method = :newton, autodiff = :forward)`.
 * Tolerances and iteration bounds can be set exactly as in `nlsolve()`, since this function is a wrapper, e.g. `fixedpoint(f, init_x; iterations = 500, ...)`.
 
 **Note:** If you are supplying your own derivative, make sure that it is appropriately transformed (i.e., we currently map `f -> f - x`, but are waiting on the API to stabilize before mapping `J -> J - I`, so you'll need to do that yourself.)
