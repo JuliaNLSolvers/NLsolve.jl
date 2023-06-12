@@ -22,16 +22,40 @@ further below for a formal definition and the related commands.
 
 There is also an identical API for solving fixed points (i.e., taking as input a function `F(x)`, and solving `F(x) = x`).
 
-# Simple example
+Note, if a single equation and not a system is to be solved and performance is not critical, consider using [Roots.jl](https://github.com/JuliaMath/Roots.jl).
+If you want to solve a small system of equations at high performance, consider using [NonlinearSolve.jl](https://github.com/JuliaComputing/NonlinearSolve.jl).
+
+# A super simple example
 
 We consider the following bivariate function of two variables:
 
 ```jl
-(x, y) -> ((x+3)*(y^3-7)+18, sin(y*exp(x)-1))
+(x, y) -> [(x+3)*(y^3-7)+18, sin(y*exp(x)-1)]
 ```
 
 In order to find a zero of this function and display it, you would write the
 following program:
+
+```jl
+using NLsolve
+
+function f(x)
+    [(x[1]+3)*(x[2]^3-7)+18,
+    sin(x[2]*exp(x[1])-1)]
+end
+
+sol = nlsolve(f, [ 0.1, 1.2])
+sol.zero
+```
+The first argument to `nlsolve` is the function to be solved which
+takes a vector as input and returns the residual as a vector.
+The second argument is the starting guess for algorithm.
+The `sol.zero` retrieves the solution, if converged.
+
+# A simple example
+
+Continuing on the same system of equations, but now using an in-place
+function and a user-specified Jacobian for improved performance:
 
 ```jl
 using NLsolve
@@ -58,15 +82,12 @@ Similarly, the function `j!` computes the Jacobian of the system and stores it
 in a preallocated matrix passed as first argument. Residuals and Jacobian
 functions can take different shapes, see below.
 
-Second, when calling the `nlsolve` function, it is necessary to give a starting
-point to the iterative algorithm.
-
-Finally, the `nlsolve` function returns an object of type `SolverResults`. In
+Second, the `nlsolve` function returns an object of type `SolverResults`. In
 particular, the field `zero` of that structure contains the solution if
 convergence has occurred. If `r` is an object of type `SolverResults`, then
 `converged(r)` indicates if convergence has occurred.
 
-# Specifying the function and its Jacobian
+# Ways to specify the function and its Jacobian
 
 There are various ways of specifying the residuals function and possibly its
 Jacobian.
