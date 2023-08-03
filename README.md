@@ -307,6 +307,12 @@ By default, no linesearch is performed.
 **Note:** it is assumed that a passed linesearch function will at least update the solution
 vector and evaluate the function at the new point.
 
+Added in sjdaines fork: if `linesearch=LineSearches.Static()` (the default), an additional argument
+`project_region!` (default value `(x)->(nothing)`) can be used to define a function to modify the proposed new
+`x` value after the Newton iteration. eg `project_region! = (x)->(x .= max.(x, 1e-80))` will enforce a constraint
+`x[i] >= 1e-80`.
+
+
 ## Anderson acceleration
 
 This method is selected with `method = :anderson`.

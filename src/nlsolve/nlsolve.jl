@@ -9,6 +9,7 @@ function nlsolve(df::Union{NonDifferentiable, OnceDifferentiable},
                  extended_trace::Bool = false,
                  linesearch = LineSearches.Static(),
                  linsolve=(x, A, b) -> copyto!(x, A\b),
+                 project_region! = (x) -> (nothing),
                  factor::Real = one(real(eltype(initial_x))),
                  autoscale::Bool = true,
                  m::Integer = 10,
@@ -21,7 +22,7 @@ function nlsolve(df::Union{NonDifferentiable, OnceDifferentiable},
     end
     if method == :newton
         newton(df, initial_x, xtol, ftol, iterations,
-               store_trace, show_trace, extended_trace, linesearch; linsolve=linsolve)
+               store_trace, show_trace, extended_trace, linesearch; linsolve=linsolve, project_region! = project_region!)
     elseif method == :trust_region
         trust_region(df, initial_x, xtol, ftol, iterations,
                      store_trace, show_trace, extended_trace, factor,
