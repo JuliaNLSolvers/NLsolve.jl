@@ -43,6 +43,7 @@ function newton_(df::OnceDifferentiable,
                  linesearch,
                  linsolve,
                  apply_step!,
+                 always_step,
                  cache = NewtonCache(df)) where T
     n = length(initial_x)
     copyto!(cache.x, initial_x)
@@ -53,7 +54,12 @@ function newton_(df::OnceDifferentiable,
     x_converged, f_converged = assess_convergence(initial_x, cache.xold, value(df), NaN, ftol)
     stopped = any(isnan, cache.x) || any(isnan, value(df)) ? true : false
 
-    converged = x_converged || f_converged
+    if always_step
+        converged = false
+    else
+        converged = x_converged || f_converged
+    end
+
     x_ls = copy(cache.x)
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
@@ -145,6 +151,7 @@ function newton(df::OnceDifferentiable,
                 linesearch,
                 cache = NewtonCache(df);
                 linsolve=(x, A, b) -> copyto!(x, A\b),
-                apply_step! = (x, x_old, newton_step)->(x .= x_old .+ newton_step)) where T
-    newton_(df, initial_x, convert(real(T), xtol), convert(real(T), ftol), iterations, store_trace, show_trace, extended_trace, linesearch, linsolve, apply_step!, cache)
+                apply_step! = (x, x_old, newton_step)->(x .= x_old .+ newton_step),
+                always_step::Bool) where T
+    newton_(df, initial_x, convert(real(T), xtol), convert(real(T), ftol), iterations, store_trace, show_trace, extended_trace, linesearch, linsolve, apply_step!, always_step, cache)
 end
