@@ -43,7 +43,12 @@ function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
 
     p = copy(x)
     g = copy(x)
-    Jinv = Matrix{T}(I, n, n)
+    if df isa NonDifferentiable
+        Jinv = Matrix{T}(I, n, n)
+    else
+        value_jacobian!(df, x)
+        Jinv = jacobian(df)^-1
+    end
     check_isfinite(value(df))
     it = 0
     x_converged, f_converged = assess_convergence(x, xold, value(df), NaN, ftol)
@@ -74,11 +79,13 @@ function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
         σ₂ = T(0.001)
         x = xold + p
         value!(df, x)
-        if norm(value(df), 2) <= ρ*norm(fold, 2) - σ₂*norm(p, 2)^2 # condition 2.7
-            α = T(1.0)
-        else
-            α = approximate_norm_descent(x->value!(df, x), x, p)
-            x = xold + α*p
+        if df isa NonDifferentiable
+            if norm(value(df), 2) <= ρ*norm(fold, 2) - σ₂*norm(p, 2)^2 # condition 2.7
+                α = T(1.0)
+            else
+                α = approximate_norm_descent(x->value!(df, x), x, p)
+                x = xold + α*p
+            end
         end
 
         value!(df, x)
