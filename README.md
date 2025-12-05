@@ -307,6 +307,17 @@ By default, no linesearch is performed.
 **Note:** it is assumed that a passed linesearch function will at least update the solution
 vector and evaluate the function at the new point.
 
+If `linesearch=LineSearches.Static()` (the default), an additional parameter
+`apply_step!` (default value `(x, x_old, newton_step)->(x .= x_old .+ newton_step)`) can be used to
+define a problem-specific function to update the `x` value after the Newton iteration. 
+For example, `apply_step! = (x, x_old, newton_step)->(x .= x_old .+ newton_step; x .= max.(x, 1e-80))` 
+will enforce a constraint `x[i] >= 1e-80`.
+
+If the optional parameter `always_step = false` (the default), no Newton iteration is performed
+if the solution is already converged for the supplied initial `x` values,  and the supplied initial `x` is returned
+in the `zero` field of `SolverResults`. If `always_step = true`, a Newton step is performed 
+before testing for convergence.
+
 ## Anderson acceleration
 
 This method is selected with `method = :anderson`.
