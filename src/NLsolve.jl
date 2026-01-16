@@ -52,4 +52,6 @@ include("nlsolve/nlsolve.jl")
 include("nlsolve/utils.jl")
 include("nlsolve/fixedpoint.jl")
 
+include("trace_tools.jl")
+
 end # module
