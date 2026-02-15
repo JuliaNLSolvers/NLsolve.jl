@@ -148,12 +148,12 @@ function trust_region_(df::OnceDifferentiable,
     if autoscale
         for j = 1:nn
             cache.d[j] = norm(view(jacobian(df), :, j))
-            if cache.d[j] == zero(cache.d[j])
-                cache.d[j] = one(cache.d[j])
+            if iszero(cache.d[j]^2) # square to catch underflow
+                cache.d[j] = oneunit(cache.d[j])
             end
         end
     else
-        fill!(cache.d, one(real(T)))
+        fill!(cache.d, oneunit(real(T)))
     end
 
     delta = factor * wnorm(cache.d, cache.x)
