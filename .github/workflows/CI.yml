@@ -1,29 +1,34 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - master
-    tags: '*'
-  pull_request:
+  - push
+  - pull_request
 
 jobs:
   test:
+    name: Julia ${{ matrix.version }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        julia-version: ['1.0', '1', 'nightly']
-        os: [ubuntu-latest, macOS-latest]
-
+        version:
+          - "lts"
+          - "1"
+        os:
+          - ubuntu-latest
+          - macOS-latest
+          - windows-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: julia-actions/setup-julia@2
+      - uses: actions/checkout@v6
+      - uses: julia-actions/setup-julia@v3
         with:
-          version: ${{ matrix.julia-version }}
-      - uses: julia-actions/julia-buildpkg@latest
-      - uses: julia-actions/julia-runtest@latest
+          version: ${{ matrix.version }}
+      - uses: julia-actions/cache@v3
+      - uses: julia-actions/julia-buildpkg@v1
+      - uses: julia-actions/julia-runtest@v1
       - uses: julia-actions/julia-processcoverage@v1
-      - uses: codecov/codecov-action@v5
-        if: ${{ matrix.julia-version == '1' && matrix.os == 'ubuntu-latest' }}
+      - uses: codecov/codecov-action@v6
         with:
+          fail_ci_if_error: true
           files: lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}

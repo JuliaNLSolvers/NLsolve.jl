@@ -78,7 +78,7 @@ function newton_(df::OnceDifferentiable,
     function fgo!(storage, xlin)
         value_jacobian!(df, xlin)
         mul!(vec(storage), (jacobian(df))', vecvalue)
-        dot(value(df), value(df)) / 2
+        real(dot(value(df), value(df))) / 2
     end
     dfo = OnceDifferentiable(fo, go!, fgo!, cache.x, zero(real(T)))
 
