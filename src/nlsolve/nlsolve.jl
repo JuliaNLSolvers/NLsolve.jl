@@ -40,13 +40,13 @@ end
 function nlsolve(f,
                  initial_x::AbstractArray;
                  method::Symbol = :trust_region,
-                 autodiff = :central,
+                 autodiff = DEFAULT_AUTODIFF,
                  inplace = !applicable(f, initial_x),
                  kwargs...)
     if method in (:anderson, :broyden)
         df = NonDifferentiable(f, initial_x, copy(initial_x); inplace=inplace)
     else
-        df = OnceDifferentiable(f, initial_x, copy(initial_x); autodiff=autodiff, inplace=inplace)
+        df = OnceDifferentiable(f, initial_x, copy(initial_x); autodiff=check_autodiff(autodiff), inplace=inplace)
     end
 
     nlsolve(df, initial_x; method = method, kwargs...)

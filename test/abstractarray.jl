@@ -49,9 +49,9 @@ for method in (:trust_region, :newton, :anderson, :broyden)
     @test typeof(r_matrix.zero) == typeof(initial_x_matrix)
     #@test typeof(r_wrapped.zero) == typeof(initial_x_wrapped)
 
-    r_AD = nlsolve(f!, initial_x, method = method, m = 2, beta = 1e-3, autodiff = :forward)
-    r_matrix_AD = nlsolve(f!, initial_x_matrix, method = method, m = 2, beta = 1e-3, autodiff = :forward)
-    #r_wrapped_AD = nlsolve(f!, initial_x_wrapped, method = method, autodiff = :forward)
+    r_AD = nlsolve(f!, initial_x, method = method, m = 2, beta = 1e-3, autodiff = AutoForwardDiff())
+    r_matrix_AD = nlsolve(f!, initial_x_matrix, method = method, m = 2, beta = 1e-3, autodiff = AutoForwardDiff())
+    #r_wrapped_AD = nlsolve(f!, initial_x_wrapped, method = method, autodiff = AutoForwardDiff())
 
     @test r_AD.zero == vec(r_matrix_AD.zero)
     #@test r_matrix_AD.zero == r_wrapped_AD.zero

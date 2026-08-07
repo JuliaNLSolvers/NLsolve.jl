@@ -549,7 +549,7 @@ for (df, initial, name) in alltests
         @test converged(r)
         # with autodiff
         if !(method == :broyden)
-            tot_time2 = @elapsed r_AD = nlsolve(obj.f, initial, method = method, autodiff = :forward)
+            tot_time2 = @elapsed r_AD = nlsolve(obj.f, initial, method = method, autodiff = AutoForwardDiff())
             @printf("%-45s   %5d   %5d   %5d   %14e   %10e\n", name*"-"*string(method)*"-AD",
                     length(initial), r_AD.f_calls, r_AD.g_calls, r_AD.residual_norm, tot_time)
             @test converged(r_AD)

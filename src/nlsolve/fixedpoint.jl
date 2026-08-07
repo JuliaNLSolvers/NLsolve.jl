@@ -15,7 +15,7 @@ function fixedpoint(f,
     m::Integer = 5,
     beta::Real = 1,
     droptol::Real = 0,
-    autodiff::Symbol = :central,
+    autodiff = DEFAULT_AUTODIFF,
     inplace::Bool = !applicable(f, initial_x)) where T
     # Check for weird case. (Causes to hang for now)
     # typeof(f) <: Union{InplaceObjective, NotInplaceObjective} ? error("Union{InplaceObjective, NotInplaceObjective} Case") : true;
@@ -25,10 +25,10 @@ function fixedpoint(f,
             f(out, x);
             out .-= x;
         end
-        dg = OnceDifferentiable(g!, initial_x, copy(initial_x), autodiff)
+        dg = OnceDifferentiable(g!, initial_x, copy(initial_x), check_autodiff(autodiff))
     else
         g(x) = f(x) - x;
-        dg = OnceDifferentiable(g, initial_x, copy(initial_x); autodiff = autodiff, inplace = inplace)
+        dg = OnceDifferentiable(g, initial_x, copy(initial_x); autodiff = check_autodiff(autodiff), inplace = inplace)
     end
 
     return nlsolve(dg,

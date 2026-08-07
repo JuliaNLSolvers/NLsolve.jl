@@ -5,7 +5,7 @@ function f_nolin!(fvec, x)
     fvec[2] = sin(x[2]*exp(x[1])-1)
 end
 
-r = nlsolve(f_nolin!, [ -0.5; 1.4], autodiff = :forward, method = :newton, linesearch = LineSearches.Static())
+r = nlsolve(f_nolin!, [ -0.5; 1.4], autodiff = AutoForwardDiff(), method = :newton, linesearch = LineSearches.Static())
 @test converged(r)
 
 end

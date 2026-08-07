@@ -2,6 +2,7 @@ __precompile__()
 
 module NLsolve
 
+using ADTypes: AbstractADType, AutoFiniteDiff
 using Distances
 using NLSolversBase
 using LineSearches
@@ -30,6 +31,14 @@ export OnceDifferentiable,
        fixedpoint
 
 abstract type AbstractSolverCache end
+
+const DEFAULT_AUTODIFF = AutoFiniteDiff(; fdtype = Val(:central))
+
+check_autodiff(autodiff::AbstractADType) = autodiff
+check_autodiff(autodiff::Symbol) = throw(ArgumentError(
+  "`autodiff` no longer accepts a Symbol. Pass an ADTypes backend instead:" *
+  " `:central` becomes `AutoFiniteDiff()`, `:forward` becomes `AutoForwardDiff()`" *
+  " (which needs ForwardDiff loaded). Got `:$autodiff`."))
 
 struct IsFiniteException <: Exception
   indices

@@ -81,12 +81,12 @@ function mcpsolve(f,
                   linesearch = LineSearches.BackTracking(),
                   factor::Real = one(T),
                   autoscale::Bool = true,
-                  autodiff = :central,
+                  autodiff = DEFAULT_AUTODIFF,
                   inplace = true) where T
     if inplace
-        df = OnceDifferentiable(f, initial_x, initial_x, autodiff)
+        df = OnceDifferentiable(f, initial_x, initial_x, check_autodiff(autodiff))
     else
-        df = OnceDifferentiable(not_in_place(f), initial_x, initial_x, autodiff)
+        df = OnceDifferentiable(not_in_place(f), initial_x, initial_x, check_autodiff(autodiff))
     end
 
     @reformulate df
