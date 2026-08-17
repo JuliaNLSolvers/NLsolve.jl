@@ -1,5 +1,7 @@
 using NLsolve
 using Test
+using ADTypes: AutoFiniteDiff, AutoForwardDiff
+using ForwardDiff
 using NLSolversBase
 using LineSearches
 using LinearAlgebra

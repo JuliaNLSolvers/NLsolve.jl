@@ -101,7 +101,7 @@ end
 r = nlsolve(f, [ -0.5; 1.4]; inplace = false)
 @test converged(r)
 
-r = nlsolve(f, [ -0.5; 1.4]; inplace = false, autodiff = :forward)
+r = nlsolve(f, [ -0.5; 1.4]; inplace = false, autodiff = AutoForwardDiff())
 @test converged(r)
 
 r = nlsolve(f, g, [ -0.5; 1.4]; inplace = false)
@@ -120,7 +120,7 @@ end
 
 r = nlsolve(n_ary(f), [ -0.5; 1.4])
 @test converged(r)
-r = nlsolve(n_ary(f), [ -0.5; 1.4], autodiff = :forward)
+r = nlsolve(n_ary(f), [ -0.5; 1.4], autodiff = AutoForwardDiff())
 @test converged(r)
 
 @testset "anderson trace issue #160" begin

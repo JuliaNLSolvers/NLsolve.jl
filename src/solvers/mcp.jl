@@ -28,8 +28,9 @@ function mcp_smooth(df::OnceDifferentiable,
     end
 
     function j!(J, x)
-        F = copy(x)
-        value_jacobian!!(df, F, J, x)
+        Fx, Jx = value_jacobian!!(df, x)
+        F = copy(Fx)
+        copyto!(J, Jx)
 
         # Derivatives of phiplus
         sqplus = sqrt.(F.^2 .+ (x .- upper).^2)
@@ -99,8 +100,9 @@ function mcp_minmax(df::OnceDifferentiable,
     end
 
     function j!(J, x)
-        F = copy(x)
-        value_jacobian!!(df, F, J, x)
+        Fx, Jx = value_jacobian!!(df, x)
+        F = copy(Fx)
+        copyto!(J, Jx)
         for i = 1:length(x)
             if F[i] < x[i]-upper[i] || F[i] > x[i]-lower[i]
                 for j = 1:length(x)

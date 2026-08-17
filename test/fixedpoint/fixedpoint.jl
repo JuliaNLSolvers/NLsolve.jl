@@ -80,12 +80,12 @@ end
     Gradient method tests.
 =#
     # Autodifferentiation tests.
-    @test fixedpoint(f_3!, init_x3; autodiff = :forward).zero == fixedpoint(f_3, init_x3; inplace = false, autodiff = :forward).zero ≈ [0.5671432953088511]
-    @test fixedpoint(f_3!, init_x3; autodiff = :central).zero == fixedpoint(f_3, init_x3; inplace = false, autodiff = :central).zero ≈ [0.5671432953088511]
+    @test fixedpoint(f_3!, init_x3; autodiff = AutoForwardDiff()).zero == fixedpoint(f_3, init_x3; inplace = false, autodiff = AutoForwardDiff()).zero ≈ [0.5671432953088511]
+    @test fixedpoint(f_3!, init_x3; autodiff = AutoFiniteDiff()).zero == fixedpoint(f_3, init_x3; inplace = false, autodiff = AutoFiniteDiff()).zero ≈ [0.5671432953088511]
 
     # Newton tests.
-    @test fixedpoint(f_3!, init_x3; autodiff = :forward, method = :newton).zero == fixedpoint(f_3, init_x3; inplace = false, autodiff = :forward, method = :newton).zero ≈ [0.5671432953088511]
-    @test fixedpoint(f_3!, init_x3; autodiff = :central, method = :newton).zero == fixedpoint(f_3, init_x3; inplace = false, autodiff = :central, method = :newton).zero ≈ [0.5671432953088511]
+    @test fixedpoint(f_3!, init_x3; autodiff = AutoForwardDiff(), method = :newton).zero == fixedpoint(f_3, init_x3; inplace = false, autodiff = AutoForwardDiff(), method = :newton).zero ≈ [0.5671432953088511]
+    @test fixedpoint(f_3!, init_x3; autodiff = AutoFiniteDiff(), method = :newton).zero == fixedpoint(f_3, init_x3; inplace = false, autodiff = AutoFiniteDiff(), method = :newton).zero ≈ [0.5671432953088511]
 
 #=
     `inplace` flag tests.
