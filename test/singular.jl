@@ -55,3 +55,32 @@ end
 df = OnceDifferentiable(f_let!, g_let!, rand(10), rand(10))
 r = nlsolve(df, rand(10), method = :trust_region)
 end
+
+@testset "underflowing column norms" begin
+# https://github.com/JuliaNLSolvers/NLsolve.jl/issues/297
+# A Jacobian column with entries below sqrt(floatmin) is nonzero, so it passed
+# the d[j] == 0 guard, but d[j]^2 underflows to zero and g ./ d.^2 in dogleg!
+# produced NaN.
+
+function f_tiny!(F, x)
+    F[1] = x[1] - 2
+    F[2] = 1e-200 * (x[2] - 3)
+end
+
+function g_tiny!(J, x)
+    J[1, 1] = 1.0
+    J[1, 2] = 0.0
+    J[2, 1] = 0.0
+    J[2, 2] = 1e-200
+end
+
+df_tiny = OnceDifferentiable(f_tiny!, g_tiny!, zeros(2), zeros(2))
+
+r = nlsolve(df_tiny, zeros(2), method = :trust_region)
+@test converged(r)
+@test !any(isnan, r.zero)
+@test r.zero ≈ [2.0, 3.0]
+
+r = nlsolve(df_tiny, zeros(2), method = :trust_region, autoscale = false)
+@test !any(isnan, r.zero)
+end
