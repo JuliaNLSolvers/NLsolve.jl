@@ -43,7 +43,7 @@ function nlsolve(f,
                  autodiff = DEFAULT_AUTODIFF,
                  inplace = !applicable(f, initial_x),
                  kwargs...)
-    if method in (:anderson, :broyden)
+    if (method == :anderson) || ((method == :broyden) && (autodiff == :central))
         df = NonDifferentiable(f, initial_x, copy(initial_x); inplace=inplace)
     else
         df = OnceDifferentiable(f, initial_x, copy(initial_x); autodiff=check_autodiff(autodiff), inplace=inplace)
