@@ -42,6 +42,8 @@ function newton_(df::OnceDifferentiable,
                  extended_trace::Bool,
                  linesearch,
                  linsolve,
+                 apply_step!,
+                 always_step,
                  cache = NewtonCache(df)) where T
     n = length(initial_x)
     copyto!(cache.x, initial_x)
@@ -52,7 +54,12 @@ function newton_(df::OnceDifferentiable,
     x_converged, f_converged = assess_convergence(initial_x, cache.xold, value(df), NaN, ftol)
     stopped = any(isnan, cache.x) || any(isnan, value(df)) ? true : false
 
-    converged = x_converged || f_converged
+    if always_step
+        converged = false
+    else
+        converged = x_converged || f_converged
+    end
+
     x_ls = copy(cache.x)
     tr = SolverTrace()
     tracing = store_trace || show_trace || extended_trace
@@ -110,7 +117,8 @@ function newton_(df::OnceDifferentiable,
 
 
         if linesearch isa Static
-            x_ls .= cache.x .+ cache.p
+            # default is x_ls .= cache.x .+ cache.p
+            apply_step!(x_ls, cache.x, cache.p)
             value_jacobian!(df, x_ls)
             alpha, ϕalpha = one(real(T)), value(dfo)
         else
@@ -142,6 +150,8 @@ function newton(df::OnceDifferentiable,
                 extended_trace::Bool,
                 linesearch,
                 cache = NewtonCache(df);
-                linsolve=(x, A, b) -> copyto!(x, A\b)) where T
-    newton_(df, initial_x, convert(real(T), xtol), convert(real(T), ftol), iterations, store_trace, show_trace, extended_trace, linesearch, linsolve, cache)
+                linsolve=(x, A, b) -> copyto!(x, A\b),
+                apply_step! = (x, x_old, newton_step)->(x .= x_old .+ newton_step),
+                always_step::Bool) where T
+    newton_(df, initial_x, convert(real(T), xtol), convert(real(T), ftol), iterations, store_trace, show_trace, extended_trace, linesearch, linsolve, apply_step!, always_step, cache)
 end
