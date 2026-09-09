@@ -39,6 +39,10 @@ check_autodiff(autodiff::Symbol) = throw(ArgumentError(
   "`autodiff` no longer accepts a Symbol. Pass an ADTypes backend instead:" *
   " `:central` becomes `AutoFiniteDiff()`, `:forward` becomes `AutoForwardDiff()`" *
   " (which needs ForwardDiff loaded). Got `:$autodiff`."))
+check_autodiff(autodiff) = throw(ArgumentError(
+  "`autodiff` must be an ADTypes backend, such as `AutoFiniteDiff()` or" *
+  " `AutoForwardDiff()` (which needs ForwardDiff loaded)." *
+  " Got `$autodiff` of type $(typeof(autodiff))."))
 
 struct IsFiniteException <: Exception
   indices
