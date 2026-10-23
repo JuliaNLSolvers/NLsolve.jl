@@ -19,6 +19,10 @@ function nlsolve(df::Union{NonDifferentiable, OnceDifferentiable},
         @printf "Iter     f(x) inf-norm    Step 2-norm \n"
         @printf "------   --------------   --------------\n"
     end
+    # Newton's J \ F step is a least-squares step, so only the other methods need a square system
+    if method in (:trust_region, :anderson, :broyden) && length(value(df)) != length(initial_x)
+        throw(DimensionMismatch("method = :$method needs one residual per unknown, but the residual has length $(length(value(df))) and initial_x has length $(length(initial_x)). For least squares, see LsqFit.jl."))
+    end
     if method == :newton
         newton(df, initial_x, xtol, ftol, iterations,
                store_trace, show_trace, extended_trace, linesearch; linsolve=linsolve)
@@ -43,10 +47,11 @@ function nlsolve(f,
                  autodiff = DEFAULT_AUTODIFF,
                  inplace = !applicable(f, initial_x),
                  kwargs...)
+    f! = inplace ? f : not_in_place(f)
     if method in (:anderson, :broyden)
-        df = NonDifferentiable(f, initial_x, copy(initial_x); inplace=inplace)
+        df = NonDifferentiable(f!, initial_x, copy(initial_x))
     else
-        df = OnceDifferentiable(f, initial_x, copy(initial_x); autodiff=check_autodiff(autodiff), inplace=inplace)
+        df = OnceDifferentiable(f!, initial_x, copy(initial_x); autodiff=check_autodiff(autodiff))
     end
 
     nlsolve(df, initial_x; method = method, kwargs...)
