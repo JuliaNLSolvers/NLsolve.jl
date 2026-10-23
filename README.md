@@ -13,7 +13,9 @@ NLsolve.jl is part of the [JuliaNLSolvers](https://github.com/JuliaNLSolvers) fa
 # Non-linear systems of equations
 The NLsolve package solves systems of nonlinear equations. Formally, if `F` is
 a multivalued function, then this package looks for some vector `x` that
-satisfies `F(x)=0` to some accuracy.
+satisfies `F(x)=0` to some accuracy. The system must be square: `F(x)` has one
+entry per entry of `x`. For nonlinear least squares, see
+[LsqFit.jl](https://github.com/JuliaNLSolvers/LsqFit.jl).
 
 The package is also able to solve mixed complementarity problems, which are
 similar to systems of nonlinear equations, except that the equality to zero is
