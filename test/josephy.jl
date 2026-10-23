@@ -77,4 +77,22 @@ r = mcpsolve(df, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00
 @test converged(r)
 @test norm(r.zero - solution) < 1e-8
 
+
+# An empty box has no solution (#288)
+
+lower = [0.00, 0.00, 0.00, 0.00]
+upper = [-1.00, Inf, Inf, Inf]
+x0 = [1.25, 0.00, 0.00, 0.50]
+for reformulation in (:smooth, :minmax)
+    @test_throws "lower[1] = 0.0 is greater than upper[1] = -1.0" mcpsolve(df, lower, upper, x0; reformulation)
+    @test_throws ArgumentError mcpsolve(f!, j!, lower, upper, x0; reformulation)
+    @test_throws ArgumentError mcpsolve(f!, lower, upper, x0; reformulation)
+end
+
+# Equal bounds fix a variable
+
+r = mcpsolve(df, [0.00, 0.00, 0.00, 0.00], [1e20, 0.00, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50])
+@test converged(r)
+@test norm(r.zero - solution) < 1e-8
+
 end

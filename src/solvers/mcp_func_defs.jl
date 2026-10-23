@@ -1,7 +1,14 @@
 # Solvers for mixed complementarity problems
 
+function check_bounds(lower, upper)
+    i = findfirst(i -> !(lower[i] <= upper[i]), eachindex(lower, upper))
+    i === nothing || throw(ArgumentError("lower[$i] = $(lower[i]) is greater than upper[$i] = $(upper[i]), so the MCP has no solution"))
+    return nothing
+end
+
 macro reformulate(df)
     esc(quote
+        check_bounds(lower, upper)
         if reformulation == :smooth
             rf = mcp_smooth($df, lower, upper)
         elseif reformulation == :minmax
