@@ -1,6 +1,6 @@
 name = "NLsolve"
 uuid = "2774e3e8-f4cf-5e23-947b-6d7e65073b56"
-version = "5.0.1"
+version = "5.0.2"
 
 [deps]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
