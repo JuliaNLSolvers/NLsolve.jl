@@ -24,7 +24,19 @@ further below for a formal definition and the related commands.
 
 There is also an identical API for solving fixed points (i.e., taking as input a function `F(x)`, and solving `F(x) = x`).
 
-Note, if a single equation and not a system is to be solved and performance is not critical, consider using [Roots.jl](https://github.com/JuliaMath/Roots.jl).
+Scalar equations are out of scope: there is no `nlsolve` method that takes a
+number as the initial point. A scalar equation can in principle be solved by
+wrapping it in an array. A one-element vector, a 1×1 matrix and a
+0-dimensional array (`fill(x0)`) all work:
+
+```jl
+using NLsolve
+f(x) = x^3 - 2x - 5
+r = nlsolve(x -> [f(x[1])], [2.0])
+r.zero[1]  # ≈ 2.0946
+```
+
+For a single equation, [Roots.jl](https://github.com/JuliaMath/Roots.jl) is the better fit.
 If you want to solve a small system of equations at high performance, consider using [NonlinearSolve.jl](https://github.com/JuliaComputing/NonlinearSolve.jl).
 
 # A super simple example
