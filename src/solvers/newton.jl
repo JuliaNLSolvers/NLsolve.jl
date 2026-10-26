@@ -124,7 +124,7 @@ function newton_(df::OnceDifferentiable,
         stopped = any(isnan, cache.x) || any(isnan, value(df)) ? true : false
 
         converged = x_converged || f_converged
-        newtontrace(sqeuclidean(cache.x, cache.xold), tracing, extended_trace, cache, df, it, tr, store_trace, show_trace)
+        newtontrace(euclidean(cache.x, cache.xold), tracing, extended_trace, cache, df, it, tr, store_trace, show_trace)
     end
     return SolverResults("Newton with line-search",
                          initial_x, copy(cache.x), norm(value(df), Inf),

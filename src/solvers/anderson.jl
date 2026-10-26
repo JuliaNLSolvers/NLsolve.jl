@@ -89,7 +89,7 @@ end
             update!(tr,
                     iter,
                     maximum(abs, fx),
-                    iter > 1 ? sqeuclidean(cache.g, cache.x) : convert(real(eltype(initial_x)), NaN),
+                    iter > 1 ? euclidean(cache.g, cache.x) : convert(real(eltype(initial_x)), NaN),
                     dt,
                     store_trace,
                     show_trace)

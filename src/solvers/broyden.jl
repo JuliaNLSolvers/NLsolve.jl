@@ -8,7 +8,6 @@ macro broydentrace(stepnorm)
             if extended_trace
                 dt["x"] = copy(x)
                 dt["f(x)"] = copy(value(df))
-                dt["g(x)"] = copy(jacobian(df))
             end
             update!(tr,
                     it,
@@ -105,7 +104,7 @@ function broyden_(df::Union{NonDifferentiable, OnceDifferentiable},
         stopped = any(isnan, x) || any(isnan, value(df)) ? true : false
 
         maybe_stuck = false
-        @broydentrace sqeuclidean(x, xold)
+        @broydentrace euclidean(x, xold)
     end
     return SolverResults("broyden without line-search",
                          initial_x, copyto!(copy(initial_x), x), norm(value(df), Inf),

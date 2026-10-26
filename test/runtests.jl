@@ -27,6 +27,7 @@ else
              "difficult_mcp.jl",
              "sparse.jl",
              "throws.jl",
+             "trace.jl",
              "f_g_counts.jl",
              "no_linesearch.jl",
              "abstractarray.jl",
