@@ -12,6 +12,12 @@
 # hence the difference in the smooth function.
 struct MCP
 end
+
+# a / sqrt(a^2 + b^2) in the derivatives of phiplus and phiminus. Both are not
+# differentiable at (a, b) = (0, 0); returning 0 there picks the element (1, 1)
+# of their generalized gradients.
+fischer_ratio(a, r) = iszero(r) ? zero(a) : a / r
+
 function mcp_smooth(df::OnceDifferentiable,
                     lower::Vector, upper::Vector)
 
@@ -35,12 +41,12 @@ function mcp_smooth(df::OnceDifferentiable,
         # Derivatives of phiplus
         sqplus = sqrt.(F.^2 .+ (x .- upper).^2)
 
-        dplus_du = 1 .+ F./sqplus
+        dplus_du = 1 .+ fischer_ratio.(F, sqplus)
 
         dplus_dv = copy(x)
         for i = 1:length(x)
             if isfinite.(upper[i])
-                dplus_dv[i] = 1 + (x[i]-upper[i])/sqplus[i]
+                dplus_dv[i] = 1 + fischer_ratio(x[i]-upper[i], sqplus[i])
             else
                 dplus_dv[i] = 0
             end
@@ -56,12 +62,12 @@ function mcp_smooth(df::OnceDifferentiable,
 
         sqminus = sqrt.(phiplus.^2 .+ (x .- lower).^2)
 
-        dminus_du = 1 .- phiplus ./ sqminus
+        dminus_du = 1 .- fischer_ratio.(phiplus, sqminus)
 
         dminus_dv = copy(x)
         for i = 1:length(x)
             if isfinite.(lower[i])
-                dminus_dv[i] = 1 - (x[i]-lower[i])/sqminus[i]
+                dminus_dv[i] = 1 - fischer_ratio(x[i]-lower[i], sqminus[i])
             else
                 dminus_dv[i] = 0
             end
