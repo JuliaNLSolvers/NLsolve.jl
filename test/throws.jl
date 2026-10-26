@@ -60,4 +60,10 @@ r = nlsolve(df_tall, x0; method = :newton)
 @test converged(r)
 @test r.zero ≈ [1.0, 2.0]
 
+# The QR updates used by Anderson acceleration reject an out-of-range column
+# index with a message, not a MethodError from a zero-argument ArgumentError
+Q, R = Matrix(1.0I, 3, 3), Matrix(1.0I, 3, 3)
+@test_throws "k = 0 is not in 1:3" NLsolve.qrdelete!(Q, R, 0)
+@test_throws "k = 4 is not in 1:3" NLsolve.qradd!(Q, R, zeros(3), 4)
+
 end # testset
