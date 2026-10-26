@@ -9,6 +9,7 @@ using SparseArrays
 using Printf
 using IterativeSolvers
 using Random
+using StaticArrays: MVector
 add_jl(x) = endswith(x, ".jl") ? x : x*".jl"
 
 if length(ARGS) > 0
@@ -31,6 +32,7 @@ else
              "f_g_counts.jl",
              "no_linesearch.jl",
              "abstractarray.jl",
+             "staticarrays.jl",
              "complex.jl",
              "interface/caches.jl",
              "fixedpoint/fixedpoint.jl"]

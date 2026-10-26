@@ -18,6 +18,7 @@ ForwardDiff = "0.10, 1"
 LineSearches = "7.6.2"
 NLSolversBase = "8.0.1"
 Reexport = "0.2, 1.0"
+StaticArrays = "1"
 julia = "1.10"
 
 [extras]
@@ -25,7 +26,8 @@ ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 IterativeSolvers = "42fd0dbc-a981-5370-80f2-aaf504508153"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["ForwardDiff", "IterativeSolvers", "Random", "SparseArrays", "Test"]
+test = ["ForwardDiff", "IterativeSolvers", "Random", "SparseArrays", "StaticArrays", "Test"]
