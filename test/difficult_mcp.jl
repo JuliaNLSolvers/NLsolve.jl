@@ -15,8 +15,18 @@ df = OnceDifferentiable(f_diffmcp!, g_diffmcp!, [0.0], [0.0])
 
 solution = [ 2.004987562 ]
 
-# TODO Figure out a good linesearch to make this work again
-#r = mcpsolve(df, [0.], [Inf], [0.1], method = :newton)
-#@test converged(r)
-#@test norm(r.zero - solution) < 1e-8
+# From x0 = 0.1, Newton with the default BackTracking line search stalls near
+# x = -0.005, outside the box, where the reformulated residual is about 0.01.
+# The step shrinks to exactly zero, which passes the step test when xtol = 0, so
+# the run reports convergence at a point that is not a solution (#319).
+r = mcpsolve(df, [0.], [Inf], [0.1], method = :newton)
+@test_broken !converged(r)
+@test_broken norm(r.zero - solution) < 1e-8
+
+# From x0 = 1.5 both methods and both reformulations reach the solution
+for method in (:newton, :trust_region), reformulation in (:smooth, :minmax)
+    r = mcpsolve(df, [0.], [Inf], [1.5]; method, reformulation)
+    @test converged(r)
+    @test norm(r.zero - solution) < 1e-8
+end
 end
