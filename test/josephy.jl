@@ -95,4 +95,26 @@ r = mcpsolve(df, [0.00, 0.00, 0.00, 0.00], [1e20, 0.00, 1e20, 1e20], [1.25, 0.00
 @test converged(r)
 @test norm(r.zero - solution) < 1e-8
 
+# Out-of-place functions
+
+function f_oop(x)
+    F = similar(x)
+    f!(F, x)
+    F
+end
+function j_oop(x)
+    J = zeros(eltype(x), 4, 4)
+    j!(J, x)
+    J
+end
+for reformulation in (:smooth, :minmax)
+    r = mcpsolve(f_oop, j_oop, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50]; reformulation, inplace = false)
+    @test converged(r)
+    @test norm(r.zero - solution) < 1e-8
+
+    r = mcpsolve(f_oop, [0.00, 0.00, 0.00, 0.00], [1e20, 1e20, 1e20, 1e20], [1.25, 0.00, 0.00, 0.50]; reformulation, inplace = false)
+    @test converged(r)
+    @test norm(r.zero - solution) < 1e-8
+end
+
 end
