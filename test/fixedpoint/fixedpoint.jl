@@ -107,4 +107,13 @@ end
     # edge case
     zak(x) = map!(n -> 1/2 * n, x, x) # one-argument in-place function
     @test (fixedpoint(zak, init_x2).zero == fixedpoint(baz, init_x2).zero) == false # should fail
+    # a map that reaches its fixed point 0 in one step (#231)
+    for m in (0, 5)
+        r = fixedpoint(x -> 0.0 .* x, [1.2]; m)
+        @test converged(r)
+        @test r.zero == [0.0]
+    end
+    r = fixedpoint((out, x) -> (out .= 0.0 .* x), [1.2])
+    @test converged(r)
+    @test r.zero == [0.0]
 end
