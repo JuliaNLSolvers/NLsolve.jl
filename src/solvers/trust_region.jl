@@ -211,7 +211,9 @@ function trust_region_(df::OnceDifferentiable,
         elseif rho >= 0.5
             delta = max(delta, 2 * wnorm(cache.d, cache.p))
         end
-        stopped = any(isnan, cache.x) || any(isnan, value(df)) ? true : false
+        # rho is NaN when neither the model nor f decreases. The step is then rejected and delta
+        # is unchanged, so every later iteration would repeat this one.
+        stopped = isnan(rho) || any(isnan, cache.x) || any(isnan, value(df))
     end
 
     name = "Trust-region with dogleg"

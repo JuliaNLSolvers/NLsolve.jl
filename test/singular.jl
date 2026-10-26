@@ -84,3 +84,14 @@ r = nlsolve(df_tiny, zeros(2), method = :trust_region)
 r = nlsolve(df_tiny, zeros(2), method = :trust_region, autoscale = false)
 @test !any(isnan, r.zero)
 end
+
+@testset "trust region stops when no step reduces f" begin
+# x^2 + 1 has no real root. The trust region reaches x = 0, where J = 0 and the
+# dogleg step is zero, so rho is 0/0. It stops there instead of repeating that
+# iteration until the iteration limit.
+f_noroot!(F, x) = (F[1] = x[1]^2 + 1)
+r = nlsolve(f_noroot!, [1.0], method = :trust_region)
+@test !converged(r)
+@test r.zero == [0.0]
+@test r.iterations == 2
+end
